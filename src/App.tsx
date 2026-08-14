@@ -34,6 +34,7 @@ import {
   TreasuryPage,
   UsersPage,
 } from './pages/SystemPages'
+import './system.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
