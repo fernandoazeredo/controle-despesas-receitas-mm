@@ -1,0 +1,10 @@
+.accounts-fernando-only .account-admin-actions > button:nth-of-type(3) {
+  display: none !important;
+}
+
+.accounts-fernando-only .txt-admin-box h2::after {
+  content: ' · acesso exclusivo Fernando';
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
