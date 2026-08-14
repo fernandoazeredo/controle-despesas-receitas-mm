@@ -1,0 +1,33 @@
+.status-badge.workflow-neutral,
+.workflow-status-badge.workflow-neutral { background:#eef1f4 !important; color:#55616d !important; border-color:#d9dfe5 !important; }
+.status-badge.workflow-info,
+.workflow-status-badge.workflow-info { background:#edf5ff !important; color:#1f5f9f !important; border-color:#bad5f2 !important; }
+.status-badge.workflow-success,
+.workflow-status-badge.workflow-success { background:#edf9f1 !important; color:#1f7a44 !important; border-color:#b7ddc5 !important; }
+.status-badge.workflow-warning,
+.workflow-status-badge.workflow-warning { background:#fff7e6 !important; color:#9a6100 !important; border-color:#f0d292 !important; }
+.status-badge.workflow-danger,
+.workflow-status-badge.workflow-danger { background:#fff0f0 !important; color:#b42328 !important; border-color:#efb4b7 !important; }
+.workflow-status-badge { display:inline-flex; align-items:center; width:max-content; padding:5px 9px; border:1px solid transparent; border-radius:999px; font-size:11px; font-weight:800; line-height:1; }
+.rejected-with-value strong { color:var(--expense); }
+.decision-modal { width:min(620px, calc(100% - 32px)); margin:48px auto; background:#fff; border-radius:16px; padding:22px; box-shadow:0 24px 70px rgba(0,0,0,.28); }
+.decision-modal.rejeitado { border-top:5px solid var(--expense); }
+.decision-modal.devolvido { border-top:5px solid #d59016; }
+.decision-warning { display:flex; align-items:center; gap:12px; padding:12px 14px; margin:10px 0 16px; border:1px solid var(--border); background:#f8fafc; border-radius:10px; }
+.decision-warning > div { display:grid; gap:2px; }
+.decision-warning span { color:var(--muted); font-size:12px; }
+.decision-reason { display:grid; gap:7px; }
+.decision-reason > span { font-size:12px; font-weight:800; color:#34404b; }
+.decision-reason textarea { width:100%; resize:vertical; min-height:110px; }
+.warning-action-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:9px; padding:10px 14px; background:#d59016; color:#fff; font-weight:800; cursor:pointer; }
+.warning-action-button:disabled { opacity:.55; cursor:not-allowed; }
+.enhanced-tips-grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
+.help-situations-card { margin-top:18px; }
+.help-situation-list { display:grid; margin-top:14px; }
+.help-situation-list > div { display:flex; gap:12px; align-items:flex-start; padding:13px 0; border-top:1px solid var(--border); color:#4b5661; font-size:13px; line-height:1.5; }
+.help-situation-list svg { flex:0 0 auto; margin-top:1px; }
+.enhanced-howto article { align-items:flex-start; }
+.brand-logo-only { display:flex; justify-content:center; align-items:center; padding:4px 0 8px; }
+.brand-logo-only img { display:block; width:100%; max-width:185px; max-height:74px; object-fit:contain; border-radius:6px; }
+.brand-logo-only .brand-fallback { display:none; }
+@media (max-width:900px){ .enhanced-tips-grid { grid-template-columns:1fr; } }
