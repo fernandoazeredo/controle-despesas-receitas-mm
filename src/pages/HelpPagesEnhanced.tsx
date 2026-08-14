@@ -29,9 +29,9 @@ export function TipsPageEnhanced() {
       <article className="tip"><FileCheck2 /><h3>Aprovação</h3><p><strong>Aprovado</strong> conta na Dashboard. <strong>Devolvido</strong> volta para correção. <strong>Rejeitado</strong> sai do fluxo financeiro. Devolução e rejeição exigem justificativa, que fica registrada na Auditoria.</p></article>
       <article className="tip"><BookOpenCheck /><h3>Plano de Contas</h3><p>O plano está integrado aos lançamentos: Despesas pesquisa contas finais <strong>4.xx</strong> e Receitas/Alvarás contas finais <strong>3.xx</strong>. Administrador pode <strong>baixar o TXT</strong>, corrigir e <strong>fazer upload do mesmo arquivo</strong>.</p></article>
       <article className="tip"><Users /><h3>Usuários — padrão @ Kit Fernando</h3><p>Não é necessário convite. O próprio usuário abre o sistema, clica em <strong>Primeiro acesso? Solicitar cadastro</strong> e fica <strong>Pendente</strong>. O administrador define o perfil e altera para <strong>Ativo</strong>.</p></article>
-      <article className="tip"><Calculator /><h3>Contabilidade</h3><p>Escolha competência e movimento, confira quantidades e valores e registre o envio. O Firebase já está no plano Blaze; documentos e pacote ZIP entram na próxima etapa de ativação do Storage.</p></article>
-      <article className="tip"><ShieldCheck /><h3>Auditoria</h3><p>Envios, aprovações, devoluções, rejeições, correções, alterações de usuários e atualizações do Plano de Contas ficam registrados. O motivo de devolução ou rejeição aparece no próprio log.</p></article>
-      <article className="tip"><Paperclip /><h3>Documentos</h3><p>O projeto já possui plano Blaze. Após a validação do bucket do Firebase Storage, boletos, notas, alvarás, comprovantes, PDFs e pacotes contábeis poderão ser armazenados no próprio projeto isolado.</p></article>
+      <article className="tip"><Calculator /><h3>Contabilidade</h3><p>Escolha competência e movimento, confira quantidades e valores. <strong>Baixar ZIP</strong> gera o pacote contábil no navegador; <strong>Gerar link para Contabilidade</strong> envia o mesmo ZIP ao Firebase Storage e disponibiliza o link; <strong>Enviar Movimento</strong> registra o fechamento no histórico.</p></article>
+      <article className="tip"><ShieldCheck /><h3>Auditoria</h3><p>Envios, aprovações, devoluções, rejeições, correções, alterações de usuários, atualizações do Plano de Contas e geração de pacotes contábeis ficam registrados.</p></article>
+      <article className="tip"><Paperclip /><h3>Documentos</h3><p>O Firebase Storage está ativo no projeto Blaze. O pacote contábil já usa o Storage; a conexão dos uploads de boletos, notas, alvarás, comprovantes e PDFs aos formulários será tratada separadamente.</p></article>
     </div>
 
     <section className="page-card help-situations-card">
@@ -42,7 +42,7 @@ export function TipsPageEnhanced() {
         <div><RefreshCw /><span><strong>Valor do alvará mudou:</strong> ajuste o Valor Líquido do Alvará; percentuais e valores vinculados são recalculados conforme o último campo editado.</span></div>
         <div><BookOpenCheck /><span><strong>Precisa classificar um lançamento:</strong> digite parte do código ou nome da conta no próprio formulário. A busca consulta o Plano de Contas sincronizado e restringe o tipo correto.</span></div>
         <div><UserCheck /><span><strong>Novo usuário:</strong> envie apenas o link do sistema → usuário solicita cadastro → aparece como Pendente → administrador define perfil → altera para Ativo.</span></div>
-        <div><FolderArchive /><span><strong>Precisa localizar um lançamento:</strong> use Despesas, Receitas ou Arquivo de Documentos e pesquise por responsável, fornecedor, processo, código da conta ou status.</span></div>
+        <div><FolderArchive /><span><strong>Precisa enviar movimento ao contador:</strong> abra Contabilidade → escolha competência/filtros → Baixar ZIP ou Gerar link para Contabilidade → registre o envio no histórico.</span></div>
       </div>
     </section>
   </>
@@ -58,11 +58,11 @@ export function HowToPageEnhanced() {
     ['6', 'Corrigir uma devolução', 'Em Despesas, localize o status Devolvido p/ Correção, clique Corrigir e reenviar, faça os ajustes e envie novamente.'],
     ['7', 'Cadastrar uma receita / alvará', 'A área de origem preenche o demonstrativo completo, escolhe uma conta final 3.xx do Plano de Contas e envia o documento pronto à Tesouraria. Percentual e valor permanecem vinculados e o líquido do cliente é calculado automaticamente.'],
     ['8', 'Tratar a receita na Tesouraria', 'A Tesouraria recebe o demonstrativo pronto, confirma o recebimento e encerra a operação depois da conferência do crédito, dos repasses aplicáveis e dos comprovantes.'],
-    ['9', 'Consultar a Dashboard', 'Receitas ficam em azul, despesas em vermelho e saldo em verde. Somente despesas aprovadas entram no cálculo. Os cards Despesas e Aguardando Aprovação levam diretamente aos respectivos módulos.'],
+    ['9', 'Consultar a Dashboard', 'Receitas ficam em azul, despesas em vermelho e saldo em verde. Somente despesas aprovadas entram no cálculo. Os cards Receitas, Despesas, Aguardando Aprovação e Fluxo de aprovação funcionam como atalhos para os respectivos módulos.'],
     ['10', 'Usar e manter o Plano de Contas', 'Os formulários consultam o plano sincronizado no Firestore. Administradores podem baixar o Plano de Contas em TXT, corrigir o arquivo e subir o mesmo TXT; antes da substituição o sistema mostra uma confirmação com as quantidades.'],
     ['11', 'Gerenciar usuários — @ Kit Fernando', 'O usuário se cadastra sozinho pelo link do sistema e entra como Pendente. Em Usuários e Permissões, o administrador define o perfil e altera o status para Ativo, Inativo ou Bloqueado.'],
-    ['12', 'Fechar para a Contabilidade', 'Escolha a competência, confira despesas e receitas aptas e registre o envio. O histórico fica salvo. Com o plano Blaze já ativo, a próxima etapa é habilitar Storage para documentos e ZIP.'],
-    ['13', 'Consultar Auditoria e documentos', 'Use Auditoria para rastrear ações, inclusive motivos de devolução/rejeição, e o Arquivo de Documentos para localizar dossiês. O armazenamento dos anexos será ativado no Firebase Storage do próprio projeto.'],
+    ['12', 'Fechar para a Contabilidade', 'Escolha a competência, unidade e movimento. Baixar ZIP gera resumo, CSV de despesas/receitas e JSON do movimento. Gerar link envia esse ZIP ao Firebase Storage e disponibiliza um link para compartilhamento. Enviar Movimento registra o fechamento no histórico.'],
+    ['13', 'Consultar Auditoria e documentos', 'Use Auditoria para rastrear ações, inclusive motivos de devolução/rejeição e geração de pacotes. O Firebase Storage já está ativo; os uploads documentais dos formulários serão conectados em etapa própria.'],
   ]
 
   return <>
