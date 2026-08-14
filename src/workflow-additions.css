@@ -1,0 +1,91 @@
+.utilities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.utility-card {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+.utility-card > svg { color: #52616f; }
+.utility-card h2 { margin: 0 0 5px; font-size: 18px; }
+.utility-card p { margin: 0; color: var(--muted); line-height: 1.55; }
+.utility-danger-card { border-color: #efc2c2 !important; background: #fffafa !important; }
+.utility-danger-card > svg, .utility-danger-card h2 { color: var(--expense); }
+
+.bank-statement-box {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #cdd9e3;
+  border-radius: 12px;
+  background: #f8fbfd;
+}
+.bank-statement-box > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.bank-statement-box > div > div { display: grid; gap: 3px; }
+.bank-statement-box span { color: var(--muted); font-size: 12px; }
+.bank-statement-box small { display: inline-flex; align-items: center; gap: 5px; color: #17623b; font-weight: 800; }
+.accounting-file-button { cursor: pointer; white-space: nowrap; }
+
+.upload-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--expense);
+  color: #fff;
+  font-size: 11px;
+}
+.upload-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid #d7e0e7;
+  border-radius: 10px;
+  background: #fff;
+}
+.upload-item-main { flex: 1; min-width: 0; display: grid; gap: 5px; }
+.upload-item-main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.upload-item-main small { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; }
+.upload-progress { height: 7px; border-radius: 999px; overflow: hidden; background: #dfe9f2; }
+.upload-progress i { display: block; height: 100%; background: var(--revenue); transition: width .2s ease; }
+.upload-success { border-color: #9fd6b6; background: #f4fbf7; }
+.upload-success .upload-item-main small { color: #17623b; font-weight: 800; }
+.upload-error { border-color: #e8b6b6; background: #fff7f7; }
+.upload-error .upload-item-main small { color: #a52222; }
+.upload-item > a { color: var(--revenue); display: inline-flex; }
+.attachment-count-link {
+  margin-top: 5px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #9fc8eb;
+  background: #f5faff;
+  color: var(--revenue);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .utilities-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .bank-statement-box { align-items: stretch; flex-direction: column; }
+  .accounting-file-button { width: 100%; justify-content: center; }
+}
