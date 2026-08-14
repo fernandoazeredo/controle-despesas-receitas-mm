@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, Copy, RefreshCw, ShieldCheck, UserCheck, Users } from 'lucide-react'
+import { CheckCircle2, RefreshCw, ShieldCheck, Users } from 'lucide-react'
 import { addDoc, collection, doc, onSnapshot, serverTimestamp, updateDoc, type DocumentData } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import {
@@ -53,7 +53,6 @@ export function UsersPageKitFernando() {
   const { profile } = useAuth()
   const [records, setRecords] = useState<UserRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState('')
   const canManage = profile?.role === 'master'
 
   useEffect(() => onSnapshot(collection(db, 'users'), (snapshot) => {
@@ -96,42 +95,16 @@ export function UsersPageKitFernando() {
     })
   }
 
-  async function copyRegistrationLink() {
-    const text = `${window.location.origin}\n\nNo primeiro acesso, clique em “Primeiro acesso? Solicitar cadastro”. O cadastro ficará Pendente até a liberação do Administrador Master.`
-    try {
-      await navigator.clipboard.writeText(text)
-      setMessage('Link e instrução de cadastro copiados.')
-    } catch {
-      setMessage(`Envie este endereço ao usuário: ${window.location.origin}`)
-    }
-  }
-
   return <>
     <div className="page-heading">
-      <div>
-        <span className="eyebrow">Padrão @ Kit Fernando</span>
-        <h1>Usuários e Permissões</h1>
-        <p>O próprio usuário solicita o cadastro. O perfil é definido pelas regras oficiais do escritório e o Administrador Master libera ou bloqueia o acesso.</p>
-      </div>
-      {canManage && <div className="quick-actions"><button className="secondary-button" type="button" onClick={copyRegistrationLink}><Copy size={17} /> Copiar link de cadastro</button></div>}
+      <div><h1>Usuários e Permissões</h1></div>
     </div>
-
-    {message && <div className="user-invite-feedback" role="status">{message}</div>}
 
     <div className="user-access-summary">
       <article className="user-pending-card"><span>Pendentes</span><strong>{counts.pending}</strong><small>Aguardando sua liberação</small></article>
       <article className="user-active-card"><span>Ativos</span><strong>{counts.active}</strong><small>Com acesso ao sistema</small></article>
       <article className="user-blocked-card"><span>Bloqueados</span><strong>{counts.blocked}</strong><small>Sem acesso</small></article>
     </div>
-
-    <section className="page-card kit-user-flow">
-      <div className="kit-user-flow-icon"><UserCheck size={28} /></div>
-      <div>
-        <h2>Perfis oficiais e autorização</h2>
-        <p><strong>Fernando:</strong> Administrador Master do sistema. <strong>Flávio Marques:</strong> Diretor e único autorizador de pagamentos/despesas. <strong>Reinaldo:</strong> Gerente. <strong>Socorro:</strong> Tesouraria. Todos os demais cadastros entram como <strong>Colaborador / Operador</strong>.</p>
-        <small>Todos os usuários, exceto o Master, nascem Pendentes e só acessam após a sua liberação.</small>
-      </div>
-    </section>
 
     <section className="page-card module-card users-kit-card">
       <div className="card-title-row"><div><h2>Cadastros do sistema</h2><p>Pendentes aparecem primeiro para facilitar a liberação.</p></div><WorkflowStatusBadge status="pending" label={`${counts.pending} pendente(s)`} /></div>
