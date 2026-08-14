@@ -1,0 +1,140 @@
+.expense-mask-note {
+  color: #8e191d !important;
+  font-weight: 700;
+}
+
+.deductions-row {
+  background: #fff8f8;
+}
+
+.deductions-row strong:last-child {
+  color: var(--expense);
+  justify-content: flex-end;
+  font-size: 15px;
+}
+
+.client-row strong:last-child {
+  color: var(--success);
+  justify-content: flex-end;
+  font-size: 17px;
+}
+
+.accounting-feedback {
+  margin-top: 14px;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.accounting-feedback.success {
+  background: var(--success-soft);
+  border: 1px solid #b9dec9;
+  color: var(--success);
+}
+
+.accounting-feedback.warning {
+  background: var(--warning-soft);
+  border: 1px solid #ead39b;
+  color: #805600;
+}
+
+.accounting-history-card {
+  margin-top: 18px;
+}
+
+.accounting-history-card .card-title-row p {
+  margin-top: 5px;
+}
+
+.accounting-history-list {
+  margin-top: 16px;
+  display: grid;
+}
+
+.accounting-history-list article {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.accounting-history-list article > div:first-child,
+.history-totals {
+  display: grid;
+  gap: 3px;
+}
+
+.accounting-history-list strong {
+  font-size: 14px;
+}
+
+.accounting-history-list span,
+.accounting-history-list small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.history-totals span:first-child {
+  color: var(--expense);
+  font-weight: 700;
+}
+
+.history-totals span:last-child {
+  color: var(--revenue);
+  font-weight: 700;
+}
+
+.user-onboarding-box {
+  margin-bottom: 18px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px 16px;
+  align-items: start;
+  border-top: 4px solid #087faf;
+}
+
+.user-onboarding-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #eaf7fd;
+  color: #087faf;
+}
+
+.user-onboarding-box h2 {
+  margin-bottom: 6px;
+}
+
+.user-flow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.user-flow span {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #f8fafc;
+  padding: 9px 10px;
+  text-align: center;
+  color: #435164;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .accounting-history-list article {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .user-flow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
