@@ -27,7 +27,7 @@
 .help-situation-list > div { display:flex; gap:12px; align-items:flex-start; padding:13px 0; border-top:1px solid var(--border); color:#4b5661; font-size:13px; line-height:1.5; }
 .help-situation-list svg { flex:0 0 auto; margin-top:1px; }
 .enhanced-howto article { align-items:flex-start; }
-.brand-logo-only { display:flex; justify-content:center; align-items:center; padding:4px 0 8px; }
-.brand-logo-only img { display:block; width:100%; max-width:185px; max-height:74px; object-fit:contain; border-radius:6px; }
-.brand-logo-only .brand-fallback { display:none; }
+.brand-logo-only { display:flex; justify-content:center; align-items:center; padding:0 0 8px; }
+.brand-logo-only img { display:block; width:100%; max-width:205px; height:auto; object-fit:contain; }
+.google-logo-svg { width:21px; height:21px; flex:0 0 21px; }
 @media (max-width:900px){ .enhanced-tips-grid { grid-template-columns:1fr; } }
