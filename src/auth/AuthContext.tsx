@@ -11,7 +11,25 @@ import {
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 import { auth, db } from '../lib/firebase'
 
-export type UserRole = 'master' | 'admin' | 'diretoria' | 'tesouraria' | 'alvaras' | 'contabilidade' | 'consulta'
+/**
+ * Perfis oficiais do @ Kit Fernando:
+ * - master: administrador principal (Fernando) — acesso total.
+ * - admin: diretor/administrador — análise, autorizações e aprovações.
+ * - operador: colaboradores — operação diária, sem poder de aprovação administrativa.
+ *
+ * Os perfis antigos permanecem no tipo apenas para compatibilidade com usuários já gravados
+ * no Firestore. Na interface eles são tratados como Operador até o Master salvar o novo perfil.
+ */
+export type UserRole =
+  | 'master'
+  | 'admin'
+  | 'operador'
+  | 'diretoria'
+  | 'tesouraria'
+  | 'alvaras'
+  | 'contabilidade'
+  | 'consulta'
+
 export type UserStatus = 'pending' | 'active' | 'inactive' | 'blocked'
 
 export type AppUser = {
@@ -41,7 +59,7 @@ function normalizeProfile(uid: string, data: Record<string, unknown>): AppUser {
     uid,
     email: String(data.email ?? ''),
     displayName: String(data.displayName ?? data.name ?? ''),
-    role: (data.role as UserRole) ?? 'consulta',
+    role: (data.role as UserRole) ?? 'operador',
     status: (data.status as UserStatus) ?? 'pending',
     photoURL: data.photoURL ? String(data.photoURL) : undefined,
   }
@@ -62,7 +80,7 @@ async function ensureProfile(firebaseUser: User, requestedName?: string): Promis
     uid: firebaseUser.uid,
     email,
     displayName: requestedName?.trim() || firebaseUser.displayName || email.split('@')[0] || 'Usuário',
-    role: isPrimaryAdmin ? 'master' : 'consulta',
+    role: isPrimaryAdmin ? 'master' : 'operador',
     status: isPrimaryAdmin ? 'active' : 'pending',
     photoURL: firebaseUser.photoURL ?? undefined,
   }
