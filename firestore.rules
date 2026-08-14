@@ -147,7 +147,10 @@ service cloud.firestore {
       allow update: if directorExpenseDecision()
         || operationalExpenseUpdate()
         || treasuryExpenseClose();
-      allow delete: if hasRole(['master']);
+      allow delete: if hasRole(['master'])
+        || (hasRole(['gerente', 'tesouraria', 'operador'])
+          && resource.data.status == 'rascunho'
+          && resource.data.createdBy == request.auth.uid);
     }
 
     match /receivables/{document=**} {
