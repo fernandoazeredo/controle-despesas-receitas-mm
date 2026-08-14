@@ -20,17 +20,10 @@ import {
 } from 'lucide-react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
-import {
-  AuditPage,
-  DocumentsPage,
-  TreasuryPage,
-} from './pages/SystemPages'
+import { AuditPage, DocumentsPage, TreasuryPage } from './pages/SystemPages'
 import { AccountingPageFixed } from './pages/FixedPages'
-import {
-  ExpensesPageReview,
-  ReceivablesPageReview,
-  UsersPageReview,
-} from './pages/ReviewFixPages'
+import { UsersPageReview } from './pages/ReviewFixPages'
+import { ExpensesPageIntegrated, ReceivablesPageIntegrated } from './pages/FinanceEntryPages'
 import { AccountsPageOfficial } from './pages/AccountsPageOfficial'
 import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
 import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
@@ -41,6 +34,7 @@ import './fixes.css'
 import './review-fixes.css'
 import './accounts-official.css'
 import './enhancements.css'
+import './account-selector.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -85,14 +79,7 @@ function GoogleMark() {
 }
 
 function LoadingScreen() {
-  return (
-    <div className="auth-page">
-      <div className="loading-box" aria-live="polite">
-        <LoaderCircle className="spin" size={28} />
-        <span>Carregando o sistema...</span>
-      </div>
-    </div>
-  )
+  return <div className="auth-page"><div className="loading-box" aria-live="polite"><LoaderCircle className="spin" size={28} /><span>Carregando o sistema...</span></div></div>
 }
 
 function LoginScreen() {
@@ -138,50 +125,20 @@ function LoginScreen() {
           <h1>Controle de Despesas e Receitas</h1>
           <p>Gestão financeira, documental, aprovações e movimentação contábil em um único ambiente.</p>
         </section>
-
         <section className="auth-card">
           <span className="eyebrow">Acesso ao sistema</span>
           <h2>{mode === 'login' ? 'Entrar' : 'Solicitar acesso'}</h2>
-          <p className="auth-helper">
-            {mode === 'login'
-              ? 'Utilize seu e-mail corporativo ou sua conta Google.'
-              : 'Novos cadastros ficam aguardando liberação administrativa.'}
-          </p>
-
+          <p className="auth-helper">{mode === 'login' ? 'Utilize seu e-mail corporativo ou sua conta Google.' : 'Novos cadastros ficam aguardando liberação administrativa.'}</p>
           <form onSubmit={submit} className="auth-form">
-            {mode === 'register' && (
-              <label>
-                <span>Nome</span>
-                <input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
-              </label>
-            )}
-            <label>
-              <span>E-mail</span>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-            </label>
-            <label>
-              <span>Senha</span>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
-            </label>
-
+            {mode === 'register' && <label><span>Nome</span><input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" /></label>}
+            <label><span>E-mail</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
+            <label><span>Senha</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>
             {error && <div className="form-error" role="alert">{error}</div>}
-
-            <button className="primary-button auth-submit" type="submit" disabled={busy}>
-              {busy ? <LoaderCircle className="spin" size={18} /> : <Mail size={18} />}
-              {mode === 'login' ? 'Entrar com e-mail' : 'Criar acesso'}
-            </button>
+            <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? <LoaderCircle className="spin" size={18} /> : <Mail size={18} />}{mode === 'login' ? 'Entrar com e-mail' : 'Criar acesso'}</button>
           </form>
-
           <div className="auth-divider"><span>ou</span></div>
-
-          <button className="google-button" type="button" onClick={googleLogin} disabled={busy}>
-            <GoogleMark />
-            Continuar com Google
-          </button>
-
-          <button className="text-button" type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}>
-            {mode === 'login' ? 'Primeiro acesso? Solicitar cadastro' : 'Já possui acesso? Voltar para o login'}
-          </button>
+          <button className="google-button" type="button" onClick={googleLogin} disabled={busy}><GoogleMark />Continuar com Google</button>
+          <button className="text-button" type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}>{mode === 'login' ? 'Primeiro acesso? Solicitar cadastro' : 'Já possui acesso? Voltar para o login'}</button>
         </section>
       </div>
     </div>
@@ -190,44 +147,15 @@ function LoginScreen() {
 
 function PendingScreen() {
   const { profile, logout } = useAuth()
-  return (
-    <div className="auth-page">
-      <section className="pending-card">
-        <UserRoundCheck size={42} />
-        <span className="eyebrow">Cadastro recebido</span>
-        <h1>Aguardando liberação</h1>
-        <p>Seu cadastro foi criado, mas ainda precisa ser ativado por um administrador do sistema.</p>
-        <strong>{profile?.email}</strong>
-        <button className="secondary-button" type="button" onClick={logout}><LogOut size={18} /> Sair</button>
-      </section>
-    </div>
-  )
+  return <div className="auth-page"><section className="pending-card"><UserRoundCheck size={42} /><span className="eyebrow">Cadastro recebido</span><h1>Aguardando liberação</h1><p>Seu cadastro foi criado, mas ainda precisa ser ativado por um administrador do sistema.</p><strong>{profile?.email}</strong><button className="secondary-button" type="button" onClick={logout}><LogOut size={18} /> Sair</button></section></div>
 }
 
 function Configuracoes() {
   return (
     <>
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">Administração</span>
-          <h1>Configurações</h1>
-          <p>Dados institucionais, regras operacionais e situação dos serviços do aplicativo.</p>
-        </div>
-      </div>
-      <section className="page-card">
-        <span className="eyebrow">Dados institucionais</span>
-        <h2>Configurações do Aplicativo</h2>
-        <p>Cadastro utilizado nos demonstrativos, relatórios e documentos gerados pelo sistema.</p>
-        <div className="settings-grid">
-          <label><span>Razão Social</span><input value={companyData.razaoSocial} readOnly /></label>
-          <label><span>CNPJ</span><input value={companyData.cnpj} readOnly /></label>
-          <label className="settings-full-width"><span>Endereço</span><input value={companyData.endereco} readOnly /></label>
-        </div>
-      </section>
-      <div className="settings-panels">
-        <section className="page-card"><h2>Fluxo Financeiro</h2><div className="status-row"><span>Aprovação de despesas</span><strong>Ativa</strong></div><div className="status-row"><span>Classificação contábil</span><strong>Opcional</strong></div><div className="status-row"><span>Recebimento chega pronto à Tesouraria</span><strong>Ativo</strong></div></section>
-        <section className="page-card"><h2>Serviços Firebase</h2><div className="status-row"><span>Authentication</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Firestore</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Hosting</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Storage</span><strong className="warning-text">Pendente Blaze</strong></div></section>
-      </div>
+      <div className="page-heading"><div><span className="eyebrow">Administração</span><h1>Configurações</h1><p>Dados institucionais, regras operacionais e situação dos serviços do aplicativo.</p></div></div>
+      <section className="page-card"><span className="eyebrow">Dados institucionais</span><h2>Configurações do Aplicativo</h2><p>Cadastro utilizado nos demonstrativos, relatórios e documentos gerados pelo sistema.</p><div className="settings-grid"><label><span>Razão Social</span><input value={companyData.razaoSocial} readOnly /></label><label><span>CNPJ</span><input value={companyData.cnpj} readOnly /></label><label className="settings-full-width"><span>Endereço</span><input value={companyData.endereco} readOnly /></label></div></section>
+      <div className="settings-panels"><section className="page-card"><h2>Fluxo Financeiro</h2><div className="status-row"><span>Aprovação de despesas</span><strong>Ativa</strong></div><div className="status-row"><span>Classificação contábil</span><strong>Opcional</strong></div><div className="status-row"><span>Recebimento chega pronto à Tesouraria</span><strong>Ativo</strong></div></section><section className="page-card"><h2>Serviços Firebase</h2><div className="status-row"><span>Authentication</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Firestore</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Hosting</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Storage</span><strong className="warning-text">Pendente Blaze</strong></div></section></div>
     </>
   )
 }
@@ -241,41 +169,16 @@ function AppShell() {
     <div className="app-shell">
       <WorkflowStatusEnhancer />
       <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-logo-only">
-            <img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" />
-          </div>
-          <div className="app-name">Controle de Despesas e Receitas</div>
-        </div>
-
-        <nav>
-          {visibleMenu.map(({ to, label, icon: Icon, tone }) => (
-            <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}${tone ? ` ${tone}-nav` : ''}`}>
-              <Icon size={18} />
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="sidebar-help">
-          <NavLink to="/dicas" className="tips-button"><Lightbulb size={18} /> DICAS</NavLink>
-          <NavLink to="/como-usar" className="howto-link"><Scale size={18} /> Como Usar</NavLink>
-        </div>
-
-        <div className="sidebar-user">
-          <div>
-            <strong>{profile?.displayName || 'Usuário'}</strong>
-            <span>{profile?.email}</span>
-          </div>
-          <button type="button" onClick={logout} title="Sair"><LogOut size={17} /></button>
-        </div>
+        <div className="brand"><div className="brand-logo-only"><img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" /></div><div className="app-name">Controle de Despesas e Receitas</div></div>
+        <nav>{visibleMenu.map(({ to, label, icon: Icon, tone }) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}${tone ? ` ${tone}-nav` : ''}`}><Icon size={18} /><span>{label}</span></NavLink>)}</nav>
+        <div className="sidebar-help"><NavLink to="/dicas" className="tips-button"><Lightbulb size={18} /> DICAS</NavLink><NavLink to="/como-usar" className="howto-link"><Scale size={18} /> Como Usar</NavLink></div>
+        <div className="sidebar-user"><div><strong>{profile?.displayName || 'Usuário'}</strong><span>{profile?.email}</span></div><button type="button" onClick={logout} title="Sair"><LogOut size={17} /></button></div>
       </aside>
-
       <main className="main-content">
         <Routes>
           <Route path="/" element={<DashboardPageEnhanced />} />
-          <Route path="/despesas" element={<ExpensesPageReview />} />
-          <Route path="/alvaras" element={<ReceivablesPageReview />} />
+          <Route path="/despesas" element={<ExpensesPageIntegrated />} />
+          <Route path="/alvaras" element={<ReceivablesPageIntegrated />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
           <Route path="/plano-contas" element={<AccountsPageOfficial />} />
@@ -294,7 +197,6 @@ function AppShell() {
 
 export default function App() {
   const { user, profile, loading } = useAuth()
-
   if (loading) return <LoadingScreen />
   if (!user) return <LoginScreen />
   if (!profile || profile.status !== 'active') return <PendingScreen />
