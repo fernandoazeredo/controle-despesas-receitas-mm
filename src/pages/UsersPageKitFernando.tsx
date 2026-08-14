@@ -9,15 +9,12 @@ const PRIMARY_ADMIN_EMAIL = 'fernandoazeredo64@gmail.com'
 const dateTimeBR = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 
 type UserRecord = { id: string } & DocumentData
+type ManagedRole = 'admin' | 'operador'
 
-const roleLabels: Record<UserRole, string> = {
-  master: 'Master',
-  admin: 'Administrador',
-  diretoria: 'Diretoria / Aprovador',
-  tesouraria: 'Tesouraria / Financeiro',
-  alvaras: 'Recebimento de Alvarás',
-  contabilidade: 'Contabilidade',
-  consulta: 'Consulta',
+const roleLabels: Record<ManagedRole | 'master', string> = {
+  master: 'Administrador Master',
+  admin: 'Administrador / Diretor',
+  operador: 'Operador / Colaborador',
 }
 
 const statusLabels: Record<UserStatus, string> = {
@@ -34,12 +31,18 @@ function timestampToDateTime(value: unknown) {
   return '—'
 }
 
+function normalizedManagedRole(value: unknown): ManagedRole | 'master' {
+  if (value === 'master') return 'master'
+  if (value === 'admin') return 'admin'
+  return 'operador'
+}
+
 export function UsersPageKitFernando() {
   const { profile } = useAuth()
   const [records, setRecords] = useState<UserRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
-  const canManage = profile?.role === 'master' || profile?.role === 'admin'
+  const canManage = profile?.role === 'master'
 
   useEffect(() => onSnapshot(collection(db, 'users'), (snapshot) => {
     setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
@@ -69,7 +72,7 @@ export function UsersPageKitFernando() {
     await addDoc(collection(db, 'auditLogs'), {
       action: field === 'status' ? 'Status de usuário alterado' : 'Perfil de usuário alterado',
       module: 'Usuários',
-      detail: `${item.email} → ${field === 'status' ? statusLabels[value as UserStatus] : roleLabels[value as UserRole]}`,
+      detail: `${item.email} → ${field === 'status' ? statusLabels[value as UserStatus] : roleLabels[value as ManagedRole]}`,
       entityId: item.id,
       userId: profile?.uid ?? null,
       userName: profile?.displayName ?? null,
@@ -79,7 +82,7 @@ export function UsersPageKitFernando() {
   }
 
   async function copyRegistrationLink() {
-    const text = `${window.location.origin}\n\nNo primeiro acesso, clique em “Primeiro acesso? Solicitar cadastro”. O cadastro ficará Pendente até a liberação do administrador.`
+    const text = `${window.location.origin}\n\nNo primeiro acesso, clique em “Primeiro acesso? Solicitar cadastro”. O cadastro ficará Pendente até a liberação do Administrador Master.`
     try {
       await navigator.clipboard.writeText(text)
       setMessage('Link e instrução de cadastro copiados.')
@@ -93,7 +96,7 @@ export function UsersPageKitFernando() {
       <div>
         <span className="eyebrow">Padrão @ Kit Fernando</span>
         <h1>Usuários e Permissões</h1>
-        <p>O próprio usuário solicita o cadastro. O acesso nasce Pendente e só é liberado depois da sua aprovação.</p>
+        <p>O próprio usuário solicita o cadastro. O Administrador Master define se ele será Administrador/Diretor ou Operador/Colaborador e libera o acesso.</p>
       </div>
       {canManage && <div className="quick-actions"><button className="secondary-button" type="button" onClick={copyRegistrationLink}><Copy size={17} /> Copiar link de cadastro</button></div>}
     </div>
@@ -109,9 +112,9 @@ export function UsersPageKitFernando() {
     <section className="page-card kit-user-flow">
       <div className="kit-user-flow-icon"><UserCheck size={28} /></div>
       <div>
-        <h2>Fluxo de cadastro</h2>
-        <p><strong>1.</strong> Usuário abre o sistema → <strong>2.</strong> “Primeiro acesso? Solicitar cadastro” → <strong>3.</strong> cadastro fica <strong>Pendente</strong> → <strong>4.</strong> Administrador define o perfil → <strong>5.</strong> muda o status para <strong>Ativo</strong>.</p>
-        <small>Não existe convite obrigatório e ninguém ganha acesso automaticamente.</small>
+        <h2>Fluxo de cadastro e autorização</h2>
+        <p><strong>1.</strong> Usuário abre o sistema → <strong>2.</strong> “Primeiro acesso? Solicitar cadastro” → <strong>3.</strong> cadastro fica <strong>Pendente</strong> como Operador → <strong>4.</strong> Master escolhe <strong>Administrador/Diretor</strong> ou <strong>Operador/Colaborador</strong> → <strong>5.</strong> muda o status para <strong>Ativo</strong>.</p>
+        <small>Administrador/Diretor pode autorizar e aprovar despesas. Operador executa os lançamentos e rotinas operacionais, mas não aprova.</small>
       </div>
     </section>
 
@@ -121,11 +124,11 @@ export function UsersPageKitFernando() {
         <div className="data-row data-head"><span>Usuário</span><span>Perfil</span><span>Status</span><span>Último acesso</span></div>
         {ordered.map((item) => {
           const locked = item.email === PRIMARY_ADMIN_EMAIL
-          const currentRole = (item.role as UserRole) || 'consulta'
+          const currentRole = locked ? 'master' : normalizedManagedRole(item.role)
           const currentStatus = (item.status as UserStatus) || 'pending'
           return <div className="data-row" key={item.id}>
-            <span><strong>{item.displayName || 'Usuário'}</strong><small>{item.email}</small>{locked && <em className="master-lock"><ShieldCheck size={13} /> Administrador principal</em>}</span>
-            <span>{canManage && !locked ? <select value={currentRole} onChange={(event) => updateUser(item, 'role', event.target.value)}>{Object.entries(roleLabels).filter(([value]) => value !== 'master').map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : <strong>{roleLabels[currentRole]}</strong>}</span>
+            <span><strong>{item.displayName || 'Usuário'}</strong><small>{item.email}</small>{locked && <em className="master-lock"><ShieldCheck size={13} /> Administrador Master</em>}</span>
+            <span>{canManage && !locked ? <select value={currentRole} onChange={(event) => updateUser(item, 'role', event.target.value)}><option value="operador">Operador / Colaborador</option><option value="admin">Administrador / Diretor</option></select> : <strong>{roleLabels[currentRole]}</strong>}</span>
             <span>{canManage && !locked ? <select value={currentStatus} onChange={(event) => updateUser(item, 'status', event.target.value)}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : <WorkflowStatusBadge status={locked ? 'active' : currentStatus} label={locked ? 'Ativo' : statusLabels[currentStatus]} />}</span>
             <span>{item.status === 'active' && item.lastLoginAt ? timestampToDateTime(item.lastLoginAt) : item.status === 'pending' ? <span className="pending-access-note"><CheckCircle2 size={14} /> Aguardando liberação</span> : timestampToDateTime(item.lastLoginAt)}</span>
           </div>
