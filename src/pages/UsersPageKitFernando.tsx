@@ -2,19 +2,28 @@ import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Copy, RefreshCw, ShieldCheck, UserCheck, Users } from 'lucide-react'
 import { addDoc, collection, doc, onSnapshot, serverTimestamp, updateDoc, type DocumentData } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { useAuth, type UserRole, type UserStatus } from '../auth/AuthContext'
+import {
+  DIRECTOR_EMAIL,
+  MANAGER_EMAIL,
+  PRIMARY_ADMIN_EMAIL,
+  TREASURY_EMAIL,
+  officialRoleForEmail,
+  useAuth,
+  type UserStatus,
+} from '../auth/AuthContext'
 import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
 
-const PRIMARY_ADMIN_EMAIL = 'fernandoazeredo64@gmail.com'
 const dateTimeBR = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-
 type UserRecord = { id: string } & DocumentData
-type ManagedRole = 'admin' | 'operador'
 
-const roleLabels: Record<ManagedRole | 'master', string> = {
+type OfficialRole = 'master' | 'diretor' | 'gerente' | 'tesouraria' | 'operador'
+
+const roleLabels: Record<OfficialRole, string> = {
   master: 'Administrador Master',
-  admin: 'Administrador / Diretor',
-  operador: 'Operador / Colaborador',
+  diretor: 'Diretor / Autorizador',
+  gerente: 'Gerente',
+  tesouraria: 'Tesouraria',
+  operador: 'Colaborador / Operador',
 }
 
 const statusLabels: Record<UserStatus, string> = {
@@ -31,10 +40,13 @@ function timestampToDateTime(value: unknown) {
   return '—'
 }
 
-function normalizedManagedRole(value: unknown): ManagedRole | 'master' {
-  if (value === 'master') return 'master'
-  if (value === 'admin') return 'admin'
-  return 'operador'
+function roleNote(email: string) {
+  const normalized = email.trim().toLowerCase()
+  if (normalized === PRIMARY_ADMIN_EMAIL) return 'Administração total do sistema; usuários e configurações.'
+  if (normalized === DIRECTOR_EMAIL) return 'Único usuário autorizado a aprovar, devolver ou rejeitar pagamentos/despesas.'
+  if (normalized === MANAGER_EMAIL) return 'Gestão e acompanhamento operacional, sem poder de autorização.'
+  if (normalized === TREASURY_EMAIL) return 'Operação financeira e Tesouraria, sem poder de autorização.'
+  return 'Operação cotidiana; não autoriza pagamentos.'
 }
 
 export function UsersPageKitFernando() {
@@ -61,18 +73,21 @@ export function UsersPageKitFernando() {
     blocked: records.filter((item) => item.status === 'blocked').length,
   }), [records])
 
-  async function updateUser(item: UserRecord, field: 'role' | 'status', value: string) {
-    if (!canManage || item.email === PRIMARY_ADMIN_EMAIL) return
+  async function updateStatus(item: UserRecord, status: UserStatus) {
+    if (!canManage || String(item.email ?? '').toLowerCase() === PRIMARY_ADMIN_EMAIL) return
+    const email = String(item.email ?? '').trim().toLowerCase()
+    const role = officialRoleForEmail(email)
     await updateDoc(doc(db, 'users', item.id), {
-      [field]: value,
+      role,
+      status,
       updatedAt: serverTimestamp(),
       updatedBy: profile?.uid ?? null,
       updatedByName: profile?.displayName ?? null,
     })
     await addDoc(collection(db, 'auditLogs'), {
-      action: field === 'status' ? 'Status de usuário alterado' : 'Perfil de usuário alterado',
+      action: 'Status de usuário alterado',
       module: 'Usuários',
-      detail: `${item.email} → ${field === 'status' ? statusLabels[value as UserStatus] : roleLabels[value as ManagedRole]}`,
+      detail: `${email} → ${roleLabels[role]} · ${statusLabels[status]}`,
       entityId: item.id,
       userId: profile?.uid ?? null,
       userName: profile?.displayName ?? null,
@@ -96,7 +111,7 @@ export function UsersPageKitFernando() {
       <div>
         <span className="eyebrow">Padrão @ Kit Fernando</span>
         <h1>Usuários e Permissões</h1>
-        <p>O próprio usuário solicita o cadastro. O Administrador Master define se ele será Administrador/Diretor ou Operador/Colaborador e libera o acesso.</p>
+        <p>O próprio usuário solicita o cadastro. O perfil é definido pelas regras oficiais do escritório e o Administrador Master libera ou bloqueia o acesso.</p>
       </div>
       {canManage && <div className="quick-actions"><button className="secondary-button" type="button" onClick={copyRegistrationLink}><Copy size={17} /> Copiar link de cadastro</button></div>}
     </div>
@@ -112,24 +127,25 @@ export function UsersPageKitFernando() {
     <section className="page-card kit-user-flow">
       <div className="kit-user-flow-icon"><UserCheck size={28} /></div>
       <div>
-        <h2>Fluxo de cadastro e autorização</h2>
-        <p><strong>1.</strong> Usuário abre o sistema → <strong>2.</strong> “Primeiro acesso? Solicitar cadastro” → <strong>3.</strong> cadastro fica <strong>Pendente</strong> como Operador → <strong>4.</strong> Master escolhe <strong>Administrador/Diretor</strong> ou <strong>Operador/Colaborador</strong> → <strong>5.</strong> muda o status para <strong>Ativo</strong>.</p>
-        <small>Administrador/Diretor pode autorizar e aprovar despesas. Operador executa os lançamentos e rotinas operacionais, mas não aprova.</small>
+        <h2>Perfis oficiais e autorização</h2>
+        <p><strong>Fernando:</strong> Administrador Master do sistema. <strong>Flávio Marques:</strong> Diretor e único autorizador de pagamentos/despesas. <strong>Reinaldo:</strong> Gerente. <strong>Socorro:</strong> Tesouraria. Todos os demais cadastros entram como <strong>Colaborador / Operador</strong>.</p>
+        <small>Todos os usuários, exceto o Master, nascem Pendentes e só acessam após a sua liberação.</small>
       </div>
     </section>
 
     <section className="page-card module-card users-kit-card">
       <div className="card-title-row"><div><h2>Cadastros do sistema</h2><p>Pendentes aparecem primeiro para facilitar a liberação.</p></div><WorkflowStatusBadge status="pending" label={`${counts.pending} pendente(s)`} /></div>
       {loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando usuários</strong><span>Consultando o Firestore...</span></div> : ordered.length === 0 ? <div className="module-empty"><Users size={34} /><strong>Nenhum usuário cadastrado</strong><span>O primeiro cadastro aparecerá aqui como Pendente.</span></div> : <div className="data-table users-kit-table">
-        <div className="data-row data-head"><span>Usuário</span><span>Perfil</span><span>Status</span><span>Último acesso</span></div>
+        <div className="data-row data-head"><span>Usuário</span><span>Perfil / Regra</span><span>Status</span><span>Último acesso</span></div>
         {ordered.map((item) => {
-          const locked = item.email === PRIMARY_ADMIN_EMAIL
-          const currentRole = locked ? 'master' : normalizedManagedRole(item.role)
+          const email = String(item.email ?? '').trim().toLowerCase()
+          const locked = email === PRIMARY_ADMIN_EMAIL
+          const role = officialRoleForEmail(email)
           const currentStatus = (item.status as UserStatus) || 'pending'
           return <div className="data-row" key={item.id}>
-            <span><strong>{item.displayName || 'Usuário'}</strong><small>{item.email}</small>{locked && <em className="master-lock"><ShieldCheck size={13} /> Administrador Master</em>}</span>
-            <span>{canManage && !locked ? <select value={currentRole} onChange={(event) => updateUser(item, 'role', event.target.value)}><option value="operador">Operador / Colaborador</option><option value="admin">Administrador / Diretor</option></select> : <strong>{roleLabels[currentRole]}</strong>}</span>
-            <span>{canManage && !locked ? <select value={currentStatus} onChange={(event) => updateUser(item, 'status', event.target.value)}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : <WorkflowStatusBadge status={locked ? 'active' : currentStatus} label={locked ? 'Ativo' : statusLabels[currentStatus]} />}</span>
+            <span><strong>{item.displayName || 'Usuário'}</strong><small>{email}</small>{locked && <em className="master-lock"><ShieldCheck size={13} /> Administrador Master</em>}</span>
+            <span><strong>{roleLabels[role]}</strong><small>{roleNote(email)}</small></span>
+            <span>{canManage && !locked ? <select value={currentStatus} onChange={(event) => updateStatus(item, event.target.value as UserStatus)}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : <WorkflowStatusBadge status={locked ? 'active' : currentStatus} label={locked ? 'Ativo' : statusLabels[currentStatus]} />}</span>
             <span>{item.status === 'active' && item.lastLoginAt ? timestampToDateTime(item.lastLoginAt) : item.status === 'pending' ? <span className="pending-access-note"><CheckCircle2 size={14} /> Aguardando liberação</span> : timestampToDateTime(item.lastLoginAt)}</span>
           </div>
         })}
