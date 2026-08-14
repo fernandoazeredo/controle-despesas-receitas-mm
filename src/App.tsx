@@ -20,9 +20,11 @@ import {
 } from 'lucide-react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
-import { AuditPage, DocumentsPage, TreasuryPage } from './pages/SystemPages'
-import { ExpensesPageIntegrated, ReceivablesPageIntegrated } from './pages/FinanceEntryPages'
-import { AccountsPageOfficial } from './pages/AccountsPageOfficial'
+import { AuditPage, TreasuryPage } from './pages/SystemPages'
+import { ReceivablesPageIntegrated } from './pages/FinanceEntryPages'
+import { ExpensesPageStorage } from './pages/ExpensesPageStorage'
+import { AccountsPageFernando } from './pages/AccountsPageFernando'
+import { DocumentsPageStorage } from './pages/DocumentsPageStorage'
 import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
 import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
 import { AccountingPageStorage } from './pages/AccountingPageStorage'
@@ -37,6 +39,8 @@ import './enhancements.css'
 import './account-selector.css'
 import './admin-tools.css'
 import './accounting-storage.css'
+import './accounts-fernando.css'
+import './storage-documents.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -59,7 +63,7 @@ const menu: MenuItem[] = [
   { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'diretor'] },
-  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
+  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master'] },
   { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master'] },
@@ -187,13 +191,13 @@ function AppShell() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<DashboardPageEnhanced />} />
-          <Route path="/despesas" element={<ExpensesPageIntegrated />} />
+          <Route path="/despesas" element={<ExpensesPageStorage />} />
           <Route path="/alvaras" element={<ReceivablesPageIntegrated />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
-          <Route path="/plano-contas" element={<AccountsPageOfficial />} />
+          <Route path="/plano-contas" element={<AccountsPageFernando />} />
           <Route path="/contabilidade" element={<AccountingPageStorage />} />
-          <Route path="/documentos" element={<DocumentsPage />} />
+          <Route path="/documentos" element={<DocumentsPageStorage />} />
           <Route path="/usuarios" element={<UsersPageKitFernando />} />
           <Route path="/auditoria" element={<AuditPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
