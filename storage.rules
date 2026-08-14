@@ -5,6 +5,16 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    function authEmail() {
+      return signedIn() && request.auth.token.email != null
+        ? request.auth.token.email
+        : '';
+    }
+
+    function isPrimaryAdminEmail() {
+      return authEmail() == 'fernandoazeredo64@gmail.com';
+    }
+
     function currentUser() {
       return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
     }
@@ -21,31 +31,37 @@ service firebase.storage {
       return request.resource == null || request.resource.size <= 20 * 1024 * 1024;
     }
 
-    // Anexos operacionais: qualquer usuario ATIVO pode gravar somente dentro
-    // da propria pasta de UID. O perfil funcional nao interfere no upload.
+    // Anexos de despesas e recebimentos usam a autenticacao do Firebase como
+    // criterio principal. Isso evita depender de uma consulta cruzada ao
+    // Firestore durante o upload, que pode gerar storage/unauthorized mesmo
+    // para um usuario ja autenticado no aplicativo.
+    // O usuario grava na propria pasta; o Master pode administrar qualquer pasta.
     match /despesas/{userId}/{allPaths=**} {
-      allow read: if activeUser();
-      allow create, update: if activeUser()
-        && request.auth.uid == userId
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && (request.auth.uid == userId || isPrimaryAdminEmail())
         && validAttachmentSize();
-      allow delete: if activeUser() && request.auth.uid == userId;
+      allow delete: if signedIn()
+        && (request.auth.uid == userId || isPrimaryAdminEmail());
     }
 
     match /recebimentos/{userId}/{allPaths=**} {
-      allow read: if activeUser();
-      allow create, update: if activeUser()
-        && request.auth.uid == userId
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && (request.auth.uid == userId || isPrimaryAdminEmail())
         && validAttachmentSize();
-      allow delete: if activeUser() && request.auth.uid == userId;
+      allow delete: if signedIn()
+        && (request.auth.uid == userId || isPrimaryAdminEmail());
     }
 
     match /demonstrativos/{allPaths=**} {
-      allow read: if activeUser();
-      allow create, update: if activeUser() && validAttachmentSize();
-      allow delete: if hasRole(['master']);
+      allow read: if signedIn();
+      allow create, update: if signedIn() && validAttachmentSize();
+      allow delete: if isPrimaryAdminEmail();
     }
 
-    // Pacotes contabeis continuam restritos aos perfis financeiros.
+    // Pacotes contabeis permanecem com a regra financeira mais restrita,
+    // pois este fluxo ja esta validado em producao.
     match /pacotes-contabeis/{allPaths=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
       allow write: if hasRole(['master', 'gerente', 'tesouraria']);
