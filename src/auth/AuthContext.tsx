@@ -19,19 +19,10 @@ import { auth, db } from '../lib/firebase'
  * - tesouraria: Socorro — operação financeira/Tesouraria.
  * - operador: demais colaboradores.
  *
- * Perfis antigos continuam aceitos no tipo somente para compatibilidade de leitura.
+ * UserRole permanece aberto como string para compatibilidade com módulos legados já existentes;
+ * a autorização efetiva é feita pelas regras oficiais e pelas Security Rules do Firebase.
  */
-export type UserRole =
-  | 'master'
-  | 'diretor'
-  | 'gerente'
-  | 'tesouraria'
-  | 'operador'
-  | 'admin'
-  | 'diretoria'
-  | 'alvaras'
-  | 'contabilidade'
-  | 'consulta'
+export type UserRole = string
 
 export type UserStatus = 'pending' | 'active' | 'inactive' | 'blocked'
 
@@ -73,8 +64,8 @@ export function officialRoleForEmail(rawEmail: string): 'master' | 'diretor' | '
 function normalizeProfile(uid: string, data: Record<string, unknown>): AppUser {
   const email = String(data.email ?? '').trim().toLowerCase()
   const officialRole = officialRoleForEmail(email)
-  const storedRole = String(data.role ?? '') as UserRole
-  const legacyRoles: UserRole[] = ['admin', 'diretoria', 'alvaras', 'contabilidade', 'consulta']
+  const storedRole = String(data.role ?? '')
+  const legacyRoles = ['admin', 'diretoria', 'alvaras', 'contabilidade', 'consulta']
   const role = officialRole !== 'operador'
     ? officialRole
     : legacyRoles.includes(storedRole) || !storedRole ? 'operador' : storedRole
