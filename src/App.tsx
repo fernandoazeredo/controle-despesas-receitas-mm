@@ -21,11 +21,11 @@ import {
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
 import { AuditPage, DocumentsPage, TreasuryPage } from './pages/SystemPages'
-import { AccountingPageFixed } from './pages/FixedPages'
 import { ExpensesPageIntegrated, ReceivablesPageIntegrated } from './pages/FinanceEntryPages'
 import { AccountsPageOfficial } from './pages/AccountsPageOfficial'
 import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
 import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
+import { AccountingPageStorage } from './pages/AccountingPageStorage'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
 import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
 import { WorkflowStatusEnhancer } from './components/WorkflowStatusEnhancer'
@@ -36,6 +36,7 @@ import './accounts-official.css'
 import './enhancements.css'
 import './account-selector.css'
 import './admin-tools.css'
+import './accounting-storage.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -182,7 +183,7 @@ function AppShell() {
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
           <Route path="/plano-contas" element={<AccountsPageOfficial />} />
-          <Route path="/contabilidade" element={<AccountingPageFixed />} />
+          <Route path="/contabilidade" element={<AccountingPageStorage />} />
           <Route path="/documentos" element={<DocumentsPage />} />
           <Route path="/usuarios" element={<UsersPageKitFernando />} />
           <Route path="/auditoria" element={<AuditPage />} />
