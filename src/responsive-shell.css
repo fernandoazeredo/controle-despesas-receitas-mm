@@ -1,0 +1,254 @@
+/* Responsividade do shell — tablet e celular */
+.mobile-app-header,
+.mobile-menu-backdrop,
+.mobile-sidebar-head {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  body.mobile-menu-lock {
+    overflow: hidden;
+  }
+
+  .app-shell {
+    display: block;
+    min-height: 100vh;
+    padding-top: 68px;
+  }
+
+  .mobile-app-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 120;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, .97);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 6px 22px rgba(20, 36, 52, .08);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-menu-toggle,
+  .mobile-sidebar-close {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #d4dde6;
+    border-radius: 11px;
+    background: #fff;
+    color: #17314d;
+    cursor: pointer;
+  }
+
+  .mobile-menu-toggle:hover,
+  .mobile-sidebar-close:hover {
+    background: #f3f7fa;
+  }
+
+  .mobile-header-brand {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-header-brand img {
+    width: 168px;
+    max-width: 42vw;
+    height: 42px;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .mobile-header-brand span {
+    min-width: 0;
+    color: #516071;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    z-index: 140;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(360px, 88vw);
+    max-width: 88vw;
+    height: 100dvh;
+    padding: 14px 16px 18px;
+    display: flex !important;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    border-right: 1px solid var(--border) !important;
+    border-bottom: 0 !important;
+    background: #fff;
+    box-shadow: 18px 0 42px rgba(16, 31, 48, .18);
+    transform: translateX(-104%);
+    transition: transform .22s ease;
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .mobile-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 0 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobile-sidebar-head strong {
+    color: #203247;
+    font-size: 14px;
+  }
+
+  .sidebar .brand {
+    padding-top: 2px;
+  }
+
+  .sidebar nav {
+    display: flex !important;
+    grid-template-columns: none !important;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar .nav-link,
+  .sidebar .howto-link,
+  .sidebar .tips-button {
+    min-height: 44px;
+    padding: 11px 12px;
+    font-size: 14px;
+  }
+
+  .mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    display: block;
+    border: 0;
+    padding: 0;
+    background: rgba(11, 25, 42, .48);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .2s ease, visibility .2s ease;
+  }
+
+  .mobile-menu-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .main-content {
+    width: 100%;
+    min-width: 0;
+    padding: 26px 22px 34px;
+  }
+
+  .page-heading {
+    gap: 16px;
+  }
+
+  .data-table,
+  .legacy-table,
+  .composition-table {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding-top: 62px;
+  }
+
+  .mobile-app-header {
+    height: 62px;
+    padding: 9px 12px;
+  }
+
+  .mobile-menu-toggle,
+  .mobile-sidebar-close {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .mobile-header-brand img {
+    width: 150px;
+    max-width: 52vw;
+    height: 38px;
+  }
+
+  .mobile-header-brand span {
+    display: none;
+  }
+
+  .sidebar {
+    width: min(330px, 90vw);
+    max-width: 90vw;
+  }
+
+  .main-content {
+    padding: 20px 14px 30px;
+  }
+
+  .page-heading {
+    margin-bottom: 18px;
+  }
+
+  .page-heading h1 {
+    font-size: clamp(27px, 9vw, 34px);
+  }
+
+  .page-card {
+    padding: 16px;
+  }
+
+  .quick-actions,
+  .module-toolbar .secondary-button,
+  .module-toolbar .primary-button,
+  .module-toolbar .expense-button,
+  .module-toolbar .revenue-button {
+    width: 100%;
+  }
+
+  .quick-actions > * {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-app-header {
+    gap: 8px;
+  }
+
+  .mobile-header-brand img {
+    width: 138px;
+    max-width: 58vw;
+  }
+
+  .sidebar {
+    width: 92vw;
+    max-width: 92vw;
+  }
+
+  .main-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
