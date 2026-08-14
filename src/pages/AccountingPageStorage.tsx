@@ -127,7 +127,6 @@ export function AccountingPageStorage() {
     const workbook = createXlsx(workbookSheets())
     const entries: Array<{ name: string; content: string | Uint8Array }> = [
       { name: `Movimento_Contabilidade_${competence}_${safeName(unit)}.xlsx`, content: workbook },
-      { name: 'LEIA-ME.txt', content: `FLÁVIO MARQUES ADVOGADOS ASSOCIADOS\r\nCompetência: ${competence}\r\nUnidade: ${unit}\r\n\r\nConteúdo: planilha Excel, extrato consolidado do banco e documentos de despesas/receitas.\r\nLançamentos sem documento: ${missingDocs.length}. Consulte a aba Pendencias da planilha.` },
     ]
 
     const statementBytes = new Uint8Array(await getBytes(storageRef(storage, String(statement.storagePath))))
