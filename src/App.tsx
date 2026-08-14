@@ -17,11 +17,12 @@ import {
   ShieldCheck,
   UserRoundCheck,
   Users,
+  Wrench,
 } from 'lucide-react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
 import { AuditPage, TreasuryPage } from './pages/SystemPages'
-import { ReceivablesPageIntegrated } from './pages/FinanceEntryPages'
+import { ReceivablesPageStorage } from './pages/ReceivablesPageStorage'
 import { ExpensesPageStorage } from './pages/ExpensesPageStorage'
 import { AccountsPageFernando } from './pages/AccountsPageFernando'
 import { DocumentsPageStorage } from './pages/DocumentsPageStorage'
@@ -30,6 +31,7 @@ import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
 import { AccountingPageStorage } from './pages/AccountingPageStorage'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
 import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
+import { UtilitiesPage } from './pages/UtilitiesPage'
 import { WorkflowStatusEnhancer } from './components/WorkflowStatusEnhancer'
 import './system.css'
 import './fixes.css'
@@ -68,6 +70,7 @@ const menu: MenuItem[] = [
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master'] },
   { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'diretor', 'gerente'] },
+  { to: '/utilitarios', label: 'Utilitários', icon: Wrench, roles: ['master'] },
   { to: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['master'] },
 ]
 
@@ -192,7 +195,7 @@ function AppShell() {
         <Routes>
           <Route path="/" element={<DashboardPageEnhanced />} />
           <Route path="/despesas" element={<ExpensesPageStorage />} />
-          <Route path="/alvaras" element={<ReceivablesPageIntegrated />} />
+          <Route path="/alvaras" element={<ReceivablesPageStorage />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
           <Route path="/plano-contas" element={<AccountsPageFernando />} />
@@ -200,6 +203,7 @@ function AppShell() {
           <Route path="/documentos" element={<DocumentsPageStorage />} />
           <Route path="/usuarios" element={<UsersPageKitFernando />} />
           <Route path="/auditoria" element={<AuditPage />} />
+          <Route path="/utilitarios" element={<UtilitiesPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/dicas" element={<TipsPageEnhanced />} />
           <Route path="/como-usar" element={<HowToPageEnhanced />} />
