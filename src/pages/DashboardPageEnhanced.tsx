@@ -1,0 +1,47 @@
+import { useEffect, useState } from 'react'
+import { BadgeDollarSign, ReceiptText } from 'lucide-react'
+import { collection, onSnapshot, type DocumentData } from 'firebase/firestore'
+import { Link } from 'react-router-dom'
+import { db } from '../lib/firebase'
+
+const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+type AnyRecord = { id: string } & DocumentData
+
+function useLiveCollection(name: string) {
+  const [records, setRecords] = useState<AnyRecord[]>([])
+  useEffect(() => onSnapshot(collection(db, name), (snapshot) => {
+    setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
+  }), [name])
+  return records
+}
+
+function toNumber(value: unknown) {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : 0
+}
+
+export function DashboardPageEnhanced() {
+  const expenses = useLiveCollection('expenses')
+  const receivables = useLiveCollection('receivables')
+  const approved = expenses.filter((item) => item.status === 'aprovado')
+  const rejected = expenses.filter((item) => item.status === 'rejeitado')
+  const expenseTotal = approved.reduce((sum, item) => sum + toNumber(item.valorTotal), 0)
+  const rejectedTotal = rejected.reduce((sum, item) => sum + toNumber(item.valorTotal), 0)
+  const revenueTotal = receivables.reduce((sum, item) => sum + toNumber(item.valorAlvara), 0)
+  const balance = revenueTotal - expenseTotal
+  const pending = expenses.filter((item) => item.status === 'enviado_aprovacao' || item.status === 'em_analise').length
+
+  return <>
+    <div className="page-heading"><div><span className="eyebrow">Visão gerencial</span><h1>Dashboard Financeira</h1><p>Retrato consolidado das receitas e das despesas efetivamente aprovadas.</p></div><div className="quick-actions"><Link className="expense-button button-link" to="/despesas?novo=1"><ReceiptText size={18} /> + Despesa</Link><Link className="revenue-button button-link" to="/alvaras?novo=1"><BadgeDollarSign size={18} /> + Receita</Link></div></div>
+    <div className="metrics-grid">
+      <article className="metric revenue-metric"><span>Receitas</span><strong>{money.format(revenueTotal)}</strong><small>Total registrado</small></article>
+      <article className="metric expense-metric"><span>Despesas</span><strong>{money.format(expenseTotal)}</strong><small>Somente despesas aprovadas</small></article>
+      <article className={`metric balance-metric ${balance < 0 ? 'negative' : ''}`}><span>Saldo / Resultado</span><strong>{money.format(balance)}</strong><small>Receitas menos despesas aprovadas</small></article>
+      <article className="metric"><span>Aguardando Aprovação</span><strong>{pending}</strong><small>Fluxo da Diretoria</small></article>
+    </div>
+    <div className="dashboard-grid">
+      <section className="page-card"><div className="card-title-row"><h2>Movimento financeiro</h2><span className="mini-legend"><i className="legend-revenue" /> Receitas <i className="legend-expense" /> Despesas aprovadas</span></div><div className="summary-bars"><div><span>Receitas</span><strong>{money.format(revenueTotal)}</strong><b className="bar revenue-bar" style={{ width: `${Math.min(100, revenueTotal > 0 ? 100 : 4)}%` }} /></div><div><span>Despesas aprovadas</span><strong>{money.format(expenseTotal)}</strong><b className="bar expense-bar" style={{ width: `${Math.min(100, revenueTotal > 0 ? (expenseTotal / revenueTotal) * 100 : expenseTotal > 0 ? 100 : 4)}%` }} /></div></div></section>
+      <section className="page-card"><h2>Fluxo de aprovação</h2><div className="status-row"><span>Rascunhos</span><strong>{expenses.filter((item) => item.status === 'rascunho').length}</strong></div><div className="status-row"><span>Em análise</span><strong>{pending}</strong></div><div className="status-row"><span>Aprovados</span><strong>{approved.length}</strong></div><div className="status-row"><span>Devolvidos</span><strong>{expenses.filter((item) => item.status === 'devolvido').length}</strong></div><div className="status-row rejected-row rejected-with-value"><span>Rejeitados</span><strong>{rejected.length} · {money.format(rejectedTotal)}</strong></div></section>
+    </div>
+  </>
+}
