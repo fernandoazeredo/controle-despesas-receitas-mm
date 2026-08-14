@@ -86,9 +86,13 @@ service cloud.firestore {
         .hasOnly(['displayName', 'photoURL', 'lastLoginAt']);
     }
 
+    // Flávio é o autorizador oficial. Fernando Master recebe a mesma permissão
+    // para homologação e testes completos do fluxo de Aprovações.
     function directorExpenseDecision() {
-      return isDirectorEmail()
-        && hasRole(['diretor'])
+      return (
+          (isDirectorEmail() && hasRole(['diretor']))
+          || (isPrimaryAdminEmail() && hasRole(['master']))
+        )
         && resource.data.status in ['enviado_aprovacao', 'em_analise']
         && request.resource.data.status in ['aprovado', 'devolvido', 'rejeitado'];
     }
@@ -185,7 +189,8 @@ service cloud.firestore {
 
     match /approvals/{document=**} {
       allow read: if activeUser();
-      allow create, update: if isDirectorEmail() && hasRole(['diretor']);
+      allow create, update: if (isDirectorEmail() && hasRole(['diretor']))
+        || (isPrimaryAdminEmail() && hasRole(['master']));
       allow delete: if hasRole(['master']);
     }
 
