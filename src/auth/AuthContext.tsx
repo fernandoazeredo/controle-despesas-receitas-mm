@@ -12,20 +12,23 @@ import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firest
 import { auth, db } from '../lib/firebase'
 
 /**
- * Perfis oficiais do @ Kit Fernando:
- * - master: administrador principal (Fernando) — acesso total.
- * - admin: diretor/administrador — análise, autorizações e aprovações.
- * - operador: colaboradores — operação diária, sem poder de aprovação administrativa.
+ * Perfis oficiais do sistema:
+ * - master: Fernando — administração do sistema, usuários e configurações.
+ * - diretor: Flávio Marques — único autorizador de pagamentos/despesas.
+ * - gerente: Reinaldo — gestão e acompanhamento operacional.
+ * - tesouraria: Socorro — operação financeira/Tesouraria.
+ * - operador: demais colaboradores.
  *
- * Os perfis antigos permanecem no tipo apenas para compatibilidade com usuários já gravados
- * no Firestore. Na interface eles são tratados como Operador até o Master salvar o novo perfil.
+ * Perfis antigos continuam aceitos no tipo somente para compatibilidade de leitura.
  */
 export type UserRole =
   | 'master'
-  | 'admin'
-  | 'operador'
-  | 'diretoria'
+  | 'diretor'
+  | 'gerente'
   | 'tesouraria'
+  | 'operador'
+  | 'admin'
+  | 'diretoria'
   | 'alvaras'
   | 'contabilidade'
   | 'consulta'
@@ -51,15 +54,36 @@ type AuthContextValue = {
   logout: () => Promise<void>
 }
 
-const PRIMARY_ADMIN_EMAIL = 'fernandoazeredo64@gmail.com'
+export const PRIMARY_ADMIN_EMAIL = 'fernandoazeredo64@gmail.com'
+export const TREASURY_EMAIL = 'socorro@marquesemuller.adv.br'
+export const MANAGER_EMAIL = 'reinaldo@marquesemuller.adv.br'
+export const DIRECTOR_EMAIL = 'flavio.marques@marquesemuller.adv.br'
+
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+export function officialRoleForEmail(rawEmail: string): 'master' | 'diretor' | 'gerente' | 'tesouraria' | 'operador' {
+  const email = rawEmail.trim().toLowerCase()
+  if (email === PRIMARY_ADMIN_EMAIL) return 'master'
+  if (email === DIRECTOR_EMAIL) return 'diretor'
+  if (email === MANAGER_EMAIL) return 'gerente'
+  if (email === TREASURY_EMAIL) return 'tesouraria'
+  return 'operador'
+}
+
 function normalizeProfile(uid: string, data: Record<string, unknown>): AppUser {
+  const email = String(data.email ?? '').trim().toLowerCase()
+  const officialRole = officialRoleForEmail(email)
+  const storedRole = String(data.role ?? '') as UserRole
+  const legacyRoles: UserRole[] = ['admin', 'diretoria', 'alvaras', 'contabilidade', 'consulta']
+  const role = officialRole !== 'operador'
+    ? officialRole
+    : legacyRoles.includes(storedRole) || !storedRole ? 'operador' : storedRole
+
   return {
     uid,
-    email: String(data.email ?? ''),
+    email,
     displayName: String(data.displayName ?? data.name ?? ''),
-    role: (data.role as UserRole) ?? 'operador',
+    role,
     status: (data.status as UserStatus) ?? 'pending',
     photoURL: data.photoURL ? String(data.photoURL) : undefined,
   }
@@ -75,12 +99,13 @@ async function ensureProfile(firebaseUser: User, requestedName?: string): Promis
   }
 
   const email = (firebaseUser.email ?? '').trim().toLowerCase()
-  const isPrimaryAdmin = email === PRIMARY_ADMIN_EMAIL
+  const role = officialRoleForEmail(email)
+  const isPrimaryAdmin = role === 'master'
   const profile: AppUser = {
     uid: firebaseUser.uid,
     email,
     displayName: requestedName?.trim() || firebaseUser.displayName || email.split('@')[0] || 'Usuário',
-    role: isPrimaryAdmin ? 'master' : 'operador',
+    role,
     status: isPrimaryAdmin ? 'active' : 'pending',
     photoURL: firebaseUser.photoURL ?? undefined,
   }
