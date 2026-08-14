@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, BadgeCheck, Eye, FileCheck2, ShieldCheck, X } from 'lucide-react'
+import { AlertTriangle, BadgeCheck, Eye, FileCheck2, X } from 'lucide-react'
 import { addDoc, collection, doc, onSnapshot, serverTimestamp, updateDoc, type DocumentData } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { DIRECTOR_EMAIL, useAuth } from '../auth/AuthContext'
@@ -17,14 +17,11 @@ const expenseStatusLabels: Record<string, string> = {
   rejeitado: 'Rejeitado',
 }
 
-function useExpenses(enabled: boolean) {
+function useExpenses() {
   const [records, setRecords] = useState<AnyRecord[]>([])
-  useEffect(() => {
-    if (!enabled) return
-    return onSnapshot(collection(db, 'expenses'), (snapshot) => {
-      setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
-    })
-  }, [enabled])
+  useEffect(() => onSnapshot(collection(db, 'expenses'), (snapshot) => {
+    setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
+  }), [])
   return records
 }
 
@@ -46,16 +43,11 @@ export function ApprovalsPageEnhanced() {
   const { profile } = useAuth()
   const email = profile?.email?.trim().toLowerCase() ?? ''
   const isDirector = email === DIRECTOR_EMAIL && profile?.role === 'diretor'
-  const canView = isDirector || profile?.role === 'master'
-  const records = useExpenses(canView)
+  const records = useExpenses()
   const queue = records.filter((item) => ['enviado_aprovacao', 'em_analise'].includes(item.status))
   const [decision, setDecision] = useState<{ item: AnyRecord; status: DecisionStatus } | null>(null)
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
-
-  if (!canView) {
-    return <section className="page-card module-empty"><ShieldCheck size={36} /><strong>Acesso restrito</strong><span>Somente o Diretor autorizado e o Administrador Master podem visualizar esta fila.</span></section>
-  }
 
   async function approve(item: AnyRecord) {
     if (!isDirector) return
@@ -107,8 +99,8 @@ export function ApprovalsPageEnhanced() {
   }
 
   return <>
-    <div className="page-heading"><div><span className="eyebrow">Autorização de pagamentos</span><h1>Aprovações</h1><p>Flávio Marques é o único Diretor autorizado a aprovar, devolver ou rejeitar despesas. O Administrador Master possui consulta para controle do sistema, sem poder de autorização financeira.</p></div></div>
-    {!isDirector && <div className="warning-box"><Eye size={18} /><span><strong>Modo consulta:</strong> como Administrador Master, você pode acompanhar a fila, mas as decisões financeiras são exclusivas do Diretor Flávio Marques.</span></div>}
+    <div className="page-heading"><div><span className="eyebrow">Fluxo de aprovação</span><h1>Aprovações</h1><p>Todos os colaboradores ativos podem acompanhar a fila e o andamento das despesas. A autorização financeira permanece exclusiva do Diretor Flávio Marques.</p></div></div>
+    {!isDirector && <div className="warning-box"><Eye size={18} /><span><strong>Modo consulta:</strong> você pode acompanhar todos os itens da fila de aprovação, mas não pode Aprovar, Devolver ou Rejeitar.</span></div>}
     <section className="page-card module-card approval-card">
       {queue.length === 0 ? <div className="module-empty"><FileCheck2 size={34} /><strong>Nenhuma aprovação pendente</strong><span>As despesas enviadas ou reenviadas pela operação aparecerão nesta fila.</span></div> : <div className="approval-list">{queue.map((item) => <article className="approval-item" key={item.id}><div><WorkflowStatusBadge status={item.status} label={expenseStatusLabels[item.status] || item.status} /><h3>{item.nome || 'Demonstrativo de despesa'}</h3><p>{item.fornecedor || 'Sem fornecedor informado'} · {item.competencia || 'Sem competência'} · {item.categoria || 'Sem categoria'}</p></div><strong className="expense-text">{money.format(Number(item.valorTotal ?? 0))}</strong>{isDirector ? <div className="row-actions"><button className="small-success-button" disabled={busy} onClick={() => approve(item)}><BadgeCheck size={15} /> Aprovar</button><button className="small-neutral-button" disabled={busy} onClick={() => openDecision(item, 'devolvido')}>Devolver</button><button className="small-expense-button" disabled={busy} onClick={() => openDecision(item, 'rejeitado')}>Rejeitar</button></div> : <div className="row-actions"><span className="status-badge neutral">Somente consulta</span></div>}</article>)}</div>}
     </section>
