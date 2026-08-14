@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import {
   BookOpenCheck,
   Calculator,
@@ -11,6 +11,7 @@ import {
   LoaderCircle,
   LogOut,
   Mail,
+  Menu,
   ReceiptText,
   Scale,
   Settings,
@@ -18,6 +19,7 @@ import {
   UserRoundCheck,
   Users,
   Wrench,
+  X,
 } from 'lucide-react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
@@ -179,17 +181,54 @@ function Configuracoes() {
 
 function AppShell() {
   const { profile, logout } = useAuth()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const accessRole = accessRoleFromUserRole(profile?.role)
   const visibleMenu = menu.filter((item) => !item.roles || item.roles.includes(accessRole))
+
+  useEffect(() => {
+    document.body.classList.toggle('mobile-menu-lock', mobileMenuOpen)
+    return () => document.body.classList.remove('mobile-menu-lock')
+  }, [mobileMenuOpen])
+
+  const closeMobileMenu = () => setMobileMenuOpen(false)
 
   return (
     <div className="app-shell">
       <WorkflowStatusEnhancer />
-      <aside className="sidebar">
+
+      <header className="mobile-app-header">
+        <button
+          type="button"
+          className="mobile-menu-toggle"
+          aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="app-sidebar"
+          onClick={() => setMobileMenuOpen((open) => !open)}
+        >
+          {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
+        </button>
+        <div className="mobile-header-brand">
+          <img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" />
+          <span>Controle de Despesas e Receitas</span>
+        </div>
+      </header>
+
+      <button
+        type="button"
+        className={`mobile-menu-backdrop${mobileMenuOpen ? ' is-open' : ''}`}
+        aria-label="Fechar menu"
+        onClick={closeMobileMenu}
+      />
+
+      <aside id="app-sidebar" className={`sidebar${mobileMenuOpen ? ' is-open' : ''}`}>
+        <div className="mobile-sidebar-head">
+          <strong>Menu do sistema</strong>
+          <button type="button" className="mobile-sidebar-close" aria-label="Fechar menu" onClick={closeMobileMenu}><X size={21} /></button>
+        </div>
         <div className="brand"><div className="brand-logo-only"><img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" /></div><div className="app-name">Controle de Despesas e Receitas</div></div>
-        <nav>{visibleMenu.map(({ to, label, icon: Icon, tone }) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}${tone ? ` ${tone}-nav` : ''}`}><Icon size={18} /><span>{label}</span></NavLink>)}</nav>
-        <div className="sidebar-help"><NavLink to="/dicas" className="tips-button"><Lightbulb size={18} /> DICAS</NavLink><NavLink to="/como-usar" className="howto-link"><Scale size={18} /> Como Usar</NavLink></div>
-        <div className="sidebar-user"><div><strong>{profile?.displayName || 'Usuário'}</strong><span>{profile?.email}</span></div><button type="button" onClick={logout} title="Sair"><LogOut size={17} /></button></div>
+        <nav>{visibleMenu.map(({ to, label, icon: Icon, tone }) => <NavLink key={to} to={to} end={to === '/'} onClick={closeMobileMenu} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}${tone ? ` ${tone}-nav` : ''}`}><Icon size={18} /><span>{label}</span></NavLink>)}</nav>
+        <div className="sidebar-help"><NavLink to="/dicas" onClick={closeMobileMenu} className="tips-button"><Lightbulb size={18} /> DICAS</NavLink><NavLink to="/como-usar" onClick={closeMobileMenu} className="howto-link"><Scale size={18} /> Como Usar</NavLink></div>
+        <div className="sidebar-user"><div><strong>{profile?.displayName || 'Usuário'}</strong><span>{profile?.email}</span></div><button type="button" onClick={() => { closeMobileMenu(); void logout() }} title="Sair"><LogOut size={17} /></button></div>
       </aside>
       <main className="main-content">
         <Routes>
