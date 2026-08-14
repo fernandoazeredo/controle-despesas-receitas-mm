@@ -1,0 +1,15 @@
+.storage-ready-card strong { color: var(--success); }
+.storage-ready-box { margin-top:16px; display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border:1px solid #b7ddc5; border-radius:10px; background:var(--success-soft); color:#315b43; font-size:13px; line-height:1.5; }
+.storage-ready-box svg { flex:0 0 auto; margin-top:1px; color:var(--success); }
+.accounting-share-box { margin-top:16px; border:1px solid #b9d6ec; background:#f5faff; border-radius:12px; padding:14px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.accounting-share-box > div:first-child { display:flex; align-items:flex-start; gap:10px; }
+.accounting-share-box > div:first-child > div { display:grid; gap:3px; }
+.accounting-share-box strong { font-size:13px; }
+.accounting-share-box span { color:var(--muted); font-size:12px; }
+.accounting-share-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.accounting-open-link { text-decoration:none; }
+.accounting-actions button:disabled { opacity:.58; cursor:not-allowed; }
+@media (max-width:760px) {
+  .accounting-share-box { align-items:stretch; }
+  .accounting-share-actions, .accounting-share-actions > * { width:100%; }
+}
