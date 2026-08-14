@@ -1,0 +1,31 @@
+.accounts-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+.accounts-summary-grid article { background:#fff; border:1px solid var(--border); border-radius:14px; padding:17px; position:relative; overflow:hidden; }
+.accounts-summary-grid article::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:#8a97a5; }
+.accounts-summary-grid article.account-revenue::before { background:var(--revenue); }
+.accounts-summary-grid article.account-expense::before { background:var(--expense); }
+.accounts-summary-grid article.account-patrimonial::before { background:#7257a8; }
+.accounts-summary-grid span,.accounts-summary-grid small { color:var(--muted); }
+.accounts-summary-grid span { font-size:12px; font-weight:800; }
+.accounts-summary-grid strong { display:block; margin:7px 0 4px; font-size:24px; }
+.accounts-summary-grid small { font-size:11px; }
+.official-plan-info { margin-bottom:18px; display:grid; gap:9px; font-size:13px; }
+.official-plan-info > div { display:flex; align-items:center; gap:8px; }
+.account-plan-message { padding:10px 12px; border-radius:9px; background:var(--success-soft); color:var(--success); font-weight:700; }
+.accounts-toolbar select { border:1px solid #ccd5df; border-radius:10px; padding:10px 12px; background:#fff; color:#273445; min-width:190px; }
+.official-accounts-card { overflow:hidden; }
+.official-accounts-table { width:100%; overflow-x:auto; }
+.official-account-row { min-width:980px; display:grid; grid-template-columns:145px 1.6fr 170px 1.3fr; gap:14px; align-items:center; padding:12px 18px; border-bottom:1px solid #edf0f3; font-size:13px; }
+.official-account-row:last-child { border-bottom:0; }
+.official-account-row span { min-width:0; }
+.official-account-row strong,.official-account-row small { display:block; }
+.official-account-row small { margin-top:3px; color:var(--muted); font-size:10px; }
+.official-account-head { background:#f7f9fb; color:#566476; font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:800; }
+.official-group-row { background:#f8fafc; font-weight:800; }
+.official-group-row .account-code { color:#1f2c3a; }
+.account-code { font-variant-numeric:tabular-nums; font-weight:800; }
+.account-category { display:inline-flex; width:fit-content; border-radius:999px; padding:5px 9px; font-size:11px; }
+.account-category.account-revenue { background:var(--revenue-soft); color:var(--revenue); }
+.account-category.account-expense { background:var(--expense-soft); color:var(--expense); }
+.account-category.account-patrimonial { background:#f3effa; color:#654990; }
+@media (max-width:980px){ .accounts-summary-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:720px){ .accounts-summary-grid{ grid-template-columns:1fr; } .accounts-toolbar{ align-items:stretch; flex-direction:column; } .accounts-toolbar select{ width:100%; } }
