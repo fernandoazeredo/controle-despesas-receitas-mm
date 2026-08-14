@@ -39,10 +39,6 @@ service cloud.firestore {
       return activeUser() && currentUser().data.role in roles;
     }
 
-    // Janela temporária de restauração criada exclusivamente pelo Fernando.
-    // Não depende do documento users durante a restauração, pois o próprio
-    // backup pode regravar essa coleção. A autorização usa o e-mail autenticado,
-    // o UID da sessão e um prazo curto definido no systemControl/restore.
     function masterRestoreMode() {
       return isPrimaryAdminEmail()
         && exists(/databases/$(database)/documents/systemControl/restore)
@@ -97,8 +93,11 @@ service cloud.firestore {
         && request.resource.data.status in ['aprovado', 'devolvido', 'rejeitado'];
     }
 
+    // Rascunho e despesa devolvida só podem ser corrigidos pelo próprio criador.
+    // O Administrador Master pode atuar sobre qualquer lançamento para suporte/homologação.
     function operationalExpenseUpdate() {
       return hasRole(['master', 'gerente', 'tesouraria', 'operador'])
+        && (hasRole(['master']) || resource.data.createdBy == request.auth.uid)
         && (
           (resource.data.status == 'rascunho'
             && request.resource.data.status in ['rascunho', 'enviado_aprovacao'])
@@ -205,7 +204,6 @@ service cloud.firestore {
       allow update, delete: if masterRestoreMode() || hasRole(['master']);
     }
 
-    // Coleção antiga mantida apenas para compatibilidade/limpeza de registros já existentes.
     match /accountingPackages/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
       allow create: if masterRestoreMode();
