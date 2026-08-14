@@ -1,84 +1,42 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  BadgeDollarSign,
-  Calculator,
-  CheckCircle2,
-  ClipboardCopy,
-  Download,
-  ExternalLink,
-  FileArchive,
-  Link2,
-  ReceiptText,
-  Send,
-} from 'lucide-react'
-import { addDoc, collection, onSnapshot, serverTimestamp, type DocumentData } from 'firebase/firestore'
-import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage'
+import { BadgeDollarSign, Calculator, CheckCircle2, Download, FileArchive, FileSpreadsheet, Landmark, Paperclip, ReceiptText, Send, Upload } from 'lucide-react'
+import { addDoc, collection, doc, onSnapshot, serverTimestamp, setDoc, type DocumentData } from 'firebase/firestore'
+import { deleteObject, getBytes, getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage'
 import { db, storage } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import { createZip } from '../lib/simpleZip'
+import { createXlsx, type XlsxSheet } from '../lib/simpleXlsx'
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const dateTimeBR = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-
 type AnyRecord = { id: string } & DocumentData
-type BusyAction = '' | 'download' | 'link' | 'send'
+type BusyAction = '' | 'download' | 'send' | 'statement'
+type Attachment = { name?: string; path?: string; url?: string; size?: number; type?: string }
 
 function useLiveCollection(name: string) {
   const [records, setRecords] = useState<AnyRecord[]>([])
-  useEffect(() => onSnapshot(collection(db, name), (snapshot) => {
-    setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
-  }), [name])
+  useEffect(() => onSnapshot(collection(db, name), (snapshot) => setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))), [name])
   return records
 }
 
-function toNumber(value: unknown) {
-  const number = Number(value)
-  return Number.isFinite(number) ? number : 0
-}
-
+function toNumber(value: unknown) { const number = Number(value); return Number.isFinite(number) ? number : 0 }
 function timestampToDateTime(value: unknown) {
-  if (value && typeof value === 'object' && 'toDate' in value && typeof (value as { toDate?: unknown }).toDate === 'function') {
-    return dateTimeBR.format((value as { toDate: () => Date }).toDate())
-  }
+  if (value && typeof value === 'object' && 'toDate' in value && typeof (value as { toDate?: unknown }).toDate === 'function') return dateTimeBR.format((value as { toDate: () => Date }).toDate())
   return '—'
 }
-
-function csvCell(value: unknown) {
-  const text = String(value ?? '').replace(/\r?\n/g, ' ').trim()
-  return `"${text.replace(/"/g, '""')}"`
-}
-
-function toCsv(headers: string[], rows: unknown[][]) {
-  return `\ufeff${headers.map(csvCell).join(';')}\r\n${rows.map((row) => row.map(csvCell).join(';')).join('\r\n')}\r\n`
-}
-
-function safeName(value: string) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'todas'
-}
-
-function toBlob(bytes: Uint8Array) {
-  const buffer = new ArrayBuffer(bytes.byteLength)
-  new Uint8Array(buffer).set(bytes)
-  return new Blob([buffer], { type: 'application/zip' })
-}
-
-function downloadBlob(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = fileName
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-  URL.revokeObjectURL(url)
-}
-
+function safeName(value: string) { return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'arquivo' }
+function toBlob(bytes: Uint8Array) { const buffer = new ArrayBuffer(bytes.byteLength); new Uint8Array(buffer).set(bytes); return new Blob([buffer], { type: 'application/zip' }) }
+function downloadBlob(blob: Blob, fileName: string) { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url) }
+function attachmentsOf(item: AnyRecord): Attachment[] { return Array.isArray(item.attachments) ? item.attachments as Attachment[] : [] }
 function statusLabel(value: string) {
-  const labels: Record<string, string> = {
-    aprovado: 'Aprovado', pago: 'Pago', arquivado: 'Arquivado',
-    recebido_tesouraria: 'Recebido pela Tesouraria', encerrado: 'Encerrado / Arquivado',
-  }
+  const labels: Record<string, string> = { aprovado: 'Aprovado', pago: 'Pago', arquivado: 'Arquivado', recebido_tesouraria: 'Recebido pela Tesouraria', encerrado: 'Encerrado / Arquivado' }
   return labels[value] ?? value
+}
+
+async function bytesFromAttachment(file: Attachment) {
+  if (file.path) return new Uint8Array(await getBytes(storageRef(storage, file.path)))
+  if (file.url) return new Uint8Array(await (await fetch(file.url)).arrayBuffer())
+  throw new Error(`Documento sem referência de Storage: ${file.name || 'arquivo'}`)
 }
 
 export function AccountingPageStorage() {
@@ -86,24 +44,15 @@ export function AccountingPageStorage() {
   const expenses = useLiveCollection('expenses')
   const receivables = useLiveCollection('receivables')
   const dispatches = useLiveCollection('accountingDispatches')
+  const statements = useLiveCollection('bankStatements')
   const [competence, setCompetence] = useState(new Date().toISOString().slice(0, 7))
   const [unit, setUnit] = useState('Todas')
   const [movement, setMovement] = useState('Despesas + Recebimentos')
   const [busy, setBusy] = useState<BusyAction>('')
   const [message, setMessage] = useState('')
-  const [latestLink, setLatestLink] = useState('')
-  const [copied, setCopied] = useState(false)
 
-  const approvedExpenses = useMemo(() => expenses.filter((item) =>
-    ['aprovado', 'pago', 'arquivado'].includes(String(item.status))
-    && item.competencia === competence
-    && (unit === 'Todas' || item.unidade === unit)), [expenses, competence, unit])
-
-  const finishedReceivables = useMemo(() => receivables.filter((item) =>
-    ['recebido_tesouraria', 'encerrado'].includes(String(item.status))
-    && String(item.data ?? '').slice(0, 7) === competence
-    && (unit === 'Todas' || item.unidade === unit)), [receivables, competence, unit])
-
+  const approvedExpenses = useMemo(() => expenses.filter((item) => ['aprovado', 'pago', 'arquivado'].includes(String(item.status)) && item.competencia === competence && (unit === 'Todas' || item.unidade === unit)), [expenses, competence, unit])
+  const finishedReceivables = useMemo(() => receivables.filter((item) => ['recebido_tesouraria', 'encerrado'].includes(String(item.status)) && String(item.data ?? '').slice(0, 7) === competence && (unit === 'Todas' || item.unidade === unit)), [receivables, competence, unit])
   const includeExpenses = movement !== 'Somente Recebimentos'
   const includeReceivables = movement !== 'Somente Despesas'
   const selectedExpenses = includeExpenses ? approvedExpenses : []
@@ -114,224 +63,134 @@ export function AccountingPageStorage() {
   const revenueTotal = selectedReceivables.reduce((sum, item) => sum + toNumber(item.valorAlvara), 0)
   const totalEntries = expenseCount + receivableCount
   const orderedDispatches = [...dispatches].sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+  const statementId = `${competence}__${unit}`
+  const statement = statements.find((item) => item.id === statementId) ?? null
+  const documentCount = [...selectedExpenses, ...selectedReceivables].reduce((sum, item) => sum + attachmentsOf(item).length, 0)
+  const missingDocs = [...selectedExpenses.map((item) => ({ type: 'Despesa', item })), ...selectedReceivables.map((item) => ({ type: 'Receita', item }))].filter(({ item }) => attachmentsOf(item).length === 0)
 
   async function audit(action: string, detail: string, entityId?: string) {
     if (!profile) return
-    await addDoc(collection(db, 'auditLogs'), {
-      action,
-      module: 'Contabilidade',
-      detail,
-      entityId: entityId ?? null,
-      userId: profile.uid,
-      userName: profile.displayName,
-      userEmail: profile.email,
-      createdAt: serverTimestamp(),
-    })
+    await addDoc(collection(db, 'auditLogs'), { action, module: 'Contabilidade', detail, entityId: entityId ?? null, userId: profile.uid, userName: profile.displayName, userEmail: profile.email, createdAt: serverTimestamp() })
   }
 
-  function buildPackage() {
-    if (totalEntries === 0) throw new Error('Nenhum lançamento apto foi encontrado para a competência e filtros selecionados.')
+  async function uploadStatement(file: File) {
+    if (!profile || file.size > 30 * 1024 * 1024) { if (file.size > 30 * 1024 * 1024) setMessage('O extrato ultrapassa o limite de 30 MB.'); return }
+    setBusy('statement'); setMessage('')
+    try {
+      if (statement?.storagePath) { try { await deleteObject(storageRef(storage, String(statement.storagePath))) } catch {} }
+      const path = `extratos-bancarios/${competence}/${safeName(unit)}/${Date.now()}-${safeName(file.name)}`
+      const target = storageRef(storage, path)
+      await uploadBytes(target, file, { contentType: file.type || 'application/octet-stream' })
+      const downloadUrl = await getDownloadURL(target)
+      await setDoc(doc(db, 'bankStatements', statementId), { competence, unit, fileName: file.name, storagePath: path, downloadUrl, size: file.size, type: file.type || 'application/octet-stream', uploadedBy: profile.uid, uploadedByName: profile.displayName, uploadedByEmail: profile.email, uploadedAt: serverTimestamp() })
+      await audit('Extrato bancário consolidado anexado', `${competence} · ${unit} · ${file.name}`, statementId)
+      setMessage('Extrato consolidado anexado com sucesso. Ele será incluído automaticamente no ZIP da Contabilidade.')
+    } catch (error) {
+      console.error(error)
+      setMessage('Não foi possível enviar o extrato consolidado.')
+    } finally { setBusy('') }
+  }
 
-    const expenseCsv = toCsv(
-      ['Competência', 'Unidade', 'Responsável', 'Fornecedor/Favorecido', 'CPF/CNPJ', 'Plano de Contas', 'Descrição da Conta', 'DRE', 'Status', 'Valor'],
-      selectedExpenses.map((item) => [
-        item.competencia, item.unidade, item.nome, item.fornecedor, item.documento,
-        item.expenseAccountCode ?? item.classificacaoContabil ?? '', item.expenseAccountName ?? '', item.expenseAccountDre ?? '',
-        statusLabel(String(item.status ?? '')), money.format(toNumber(item.valorTotal)),
-      ]),
-    )
-
-    const revenueCsv = toCsv(
-      ['Data', 'Unidade', 'Processo', 'Reclamante', 'Reclamada', 'Origem', 'Plano de Contas', 'Descrição da Conta', 'DRE', 'Status', 'Valor do Alvará', 'Líquido Cliente'],
-      selectedReceivables.map((item) => [
-        item.data, item.unidade, item.processo, item.reclamante, item.reclamada, item.origem,
-        item.revenueAccountCode ?? item.classificacaoContabil ?? '', item.revenueAccountName ?? '', item.revenueAccountDre ?? '',
-        statusLabel(String(item.status ?? '')), money.format(toNumber(item.valorAlvara)), money.format(toNumber(item.valorLiquidoCliente)),
-      ]),
-    )
-
-    const summary = [
-      'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
-      'PACOTE DE MOVIMENTO PARA CONTABILIDADE',
-      '',
-      `Competência: ${competence}`,
-      `Unidade: ${unit}`,
-      `Movimento: ${movement}`,
-      `Despesas aptas: ${expenseCount} | ${money.format(expenseTotal)}`,
-      `Receitas aptas: ${receivableCount} | ${money.format(revenueTotal)}`,
-      `Gerado por: ${profile?.displayName || profile?.email || 'Usuário'}`,
-      `Gerado em: ${dateTimeBR.format(new Date())}`,
-      '',
-      'Conteúdo do ZIP:',
-      '- resumo.txt',
-      includeExpenses ? '- despesas.csv' : null,
-      includeReceivables ? '- receitas.csv' : null,
-      '- movimento.json',
-      '',
-      'Observação: a classificação pelo Plano de Contas é opcional. Lançamentos não classificados permanecem no pacote.',
-    ].filter(Boolean).join('\r\n')
-
-    const json = JSON.stringify({
-      generatedAt: new Date().toISOString(),
-      competence,
-      unit,
-      movement,
-      totals: { expenseCount, receivableCount, expenseTotal, revenueTotal },
-      expenses: selectedExpenses.map((item) => ({
-        id: item.id, competencia: item.competencia ?? null, unidade: item.unidade ?? null,
-        nome: item.nome ?? null, fornecedor: item.fornecedor ?? null, documento: item.documento ?? null,
-        status: item.status ?? null, valorTotal: toNumber(item.valorTotal),
-        account: item.planoConta ?? { code: item.expenseAccountCode ?? item.classificacaoContabil ?? null, name: item.expenseAccountName ?? null, dre: item.expenseAccountDre ?? null },
-      })),
-      receivables: selectedReceivables.map((item) => ({
-        id: item.id, data: item.data ?? null, unidade: item.unidade ?? null, processo: item.processo ?? null,
-        reclamante: item.reclamante ?? null, reclamada: item.reclamada ?? null, origem: item.origem ?? null,
-        status: item.status ?? null, valorAlvara: toNumber(item.valorAlvara), valorLiquidoCliente: toNumber(item.valorLiquidoCliente),
-        account: item.planoConta ?? { code: item.revenueAccountCode ?? item.classificacaoContabil ?? null, name: item.revenueAccountName ?? null, dre: item.revenueAccountDre ?? null },
-      })),
-    }, null, 2)
-
-    const entries = [
-      { name: 'resumo.txt', content: summary },
-      ...(includeExpenses ? [{ name: 'despesas.csv', content: expenseCsv }] : []),
-      ...(includeReceivables ? [{ name: 'receitas.csv', content: revenueCsv }] : []),
-      { name: 'movimento.json', content: json },
+  function workbookSheets(): XlsxSheet[] {
+    const summaryRows = [
+      ['FLÁVIO MARQUES ADVOGADOS ASSOCIADOS'],
+      ['Movimento mensal para Contabilidade'],
+      ['Competência', competence], ['Unidade', unit], ['Movimento', movement],
+      ['Despesas aptas', expenseCount], ['Total despesas', expenseTotal], ['Receitas aptas', receivableCount], ['Total receitas', revenueTotal],
+      ['Documentos anexados', documentCount], ['Lançamentos sem documento', missingDocs.length], ['Extrato consolidado', statement?.fileName || 'NÃO ANEXADO'],
+      ['Gerado por', profile?.displayName || profile?.email || 'Usuário'], ['Gerado em', dateTimeBR.format(new Date())],
     ]
+    const expenseRows: (string | number)[][] = [['Competência', 'Unidade', 'Responsável', 'Fornecedor/Favorecido', 'CPF/CNPJ', 'Plano de Contas', 'Descrição da Conta', 'DRE', 'Status', 'Valor', 'Documentos']]
+    for (const item of selectedExpenses) expenseRows.push([item.competencia ?? '', item.unidade ?? '', item.nome ?? '', item.fornecedor ?? '', item.documento ?? '', item.expenseAccountCode ?? item.classificacaoContabil ?? '', item.expenseAccountName ?? '', item.expenseAccountDre ?? '', statusLabel(String(item.status ?? '')), toNumber(item.valorTotal), attachmentsOf(item).length])
+    const revenueRows: (string | number)[][] = [['Data', 'Unidade', 'Processo', 'Reclamante', 'Reclamada', 'Origem', 'Plano de Contas', 'Descrição da Conta', 'DRE', 'Status', 'Valor do Alvará', 'Líquido Cliente', 'Documentos']]
+    for (const item of selectedReceivables) revenueRows.push([item.data ?? '', item.unidade ?? '', item.processo ?? '', item.reclamante ?? '', item.reclamada ?? '', item.origem ?? '', item.revenueAccountCode ?? item.classificacaoContabil ?? '', item.revenueAccountName ?? '', item.revenueAccountDre ?? '', statusLabel(String(item.status ?? '')), toNumber(item.valorAlvara), toNumber(item.valorLiquidoCliente), attachmentsOf(item).length])
+    const documentRows: (string | number)[][] = [['Tipo', 'Referência', 'Arquivo', 'Tamanho (bytes)']]
+    selectedExpenses.forEach((item) => attachmentsOf(item).forEach((file) => documentRows.push(['Despesa', `${item.nome ?? ''} · ${item.fornecedor ?? ''}`, file.name ?? 'Documento', toNumber(file.size)])))
+    selectedReceivables.forEach((item) => attachmentsOf(item).forEach((file) => documentRows.push(['Receita', `${item.processo ?? ''} · ${item.reclamante ?? ''}`, file.name ?? 'Documento', toNumber(file.size)])))
+    const pendingRows: (string | number)[][] = [['Tipo', 'Referência', 'Valor', 'Pendência']]
+    missingDocs.forEach(({ type, item }) => pendingRows.push([type, type === 'Despesa' ? `${item.nome ?? ''} · ${item.fornecedor ?? ''}` : `${item.processo ?? ''} · ${item.reclamante ?? ''}`, type === 'Despesa' ? toNumber(item.valorTotal) : toNumber(item.valorAlvara), 'Sem documento anexado']))
+    if (!statement) pendingRows.push(['Extrato bancário', competence, 0, 'Extrato consolidado não anexado'])
+    return [
+      { name: 'Resumo', rows: summaryRows as (string | number)[][], currencyColumns: [1] },
+      { name: 'Despesas', rows: expenseRows, currencyColumns: [9] },
+      { name: 'Receitas', rows: revenueRows, currencyColumns: [10, 11] },
+      { name: 'Documentos', rows: documentRows },
+      { name: 'Pendencias', rows: pendingRows, currencyColumns: [2] },
+    ]
+  }
+
+  async function buildPackage() {
+    if (totalEntries === 0) throw new Error('Nenhum lançamento apto foi encontrado para a competência e filtros selecionados.')
+    if (!statement?.storagePath) throw new Error('Anexe o extrato consolidado do banco antes de gerar o ZIP para a Contabilidade.')
+    setMessage('Montando planilha Excel e incorporando documentos ao ZIP...')
+
+    const workbook = createXlsx(workbookSheets())
+    const entries: Array<{ name: string; content: string | Uint8Array }> = [
+      { name: `Movimento_Contabilidade_${competence}_${safeName(unit)}.xlsx`, content: workbook },
+      { name: 'LEIA-ME.txt', content: `FLÁVIO MARQUES ADVOGADOS ASSOCIADOS\r\nCompetência: ${competence}\r\nUnidade: ${unit}\r\n\r\nConteúdo: planilha Excel, extrato consolidado do banco e documentos de despesas/receitas.\r\nLançamentos sem documento: ${missingDocs.length}. Consulte a aba Pendencias da planilha.` },
+    ]
+
+    const statementBytes = new Uint8Array(await getBytes(storageRef(storage, String(statement.storagePath))))
+    entries.push({ name: `Extrato_Bancario/${safeName(String(statement.fileName ?? 'Extrato_Consolidado'))}`, content: statementBytes })
+
+    for (let index = 0; index < selectedExpenses.length; index += 1) {
+      const item = selectedExpenses[index]
+      for (const file of attachmentsOf(item)) {
+        try {
+          const bytes = await bytesFromAttachment(file)
+          entries.push({ name: `Documentos_Despesas/${String(index + 1).padStart(3, '0')}_${safeName(String(item.fornecedor || item.nome || item.id))}/${safeName(file.name || 'documento')}`, content: bytes })
+        } catch (error) { console.warn('Documento de despesa não incluído:', file, error) }
+      }
+    }
+    for (let index = 0; index < selectedReceivables.length; index += 1) {
+      const item = selectedReceivables[index]
+      for (const file of attachmentsOf(item)) {
+        try {
+          const bytes = await bytesFromAttachment(file)
+          entries.push({ name: `Documentos_Receitas/${String(index + 1).padStart(3, '0')}_${safeName(String(item.processo || item.reclamante || item.id))}/${safeName(file.name || 'documento')}`, content: bytes })
+        } catch (error) { console.warn('Documento de receita não incluído:', file, error) }
+      }
+    }
+
     const bytes = createZip(entries)
     const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
-    const fileName = `Movimento_Contabilidade_${competence}_${safeName(unit)}_${stamp}.zip`
-    return { blob: toBlob(bytes), fileName }
+    return { blob: toBlob(bytes), fileName: `Contabilidade_${competence}_${safeName(unit)}_${stamp}.zip` }
   }
 
   async function downloadPackage() {
-    setBusy('download')
-    setMessage('')
+    setBusy('download'); setMessage('')
     try {
-      const { blob, fileName } = buildPackage()
+      const { blob, fileName } = await buildPackage()
       downloadBlob(blob, fileName)
-      await audit('Pacote ZIP da Contabilidade baixado', `${competence} · ${unit} · ${expenseCount} despesa(s) · ${receivableCount} receita(s)`)
-      setMessage(`ZIP gerado e baixado com sucesso: ${fileName}`)
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Não foi possível gerar o ZIP.')
-    } finally {
-      setBusy('')
-    }
-  }
-
-  async function generateLink() {
-    setBusy('link')
-    setMessage('')
-    setLatestLink('')
-    try {
-      const { blob, fileName } = buildPackage()
-      const path = `pacotes-contabeis/${competence}/${safeName(unit)}/${fileName}`
-      const target = storageRef(storage, path)
-      await uploadBytes(target, blob, {
-        contentType: 'application/zip',
-        customMetadata: {
-          competence,
-          unit,
-          movement,
-          generatedBy: profile?.uid ?? '',
-        },
-      })
-      const downloadUrl = await getDownloadURL(target)
-      const packageRef = await addDoc(collection(db, 'accountingPackages'), {
-        competence, unit, movement, fileName, storagePath: path, downloadUrl,
-        expenseCount, receivableCount, expenseTotal, revenueTotal,
-        createdBy: profile?.uid ?? null,
-        createdByName: profile?.displayName ?? null,
-        createdByEmail: profile?.email ?? null,
-        createdAt: serverTimestamp(),
-      })
-      await audit('Link do pacote contábil gerado', `${competence} · ${fileName}`, packageRef.id)
-      setLatestLink(downloadUrl)
-      try {
-        await navigator.clipboard.writeText(downloadUrl)
-        setCopied(true)
-        window.setTimeout(() => setCopied(false), 2500)
-        setMessage('Link do pacote gerado no Firebase Storage e copiado para a área de transferência.')
-      } catch {
-        setMessage('Link do pacote gerado no Firebase Storage. Use o botão Copiar link abaixo.')
-      }
-    } catch (error) {
-      console.error(error)
-      setMessage(error instanceof Error ? error.message : 'Não foi possível gerar o link do pacote.')
-    } finally {
-      setBusy('')
-    }
+      await audit('Pacote completo da Contabilidade baixado', `${competence} · ${unit} · ${expenseCount} despesa(s) · ${receivableCount} receita(s) · ${documentCount} documento(s)`)
+      setMessage(`ZIP completo gerado: ${fileName}`)
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Não foi possível gerar o ZIP.') } finally { setBusy('') }
   }
 
   async function sendMovement() {
-    if (totalEntries === 0) {
-      setMessage('Nenhum lançamento apto foi encontrado para a competência e filtros selecionados.')
-      return
-    }
-    const confirmed = window.confirm(`Registrar o movimento ${competence} como enviado à Contabilidade?`)
-    if (!confirmed) return
-    setBusy('send')
-    setMessage('')
+    if (totalEntries === 0) { setMessage('Nenhum lançamento apto foi encontrado.'); return }
+    if (!window.confirm(`Registrar o movimento ${competence} como enviado à Contabilidade?`)) return
+    setBusy('send'); setMessage('')
     try {
-      const ref = await addDoc(collection(db, 'accountingDispatches'), {
-        competence, unit, movement, expenseCount, receivableCount, expenseTotal, revenueTotal,
-        status: 'enviado', sentBy: profile?.uid, sentByName: profile?.displayName, sentByEmail: profile?.email,
-        createdAt: serverTimestamp(),
-      })
+      const ref = await addDoc(collection(db, 'accountingDispatches'), { competence, unit, movement, expenseCount, receivableCount, expenseTotal, revenueTotal, documentCount, bankStatement: statement?.fileName ?? null, status: 'enviado', sentBy: profile?.uid, sentByName: profile?.displayName, sentByEmail: profile?.email, createdAt: serverTimestamp() })
       await audit('Movimento registrado como enviado à Contabilidade', `${competence} · ${expenseCount} despesa(s) · ${receivableCount} receita(s)`, ref.id)
-      setMessage('Movimento registrado com sucesso. O histórico foi atualizado abaixo.')
-    } catch (error) {
-      console.error(error)
-      setMessage('Não foi possível registrar o envio. Confira sua conexão e permissão.')
-    } finally {
-      setBusy('')
-    }
+      setMessage('Movimento registrado com sucesso no histórico.')
+    } catch (error) { console.error(error); setMessage('Não foi possível registrar o envio.') } finally { setBusy('') }
   }
 
-  async function copyLatestLink() {
-    if (!latestLink) return
-    await navigator.clipboard.writeText(latestLink)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 2500)
-  }
+  return <>
+    <div className="page-heading"><div><span className="eyebrow">Fechamento mensal</span><h1>Contabilidade</h1><p>Geração do pacote mensal com planilha Excel, extrato consolidado do banco e documentos comprobatórios.</p></div></div>
+    <section className="page-card accounting-panel">
+      <div className="accounting-config"><label><span>Competência</span><input type="month" value={competence} onChange={(e) => setCompetence(e.target.value)} /></label><label><span>Unidade</span><select value={unit} onChange={(e) => setUnit(e.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label><label><span>Movimento</span><select value={movement} onChange={(e) => setMovement(e.target.value)}><option>Despesas + Recebimentos</option><option>Somente Despesas</option><option>Somente Recebimentos</option></select></label></div>
+      <div className="readiness-grid"><article><ReceiptText /><span>Despesas aptas</span><strong>{expenseCount}</strong><small>{money.format(expenseTotal)}</small></article><article><BadgeDollarSign /><span>Receitas aptas</span><strong>{receivableCount}</strong><small>{money.format(revenueTotal)}</small></article><article><Paperclip /><span>Documentos</span><strong>{documentCount}</strong><small>{missingDocs.length} lançamento(s) sem anexo</small></article><article className={statement ? 'storage-ready-card' : ''}><Landmark /><span>Extrato bancário</span><strong>{statement ? 'Anexado' : 'Pendente'}</strong><small>{statement?.fileName || 'Consolidado do mês'}</small></article></div>
 
-  return (
-    <>
-      <div className="page-heading"><div><span className="eyebrow">Fechamento mensal</span><h1>Contabilidade</h1><p>Conferência do movimento, geração do pacote ZIP, compartilhamento via Firebase Storage e histórico de envio.</p></div></div>
+      <div className="bank-statement-box"><div><Landmark size={21} /><div><strong>Extrato consolidado do banco</strong><span>Obrigatório para gerar o pacote mensal. Aceita PDF, OFX, CSV e Excel.</span>{statement && <small><CheckCircle2 size={13} /> {statement.fileName}</small>}</div></div><label className="secondary-button accounting-file-button"><Upload size={17} /> {busy === 'statement' ? 'Enviando...' : statement ? 'Substituir extrato' : 'Anexar extrato'}<input type="file" hidden accept=".pdf,.ofx,.csv,.xlsx,.xls" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadStatement(file); e.currentTarget.value = '' }} /></label></div>
 
-      <section className="page-card accounting-panel">
-        <div className="accounting-config">
-          <label><span>Competência</span><input type="month" value={competence} onChange={(event) => setCompetence(event.target.value)} /></label>
-          <label><span>Unidade</span><select value={unit} onChange={(event) => setUnit(event.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label>
-          <label><span>Movimento</span><select value={movement} onChange={(event) => setMovement(event.target.value)}><option>Despesas + Recebimentos</option><option>Somente Despesas</option><option>Somente Recebimentos</option></select></label>
-        </div>
+      <div className="storage-ready-box"><FileSpreadsheet size={18} /><span><strong>Pacote para a Contabilidade:</strong> 1 planilha Excel com abas Resumo, Despesas, Receitas, Documentos e Pendências + extrato bancário + todos os anexos disponíveis.</span></div>
+      {message && <div className={`accounting-feedback ${message.includes('sucesso') || message.includes('gerado') || message.includes('anexado') ? 'success' : 'warning'}`} role="status">{message}</div>}
+      <div className="accounting-actions"><button className="secondary-button" type="button" disabled={Boolean(busy)} onClick={() => void downloadPackage()}><Download size={17} /> {busy === 'download' ? 'Montando ZIP...' : 'Baixar ZIP completo'}</button><button className="revenue-button" type="button" disabled={Boolean(busy)} onClick={() => void sendMovement()}><Calculator size={17} /> {busy === 'send' ? 'Registrando...' : 'Registrar envio à Contabilidade'}</button></div>
+    </section>
 
-        <div className="readiness-grid">
-          <article><ReceiptText /><span>Despesas aptas</span><strong>{expenseCount}</strong><small>{money.format(expenseTotal)}</small></article>
-          <article><BadgeDollarSign /><span>Receitas aptas</span><strong>{receivableCount}</strong><small>{money.format(revenueTotal)}</small></article>
-          <article className="storage-ready-card"><FileArchive /><span>Firebase Storage</span><strong>Ativo</strong><small>Pacote ZIP habilitado</small></article>
-          <article><CheckCircle2 /><span>Classificação</span><strong>Opcional</strong><small>Plano de Contas</small></article>
-        </div>
-
-        <div className="storage-ready-box"><CheckCircle2 size={18} /><span><strong>Storage ativo.</strong> O ZIP contém resumo, CSV de despesas/receitas e JSON do movimento. O botão de link envia esse mesmo pacote ao Firebase Storage.</span></div>
-
-        {message && <div className={`accounting-feedback ${message.includes('sucesso') || message.includes('gerado') || message.includes('baixado') ? 'success' : 'warning'}`} role="status">{message}</div>}
-
-        <div className="accounting-actions">
-          <button className="secondary-button" type="button" disabled={Boolean(busy)} onClick={() => void downloadPackage()}><Download size={17} /> {busy === 'download' ? 'Gerando ZIP...' : 'Baixar ZIP'}</button>
-          <button className="secondary-button" type="button" disabled={Boolean(busy)} onClick={() => void generateLink()}><Link2 size={17} /> {busy === 'link' ? 'Gerando link...' : 'Gerar link para Contabilidade'}</button>
-          <button className="revenue-button" type="button" disabled={Boolean(busy)} onClick={() => void sendMovement()}><Calculator size={17} /> {busy === 'send' ? 'Registrando...' : 'Enviar Movimento à Contabilidade'}</button>
-        </div>
-
-        {latestLink && <div className="accounting-share-box">
-          <div><Link2 size={19} /><div><strong>Link do pacote contábil</strong><span>Gerado no Firebase Storage para compartilhamento com a Contabilidade.</span></div></div>
-          <div className="accounting-share-actions"><button className="secondary-button" type="button" onClick={() => void copyLatestLink()}><ClipboardCopy size={16} /> {copied ? 'Copiado' : 'Copiar link'}</button><a className="secondary-button accounting-open-link" href={latestLink} target="_blank" rel="noreferrer"><ExternalLink size={16} /> Abrir link</a></div>
-        </div>}
-      </section>
-
-      <section className="page-card accounting-history-card">
-        <div className="card-title-row"><div><h2>Histórico de envios para a Contabilidade</h2><p>Cada confirmação fica registrada com competência, usuário e totais.</p></div><span className="status-badge revenue">{orderedDispatches.length} envio(s)</span></div>
-        {orderedDispatches.length === 0 ? <div className="module-empty"><Send size={34} /><strong>Nenhum envio registrado</strong><span>O primeiro envio confirmado aparecerá aqui.</span></div> : <div className="accounting-history-list">{orderedDispatches.map((item) => <article key={item.id}><div><strong>{item.competence || '—'} · {item.unit || 'Todas'}</strong><span>{item.movement || 'Movimento mensal'}</span><small>{item.sentByName || item.sentByEmail || 'Usuário'} · {timestampToDateTime(item.createdAt)}</small></div><div className="history-totals"><span>{toNumber(item.expenseCount)} despesa(s) · {money.format(toNumber(item.expenseTotal))}</span><span>{toNumber(item.receivableCount)} receita(s) · {money.format(toNumber(item.revenueTotal))}</span></div><span className="status-badge success">Enviado</span></article>)}</div>}
-      </section>
-    </>
-  )
+    <section className="page-card accounting-history-card"><div className="card-title-row"><div><h2>Histórico de envios para a Contabilidade</h2><p>Cada confirmação fica registrada com competência, usuário e totais.</p></div><span className="status-badge revenue">{orderedDispatches.length} envio(s)</span></div>{orderedDispatches.length === 0 ? <div className="module-empty"><Send size={34} /><strong>Nenhum envio registrado</strong></div> : <div className="accounting-history-list">{orderedDispatches.map((item) => <article key={item.id}><div><strong>{item.competence || '—'} · {item.unit || 'Todas'}</strong><span>{item.movement || 'Movimento mensal'}</span><small>{item.sentByName || item.sentByEmail || 'Usuário'} · {timestampToDateTime(item.createdAt)}</small></div><div className="history-totals"><span>{toNumber(item.expenseCount)} despesa(s) · {money.format(toNumber(item.expenseTotal))}</span><span>{toNumber(item.receivableCount)} receita(s) · {money.format(toNumber(item.revenueTotal))}</span></div><span className="status-badge success">Enviado</span></article>)}</div>}</section>
+  </>
 }
