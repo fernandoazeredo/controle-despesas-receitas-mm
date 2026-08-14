@@ -86,6 +86,12 @@ service cloud.firestore {
       allow delete: if hasRole(['master']);
     }
 
+    match /accountingPackages/{document=**} {
+      allow read, create: if hasRole(['master', 'admin', 'contabilidade']);
+      allow update: if hasRole(['master', 'admin']);
+      allow delete: if hasRole(['master']);
+    }
+
     match /auditLogs/{document=**} {
       allow read: if hasRole(['master', 'admin', 'diretoria']);
       allow create: if activeUser();
