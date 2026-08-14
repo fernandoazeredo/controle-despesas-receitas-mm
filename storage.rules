@@ -17,25 +17,35 @@ service firebase.storage {
       return activeUser() && currentUser().data.role in roles;
     }
 
+    function validAttachmentSize() {
+      return request.resource == null || request.resource.size <= 20 * 1024 * 1024;
+    }
+
+    // Anexos operacionais: qualquer usuario ATIVO pode gravar somente dentro
+    // da propria pasta de UID. O perfil funcional nao interfere no upload.
     match /despesas/{userId}/{allPaths=**} {
       allow read: if activeUser();
-      allow write: if activeUser()
+      allow create, update: if activeUser()
         && request.auth.uid == userId
-        && hasRole(['master', 'gerente', 'tesouraria', 'operador']);
+        && validAttachmentSize();
+      allow delete: if activeUser() && request.auth.uid == userId;
     }
 
     match /recebimentos/{userId}/{allPaths=**} {
       allow read: if activeUser();
-      allow write: if activeUser()
+      allow create, update: if activeUser()
         && request.auth.uid == userId
-        && hasRole(['master', 'gerente', 'tesouraria', 'operador']);
+        && validAttachmentSize();
+      allow delete: if activeUser() && request.auth.uid == userId;
     }
 
     match /demonstrativos/{allPaths=**} {
       allow read: if activeUser();
-      allow write: if hasRole(['master', 'gerente', 'tesouraria', 'operador']);
+      allow create, update: if activeUser() && validAttachmentSize();
+      allow delete: if hasRole(['master']);
     }
 
+    // Pacotes contabeis continuam restritos aos perfis financeiros.
     match /pacotes-contabeis/{allPaths=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
       allow write: if hasRole(['master', 'gerente', 'tesouraria']);
