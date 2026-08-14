@@ -15,27 +15,34 @@ service firebase.storage {
       return authEmail() == 'fernandoazeredo64@gmail.com';
     }
 
-    function currentUser() {
-      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
+    function isDirectorEmail() {
+      return authEmail() == 'flavio.marques@marquesemuller.adv.br';
     }
 
-    function activeUser() {
-      return signedIn() && currentUser().data.status == 'active';
+    function isManagerEmail() {
+      return authEmail() == 'reinaldo@marquesemuller.adv.br';
     }
 
-    function hasRole(roles) {
-      return activeUser() && currentUser().data.role in roles;
+    function isTreasuryEmail() {
+      return authEmail() == 'socorro@marquesemuller.adv.br';
+    }
+
+    function financialReader() {
+      return isPrimaryAdminEmail() || isDirectorEmail() || isManagerEmail() || isTreasuryEmail();
+    }
+
+    function financialWriter() {
+      return isPrimaryAdminEmail() || isManagerEmail() || isTreasuryEmail();
     }
 
     function validAttachmentSize() {
       return request.resource == null || request.resource.size <= 20 * 1024 * 1024;
     }
 
-    // Anexos de despesas e recebimentos usam a autenticacao do Firebase como
-    // criterio principal. Isso evita depender de uma consulta cruzada ao
-    // Firestore durante o upload, que pode gerar storage/unauthorized mesmo
-    // para um usuario ja autenticado no aplicativo.
-    // O usuario grava na propria pasta; o Master pode administrar qualquer pasta.
+    function validBankStatementSize() {
+      return request.resource == null || request.resource.size <= 30 * 1024 * 1024;
+    }
+
     match /despesas/{userId}/{allPaths=**} {
       allow read: if signedIn();
       allow create, update: if signedIn()
@@ -60,11 +67,19 @@ service firebase.storage {
       allow delete: if isPrimaryAdminEmail();
     }
 
-    // Pacotes contabeis permanecem com a regra financeira mais restrita,
-    // pois este fluxo ja esta validado em producao.
+    // Extrato consolidado mensal usado no ZIP da Contabilidade.
+    // Usa e-mails oficiais do Firebase Auth para evitar dependencia de consulta
+    // cruzada ao Firestore durante upload/download.
+    match /extratos-bancarios/{allPaths=**} {
+      allow read: if financialReader();
+      allow create, update: if financialWriter() && validBankStatementSize();
+      allow delete: if financialWriter();
+    }
+
+    // Estrutura antiga mantida somente para leitura/limpeza de pacotes já existentes.
     match /pacotes-contabeis/{allPaths=**} {
-      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
-      allow write: if hasRole(['master', 'gerente', 'tesouraria']);
+      allow read: if financialReader();
+      allow write: if isPrimaryAdminEmail();
     }
   }
 }
