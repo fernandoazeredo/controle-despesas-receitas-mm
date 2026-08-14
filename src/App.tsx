@@ -20,6 +20,12 @@ import { NavLink, Route, Routes } from 'react-router-dom'
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
+const companyData = {
+  razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
+  cnpj: '04.344.462/0001-87',
+  endereco: 'Rua México, 21 / 1102 – Centro – Rio de Janeiro – RJ',
+}
+
 const menu = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/despesas', label: 'Despesas', icon: ReceiptText },
@@ -92,6 +98,31 @@ function Dashboard() {
   )
 }
 
+function Configuracoes() {
+  return (
+    <section className="page-card">
+      <span className="eyebrow">Dados institucionais</span>
+      <h2>Configurações do Aplicativo</h2>
+      <p>Cadastro institucional utilizado nos demonstrativos, relatórios e documentos gerados pelo sistema.</p>
+
+      <div className="settings-grid">
+        <label>
+          <span>Razão Social</span>
+          <input value={companyData.razaoSocial} readOnly />
+        </label>
+        <label>
+          <span>CNPJ</span>
+          <input value={companyData.cnpj} readOnly />
+        </label>
+        <label className="settings-full-width">
+          <span>Endereço</span>
+          <input value={companyData.endereco} readOnly />
+        </label>
+      </div>
+    </section>
+  )
+}
+
 export default function App() {
   return (
     <div className="app-shell">
@@ -132,7 +163,7 @@ export default function App() {
           <Route path="/documentos" element={<Placeholder title="Arquivo de Documentos" text="Pesquisa e consulta dos dossiês digitais, demonstrativos e comprovantes." />} />
           <Route path="/usuarios" element={<Placeholder title="Usuários e Permissões" text="Perfis de acesso separados por função e módulo." />} />
           <Route path="/auditoria" element={<Placeholder title="Auditoria" text="Histórico imutável das ações, aprovações, devoluções e alterações relevantes." />} />
-          <Route path="/configuracoes" element={<Placeholder title="Configurações" text="Dados institucionais e parâmetros administrativos do sistema." />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/dicas" element={<Placeholder title="DICAS" text="Fluxograma operacional, passo a passo por perfil e soluções para situações comuns. Este módulo terá destaque em vermelho." />} />
           <Route path="/como-usar" element={<Placeholder title="Como Usar" text="Tour guiado interativo e instruções simples para usuários com baixa familiaridade tecnológica." />} />
         </Routes>
