@@ -5,6 +5,7 @@
 }
 .storage-document-zone strong { color: #17623b !important; }
 .storage-upload-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -18,13 +19,28 @@
   white-space: nowrap;
 }
 .storage-upload-button input { display: none; }
+.storage-upload-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #cf2026;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 900;
+  box-shadow: 0 0 0 2px #fff;
+}
 .expense-attachment-list {
   margin-top: 9px;
   display: grid;
   gap: 7px;
 }
 .expense-attachment-list a,
-.expense-attachment-list span {
+.expense-attachment-list > span {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -37,6 +53,145 @@
   background: #fff;
 }
 .expense-attachment-list a:hover { border-color: #9fc8eb; color: var(--revenue); }
+.enhanced-attachment-list { gap: 9px; }
+.attachment-confirmed,
+.attachment-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d9e2e8;
+  background: #fff;
+  text-decoration: none;
+}
+.attachment-confirmed {
+  border-color: #9fd6b6 !important;
+  background: #f4fbf7 !important;
+  color: #17623b !important;
+}
+.attachment-confirmed > div,
+.attachment-upload-main > div {
+  flex: 1;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.attachment-confirmed strong,
+.attachment-upload-main strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.attachment-confirmed span,
+.attachment-upload-main span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.attachment-upload-main {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+}
+.attachment-uploading { border-color: #9fc8eb; background: #f7fbff; }
+.attachment-success { border-color: #9fd6b6; background: #f4fbf7; }
+.attachment-success .attachment-upload-main > svg { color: #198754; }
+.attachment-success .attachment-upload-main span { color: #17623b; font-weight: 700; }
+.attachment-error { border-color: #e2aaaa; background: #fff7f7; }
+.attachment-error .attachment-upload-main span { color: #a52222; }
+.attachment-canceled { border-color: #d5d9de; background: #f7f8f9; opacity: .82; }
+.attachment-progress {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dfe9f2;
+}
+.attachment-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #1680d8;
+  transition: width .18s ease;
+}
+.attachment-remove-button {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d9e2e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #65717d;
+  cursor: pointer;
+}
+.attachment-remove-button:hover { border-color: #cf2026; color: #cf2026; }
+.upload-save-note {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 11px;
+  border: 1px solid #c5dff5;
+  border-radius: 9px;
+  background: #f5faff;
+  color: #285f89;
+  font-size: 12px;
+  font-weight: 700;
+}
+.attachment-count-button {
+  margin-top: 5px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 25px;
+  padding: 3px 8px;
+  border: 1px solid #b9d3e8;
+  border-radius: 999px;
+  background: #f5faff;
+  color: #176fae;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.attachment-count-button:hover {
+  border-color: #176fae;
+  background: #eaf5fd;
+}
+.attachment-viewer-heading {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e0e5ea;
+  border-radius: 10px;
+  background: #f8fafb;
+}
+.attachment-viewer-heading > div { display: grid; gap: 2px; }
+.attachment-viewer-heading span { color: var(--muted); font-size: 12px; }
+.attachment-viewer-list { display: grid; gap: 8px; }
+.attachment-viewer-list a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid #9fd6b6;
+  border-radius: 9px;
+  background: #f4fbf7;
+  color: #17623b;
+  text-decoration: none;
+}
+.attachment-viewer-list a > div { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.attachment-viewer-list strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attachment-viewer-list span { font-size: 11px; color: #4d7460; }
 .storage-documents-card { overflow: hidden; }
 .storage-dossier-grid { display: grid; gap: 12px; padding: 16px; }
 .storage-dossier {
@@ -77,4 +232,5 @@
   .storage-dossier-heading { grid-template-columns: auto 1fr; }
   .storage-dossier-heading > b { grid-column: 1 / -1; text-align: left; }
   .storage-upload-button { width: 100%; justify-content: center; }
+  .attachment-count-button { margin-left: 0; }
 }
