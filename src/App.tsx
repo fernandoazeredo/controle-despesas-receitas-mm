@@ -44,27 +44,34 @@ const companyData = {
   endereco: 'Rua México, 21 / 1102 – Centro – Rio de Janeiro – RJ',
 }
 
+type AccessRole = 'master' | 'admin' | 'operador'
 type MenuItem = {
   to: string
   label: string
   icon: typeof LayoutDashboard
   tone?: 'expense' | 'revenue'
-  roles?: UserRole[]
+  roles?: AccessRole[]
 }
 
 const menu: MenuItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'admin', 'tesouraria'] },
-  { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'admin', 'alvaras'] },
-  { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'admin', 'tesouraria'] },
-  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'admin', 'diretoria'] },
-  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'admin', 'contabilidade', 'tesouraria'] },
-  { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'admin', 'contabilidade'] },
-  { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive },
-  { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master', 'admin'] },
-  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'admin', 'diretoria'] },
-  { to: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['master', 'admin'] },
+  { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'admin', 'operador'] },
+  { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'admin', 'operador'] },
+  { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'admin', 'operador'] },
+  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'admin'] },
+  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'admin', 'operador'] },
+  { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'admin', 'operador'] },
+  { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'admin', 'operador'] },
+  { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master'] },
+  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'admin'] },
+  { to: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['master'] },
 ]
+
+function accessRoleFromUserRole(role: UserRole | undefined): AccessRole {
+  if (role === 'master') return 'master'
+  if (role === 'admin') return 'admin'
+  return 'operador'
+}
 
 function humanizeAuthError(error: unknown) {
   const code = typeof error === 'object' && error && 'code' in error ? String((error as { code?: string }).code) : ''
@@ -130,7 +137,7 @@ function LoginScreen() {
         <section className="auth-card">
           <span className="eyebrow">Acesso ao sistema</span>
           <h2>{mode === 'login' ? 'Entrar' : 'Solicitar acesso'}</h2>
-          <p className="auth-helper">{mode === 'login' ? 'Utilize seu e-mail corporativo ou sua conta Google.' : 'Novos cadastros ficam aguardando liberação administrativa.'}</p>
+          <p className="auth-helper">{mode === 'login' ? 'Utilize seu e-mail corporativo ou sua conta Google.' : 'Novos cadastros ficam como Operador Pendente até a liberação do Administrador Master.'}</p>
           <form onSubmit={submit} className="auth-form">
             {mode === 'register' && <label><span>Nome</span><input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" /></label>}
             <label><span>E-mail</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
@@ -149,13 +156,13 @@ function LoginScreen() {
 
 function PendingScreen() {
   const { profile, logout } = useAuth()
-  return <div className="auth-page"><section className="pending-card"><UserRoundCheck size={42} /><span className="eyebrow">Cadastro recebido</span><h1>Aguardando liberação</h1><p>Seu cadastro foi criado, mas ainda precisa ser ativado por um administrador do sistema.</p><strong>{profile?.email}</strong><button className="secondary-button" type="button" onClick={logout}><LogOut size={18} /> Sair</button></section></div>
+  return <div className="auth-page"><section className="pending-card"><UserRoundCheck size={42} /><span className="eyebrow">Cadastro recebido</span><h1>Aguardando liberação</h1><p>Seu cadastro foi criado como Operador, mas ainda precisa ser ativado pelo Administrador Master.</p><strong>{profile?.email}</strong><button className="secondary-button" type="button" onClick={logout}><LogOut size={18} /> Sair</button></section></div>
 }
 
 function Configuracoes() {
   return (
     <>
-      <div className="page-heading"><div><span className="eyebrow">Administração</span><h1>Configurações</h1><p>Dados institucionais utilizados pelo aplicativo.</p></div></div>
+      <div className="page-heading"><div><span className="eyebrow">Administração Master</span><h1>Configurações</h1><p>Dados institucionais utilizados pelo aplicativo.</p></div></div>
       <section className="page-card"><span className="eyebrow">Dados institucionais</span><h2>Configurações do Aplicativo</h2><p>Cadastro utilizado nos demonstrativos, relatórios e documentos gerados pelo sistema.</p><div className="settings-grid"><label><span>Razão Social</span><input value={companyData.razaoSocial} readOnly /></label><label><span>CNPJ</span><input value={companyData.cnpj} readOnly /></label><label className="settings-full-width"><span>Endereço</span><input value={companyData.endereco} readOnly /></label></div></section>
     </>
   )
@@ -163,8 +170,8 @@ function Configuracoes() {
 
 function AppShell() {
   const { profile, logout } = useAuth()
-  const role = profile?.role ?? 'consulta'
-  const visibleMenu = menu.filter((item) => !item.roles || item.roles.includes(role))
+  const accessRole = accessRoleFromUserRole(profile?.role)
+  const visibleMenu = menu.filter((item) => !item.roles || item.roles.includes(accessRole))
 
   return (
     <div className="app-shell">
