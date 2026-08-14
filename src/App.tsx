@@ -3,6 +3,7 @@ import {
   BookOpenCheck,
   Calculator,
   CircleDollarSign,
+  FileCheck2,
   FileText,
   FolderArchive,
   LayoutDashboard,
@@ -60,7 +61,7 @@ const menu: MenuItem[] = [
   { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'admin', 'tesouraria'] },
   { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'admin', 'alvaras'] },
   { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'admin', 'tesouraria'] },
-  { to: '/aprovacoes', label: 'Aprovações', icon: ShieldCheck, roles: ['master', 'admin', 'diretoria'] },
+  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'admin', 'diretoria'] },
   { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'admin', 'contabilidade', 'tesouraria'] },
   { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'admin', 'contabilidade'] },
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive },
@@ -77,6 +78,10 @@ function humanizeAuthError(error: unknown) {
   if (code.includes('popup-closed-by-user')) return 'A janela do Google foi fechada antes de concluir o acesso.'
   if (code.includes('popup-blocked')) return 'O navegador bloqueou a janela de login do Google.'
   return 'Não foi possível concluir o acesso. Tente novamente.'
+}
+
+function GoogleMark() {
+  return <svg className="google-logo-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.35 12.04c0-.64-.06-1.25-.16-1.84H12v3.48h5.25a4.49 4.49 0 0 1-1.95 2.94v2.44h3.16c1.85-1.7 2.89-4.21 2.89-7.02Z"/><path fill="#34A853" d="M12 21.5c2.64 0 4.86-.87 6.48-2.37l-3.16-2.44c-.88.59-2 .94-3.32.94-2.55 0-4.71-1.72-5.49-4.04H3.25v2.53A9.79 9.79 0 0 0 12 21.5Z"/><path fill="#FBBC05" d="M6.51 13.59a5.88 5.88 0 0 1 0-3.76V7.3H3.25a9.5 9.5 0 0 0 0 8.82l3.26-2.53Z"/><path fill="#EA4335" d="M12 5.79c1.44 0 2.73.5 3.75 1.47l2.81-2.81A9.43 9.43 0 0 0 3.25 7.3l3.26 2.53C7.29 7.51 9.45 5.79 12 5.79Z"/></svg>
 }
 
 function LoadingScreen() {
@@ -129,11 +134,7 @@ function LoginScreen() {
     <div className="auth-page">
       <div className="auth-layout">
         <section className="auth-brand-panel">
-          <img src="/logo-fm.jpg" alt="Flávio Marques Advogados Associados" />
-          <div className="auth-brand-fallback">
-            <strong>FLÁVIO MARQUES</strong>
-            <span>ADVOGADOS ASSOCIADOS</span>
-          </div>
+          <img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" />
           <h1>Controle de Despesas e Receitas</h1>
           <p>Gestão financeira, documental, aprovações e movimentação contábil em um único ambiente.</p>
         </section>
@@ -174,7 +175,7 @@ function LoginScreen() {
           <div className="auth-divider"><span>ou</span></div>
 
           <button className="google-button" type="button" onClick={googleLogin} disabled={busy}>
-            <span className="google-mark">G</span>
+            <GoogleMark />
             Continuar com Google
           </button>
 
@@ -242,7 +243,7 @@ function AppShell() {
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-logo-only">
-            <img src="/logo-fm.jpg" alt="Flávio Marques Advogados Associados" />
+            <img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" />
           </div>
           <div className="app-name">Controle de Despesas e Receitas</div>
         </div>
