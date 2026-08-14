@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="80 240 1120 250" role="img" aria-labelledby="title desc">
   <title id="title">Flávio Marques Advogados Associados</title>
   <desc id="desc">Logomarca com quadrado azul à esquerda e o nome Flávio Marques Advogados Associados.</desc>
   <defs>
@@ -8,7 +8,7 @@
       <stop offset="1" stop-color="#e8f9fe"/>
     </linearGradient>
   </defs>
-  <rect width="1280" height="720" fill="#ffffff"/>
+  <rect x="80" y="240" width="1120" height="250" fill="#ffffff"/>
   <rect x="122" y="281" width="183" height="159" fill="url(#blue)" stroke="#1caed9" stroke-width="2"/>
   <text x="336" y="357" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" letter-spacing="2" fill="#000000">FLÁVIO MARQUES</text>
   <text x="403" y="410" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="500" letter-spacing="8" fill="#000000">ADVOGADOS ASSOCIADOS</text>
