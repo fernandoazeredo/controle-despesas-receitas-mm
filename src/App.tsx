@@ -22,12 +22,12 @@ import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
 import { AuditPage, DocumentsPage, TreasuryPage } from './pages/SystemPages'
 import { AccountingPageFixed } from './pages/FixedPages'
-import { UsersPageReview } from './pages/ReviewFixPages'
 import { ExpensesPageIntegrated, ReceivablesPageIntegrated } from './pages/FinanceEntryPages'
 import { AccountsPageOfficial } from './pages/AccountsPageOfficial'
 import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
 import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
+import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
 import { WorkflowStatusEnhancer } from './components/WorkflowStatusEnhancer'
 import './system.css'
 import './fixes.css'
@@ -35,6 +35,7 @@ import './review-fixes.css'
 import './accounts-official.css'
 import './enhancements.css'
 import './account-selector.css'
+import './admin-tools.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -184,7 +185,7 @@ function AppShell() {
           <Route path="/plano-contas" element={<AccountsPageOfficial />} />
           <Route path="/contabilidade" element={<AccountingPageFixed />} />
           <Route path="/documentos" element={<DocumentsPage />} />
-          <Route path="/usuarios" element={<UsersPageReview />} />
+          <Route path="/usuarios" element={<UsersPageKitFernando />} />
           <Route path="/auditoria" element={<AuditPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/dicas" element={<TipsPageEnhanced />} />
