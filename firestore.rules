@@ -39,6 +39,17 @@ service cloud.firestore {
       return activeUser() && currentUser().data.role in roles;
     }
 
+    // Janela temporária de restauração criada exclusivamente pelo Fernando.
+    // Não depende do documento users durante a restauração, pois o próprio
+    // backup pode regravar essa coleção. A autorização usa o e-mail autenticado,
+    // o UID da sessão e um prazo curto definido no systemControl/restore.
+    function masterRestoreMode() {
+      return isPrimaryAdminEmail()
+        && exists(/databases/$(database)/documents/systemControl/restore)
+        && get(/databases/$(database)/documents/systemControl/restore).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/systemControl/restore).data.expiresAt > request.time;
+    }
+
     function validSelfRegistration(userId) {
       return signedIn()
         && request.auth.uid == userId
@@ -126,14 +137,19 @@ service cloud.firestore {
         );
     }
 
+    match /systemControl/{document=**} {
+      allow read, create, update, delete: if isPrimaryAdminEmail();
+    }
+
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || hasRole(['master']));
-      allow create: if validSelfRegistration(userId);
+      allow create: if validSelfRegistration(userId) || masterRestoreMode();
       allow update: if signedIn() && (
         (request.auth.uid == userId && safeSelfUpdate())
         || hasRole(['master'])
+        || masterRestoreMode()
       );
-      allow delete: if hasRole(['master']) && request.auth.uid != userId;
+      allow delete: if (hasRole(['master']) && request.auth.uid != userId) || masterRestoreMode();
     }
 
     match /userInvites/{document=**} {
@@ -142,12 +158,16 @@ service cloud.firestore {
 
     match /expenses/{document=**} {
       allow read: if activeUser();
-      allow create: if hasRole(['master', 'gerente', 'tesouraria', 'operador'])
-        && request.resource.data.status in ['rascunho', 'enviado_aprovacao'];
-      allow update: if directorExpenseDecision()
+      allow create: if masterRestoreMode() || (
+        hasRole(['master', 'gerente', 'tesouraria', 'operador'])
+        && request.resource.data.status in ['rascunho', 'enviado_aprovacao']
+      );
+      allow update: if masterRestoreMode()
+        || directorExpenseDecision()
         || operationalExpenseUpdate()
         || treasuryExpenseClose();
-      allow delete: if hasRole(['master'])
+      allow delete: if masterRestoreMode()
+        || hasRole(['master'])
         || (hasRole(['gerente', 'tesouraria', 'operador'])
           && resource.data.status == 'rascunho'
           && resource.data.createdBy == request.auth.uid);
@@ -155,10 +175,12 @@ service cloud.firestore {
 
     match /receivables/{document=**} {
       allow read: if activeUser();
-      allow create: if hasRole(['master', 'gerente', 'operador'])
-        && request.resource.data.status in ['rascunho', 'enviado_tesouraria'];
-      allow update: if originReceivableUpdate() || treasuryReceivableUpdate();
-      allow delete: if hasRole(['master']);
+      allow create: if masterRestoreMode() || (
+        hasRole(['master', 'gerente', 'operador'])
+        && request.resource.data.status in ['rascunho', 'enviado_tesouraria']
+      );
+      allow update: if masterRestoreMode() || originReceivableUpdate() || treasuryReceivableUpdate();
+      allow delete: if masterRestoreMode() || hasRole(['master']);
     }
 
     match /approvals/{document=**} {
@@ -169,38 +191,38 @@ service cloud.firestore {
 
     match /chartOfAccounts/{document=**} {
       allow read: if activeUser();
-      allow write: if isPrimaryAdminEmail() && hasRole(['master']);
+      allow write: if masterRestoreMode() || (isPrimaryAdminEmail() && hasRole(['master']));
     }
 
     match /accountingDispatches/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
-      allow create: if hasRole(['master', 'gerente', 'tesouraria']);
-      allow update, delete: if hasRole(['master']);
+      allow create: if masterRestoreMode() || hasRole(['master', 'gerente', 'tesouraria']);
+      allow update, delete: if masterRestoreMode() || hasRole(['master']);
     }
 
     // Coleção antiga mantida apenas para compatibilidade/limpeza de registros já existentes.
     match /accountingPackages/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
-      allow create: if false;
-      allow update, delete: if hasRole(['master']);
+      allow create: if masterRestoreMode();
+      allow update, delete: if masterRestoreMode() || hasRole(['master']);
     }
 
     match /bankStatements/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
-      allow create, update: if hasRole(['master', 'gerente', 'tesouraria']);
-      allow delete: if hasRole(['master', 'gerente', 'tesouraria']);
+      allow create, update: if masterRestoreMode() || hasRole(['master', 'gerente', 'tesouraria']);
+      allow delete: if masterRestoreMode() || hasRole(['master', 'gerente', 'tesouraria']);
     }
 
     match /auditLogs/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente']);
-      allow create: if activeUser();
-      allow update: if false;
-      allow delete: if isPrimaryAdminEmail() && hasRole(['master']);
+      allow create: if masterRestoreMode() || activeUser();
+      allow update: if masterRestoreMode();
+      allow delete: if masterRestoreMode() || (isPrimaryAdminEmail() && hasRole(['master']));
     }
 
     match /settings/{document=**} {
       allow read: if activeUser();
-      allow write: if hasRole(['master']);
+      allow write: if masterRestoreMode() || hasRole(['master']);
     }
   }
 }
