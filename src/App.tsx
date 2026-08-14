@@ -21,20 +21,23 @@ import {
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
 import {
-  AccountingPage,
   AccountsPage,
   ApprovalsPage,
   AuditPage,
   DashboardPage,
   DocumentsPage,
-  ExpensesPage,
   HowToPage,
-  ReceivablesPage,
   TipsPage,
   TreasuryPage,
-  UsersPage,
 } from './pages/SystemPages'
+import {
+  AccountingPageFixed,
+  ExpensesPageFixed,
+  ReceivablesPageFixed,
+  UsersPageFixed,
+} from './pages/FixedPages'
 import './system.css'
+import './fixes.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -269,14 +272,14 @@ function AppShell() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/despesas" element={<ExpensesPage />} />
-          <Route path="/alvaras" element={<ReceivablesPage />} />
+          <Route path="/despesas" element={<ExpensesPageFixed />} />
+          <Route path="/alvaras" element={<ReceivablesPageFixed />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPage />} />
           <Route path="/plano-contas" element={<AccountsPage />} />
-          <Route path="/contabilidade" element={<AccountingPage />} />
+          <Route path="/contabilidade" element={<AccountingPageFixed />} />
           <Route path="/documentos" element={<DocumentsPage />} />
-          <Route path="/usuarios" element={<UsersPage />} />
+          <Route path="/usuarios" element={<UsersPageFixed />} />
           <Route path="/auditoria" element={<AuditPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/dicas" element={<TipsPage />} />
