@@ -52,6 +52,11 @@ service cloud.firestore {
       allow delete: if hasRole(['master']) && request.auth.uid != userId;
     }
 
+    match /userInvites/{document=**} {
+      allow read, create, update: if hasRole(['master', 'admin']);
+      allow delete: if hasRole(['master']);
+    }
+
     match /expenses/{document=**} {
       allow read: if activeUser();
       allow create, update: if hasRole(['master', 'admin', 'tesouraria']);
