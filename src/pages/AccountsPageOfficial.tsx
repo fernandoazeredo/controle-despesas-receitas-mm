@@ -67,14 +67,14 @@ function parseTxt(text: string): ChartOfAccount[] {
   if (rows.length < 10) throw new Error('O TXT não contém um Plano de Contas válido ou está incompleto.')
 
   const codeSet = new Set(rows.map((item) => item.code))
-  return rows.map((item) => {
+  return rows.map((item): ChartOfAccount => {
     const parts = item.code.split('.')
     let parentCode: string | null = null
     for (let size = parts.length - 1; size >= 2; size -= 1) {
       const candidate = parts.slice(0, size).join('.')
       if (codeSet.has(candidate)) { parentCode = candidate; break }
     }
-    const kind = rows.some((candidate) => candidate.code.startsWith(`${item.code}.`)) ? 'group' : 'account'
+    const kind: ChartOfAccount['kind'] = rows.some((candidate) => candidate.code.startsWith(`${item.code}.`)) ? 'group' : 'account'
     return {
       code: item.code,
       name: item.name,
