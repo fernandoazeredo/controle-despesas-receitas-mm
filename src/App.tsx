@@ -44,7 +44,7 @@ const companyData = {
   endereco: 'Rua México, 21 / 1102 – Centro – Rio de Janeiro – RJ',
 }
 
-type AccessRole = 'master' | 'admin' | 'operador'
+type AccessRole = 'master' | 'diretor' | 'gerente' | 'tesouraria' | 'operador'
 type MenuItem = {
   to: string
   label: string
@@ -55,21 +55,23 @@ type MenuItem = {
 
 const menu: MenuItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'admin', 'operador'] },
-  { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'admin', 'operador'] },
-  { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'admin', 'operador'] },
-  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'admin'] },
-  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'admin', 'operador'] },
-  { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'admin', 'operador'] },
-  { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'admin', 'operador'] },
+  { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
+  { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
+  { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
+  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'diretor'] },
+  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
+  { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
+  { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master'] },
-  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'admin'] },
+  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'diretor', 'gerente'] },
   { to: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['master'] },
 ]
 
 function accessRoleFromUserRole(role: UserRole | undefined): AccessRole {
   if (role === 'master') return 'master'
-  if (role === 'admin') return 'admin'
+  if (role === 'diretor') return 'diretor'
+  if (role === 'gerente') return 'gerente'
+  if (role === 'tesouraria') return 'tesouraria'
   return 'operador'
 }
 
@@ -137,7 +139,7 @@ function LoginScreen() {
         <section className="auth-card">
           <span className="eyebrow">Acesso ao sistema</span>
           <h2>{mode === 'login' ? 'Entrar' : 'Solicitar acesso'}</h2>
-          <p className="auth-helper">{mode === 'login' ? 'Utilize seu e-mail corporativo ou sua conta Google.' : 'Novos cadastros ficam como Operador Pendente até a liberação do Administrador Master.'}</p>
+          <p className="auth-helper">{mode === 'login' ? 'Utilize seu e-mail corporativo ou sua conta Google.' : 'Todo novo cadastro fica Pendente até a liberação do Administrador Master.'}</p>
           <form onSubmit={submit} className="auth-form">
             {mode === 'register' && <label><span>Nome</span><input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" /></label>}
             <label><span>E-mail</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
@@ -156,7 +158,7 @@ function LoginScreen() {
 
 function PendingScreen() {
   const { profile, logout } = useAuth()
-  return <div className="auth-page"><section className="pending-card"><UserRoundCheck size={42} /><span className="eyebrow">Cadastro recebido</span><h1>Aguardando liberação</h1><p>Seu cadastro foi criado como Operador, mas ainda precisa ser ativado pelo Administrador Master.</p><strong>{profile?.email}</strong><button className="secondary-button" type="button" onClick={logout}><LogOut size={18} /> Sair</button></section></div>
+  return <div className="auth-page"><section className="pending-card"><UserRoundCheck size={42} /><span className="eyebrow">Cadastro recebido</span><h1>Aguardando liberação</h1><p>Seu cadastro foi criado, mas ainda precisa ser ativado pelo Administrador Master.</p><strong>{profile?.email}</strong><button className="secondary-button" type="button" onClick={logout}><LogOut size={18} /> Sair</button></section></div>
 }
 
 function Configuracoes() {
