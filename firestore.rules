@@ -162,7 +162,7 @@ service cloud.firestore {
     }
 
     match /approvals/{document=**} {
-      allow read: if hasRole(['master', 'diretor']);
+      allow read: if activeUser();
       allow create, update: if isDirectorEmail() && hasRole(['diretor']);
       allow delete: if hasRole(['master']);
     }
@@ -178,16 +178,24 @@ service cloud.firestore {
       allow update, delete: if hasRole(['master']);
     }
 
+    // Coleção antiga mantida apenas para compatibilidade/limpeza de registros já existentes.
     match /accountingPackages/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
-      allow create: if hasRole(['master', 'gerente', 'tesouraria']);
+      allow create: if false;
       allow update, delete: if hasRole(['master']);
+    }
+
+    match /bankStatements/{document=**} {
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow create, update: if hasRole(['master', 'gerente', 'tesouraria']);
+      allow delete: if hasRole(['master', 'gerente', 'tesouraria']);
     }
 
     match /auditLogs/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente']);
       allow create: if activeUser();
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if isPrimaryAdminEmail() && hasRole(['master']);
     }
 
     match /settings/{document=**} {
