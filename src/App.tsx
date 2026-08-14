@@ -21,7 +21,6 @@ import {
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
 import {
-  AccountsPage,
   AuditPage,
   DocumentsPage,
   HowToPage,
@@ -36,9 +35,11 @@ import {
   ReceivablesPageReview,
   UsersPageReview,
 } from './pages/ReviewFixPages'
+import { AccountsPageOfficial } from './pages/AccountsPageOfficial'
 import './system.css'
 import './fixes.css'
 import './review-fixes.css'
+import './accounts-official.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -277,7 +278,7 @@ function AppShell() {
           <Route path="/alvaras" element={<ReceivablesPageReview />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageReview />} />
-          <Route path="/plano-contas" element={<AccountsPage />} />
+          <Route path="/plano-contas" element={<AccountsPageOfficial />} />
           <Route path="/contabilidade" element={<AccountingPageFixed />} />
           <Route path="/documentos" element={<DocumentsPage />} />
           <Route path="/usuarios" element={<UsersPageReview />} />
