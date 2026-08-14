@@ -52,13 +52,14 @@ if (-not (Test-Path '.\dist\index.html')) {
   throw 'dist\index.html nao encontrado. Deploy cancelado por seguranca.'
 }
 
-Write-Host '3/3 - Publicando no projeto Firebase isolado...' -ForegroundColor Yellow
+Write-Host '3/3 - Publicando Firestore, Storage e Hosting no projeto Firebase isolado...' -ForegroundColor Yellow
 Write-Host "Projeto fixado por parametro: $ProjectId" -ForegroundColor DarkCyan
-firebase deploy --only firestore:rules,firestore:indexes,hosting --project $ProjectId --non-interactive
-if ($LASTEXITCODE -ne 0) { throw 'Falha no deploy Firebase.' }
+firebase deploy --only firestore:rules,firestore:indexes,storage,hosting --project $ProjectId --non-interactive
+if ($LASTEXITCODE -ne 0) {
+  throw 'Falha no deploy Firebase. Se o erro mencionar Storage/bucket, abra Firebase Console > Storage e conclua a criacao do bucket deste projeto antes de repetir o deploy.'
+}
 
 Write-Host ''
 Write-Host 'DEPLOY CONCLUIDO COM SUCESSO.' -ForegroundColor Green
 Write-Host "Hosting esperado: https://$ProjectId.web.app" -ForegroundColor Green
-Write-Host ''
-Write-Host 'Observacao: Storage permanece fora deste deploy ate a ativacao do plano Blaze.' -ForegroundColor DarkYellow
+Write-Host 'Firestore + Storage + Hosting publicados no mesmo projeto isolado.' -ForegroundColor Green
