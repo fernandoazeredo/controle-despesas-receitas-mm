@@ -3,7 +3,6 @@ import {
   BookOpenCheck,
   Calculator,
   CircleDollarSign,
-  FileCheck2,
   FileText,
   FolderArchive,
   LayoutDashboard,
@@ -23,23 +22,24 @@ import { useAuth, type UserRole } from './auth/AuthContext'
 import {
   AuditPage,
   DocumentsPage,
-  HowToPage,
-  TipsPage,
   TreasuryPage,
 } from './pages/SystemPages'
 import { AccountingPageFixed } from './pages/FixedPages'
 import {
-  ApprovalsPageReview,
-  DashboardPageReview,
   ExpensesPageReview,
   ReceivablesPageReview,
   UsersPageReview,
 } from './pages/ReviewFixPages'
 import { AccountsPageOfficial } from './pages/AccountsPageOfficial'
+import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
+import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
+import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
+import { WorkflowStatusEnhancer } from './components/WorkflowStatusEnhancer'
 import './system.css'
 import './fixes.css'
 import './review-fixes.css'
 import './accounts-official.css'
+import './enhancements.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -60,7 +60,7 @@ const menu: MenuItem[] = [
   { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'admin', 'tesouraria'] },
   { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'admin', 'alvaras'] },
   { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'admin', 'tesouraria'] },
-  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'admin', 'diretoria'] },
+  { to: '/aprovacoes', label: 'Aprovações', icon: ShieldCheck, roles: ['master', 'admin', 'diretoria'] },
   { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'admin', 'contabilidade', 'tesouraria'] },
   { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'admin', 'contabilidade'] },
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive },
@@ -238,12 +238,11 @@ function AppShell() {
 
   return (
     <div className="app-shell">
+      <WorkflowStatusEnhancer />
       <aside className="sidebar">
         <div className="brand">
-          <img src="/logo-fm.jpg" alt="Flávio Marques Advogados Associados" onError={(e) => { e.currentTarget.style.display = 'none' }} />
-          <div className="brand-fallback">
-            <strong>FLÁVIO MARQUES</strong>
-            <span>ADVOGADOS ASSOCIADOS</span>
+          <div className="brand-logo-only">
+            <img src="/logo-fm.jpg" alt="Flávio Marques Advogados Associados" />
           </div>
           <div className="app-name">Controle de Despesas e Receitas</div>
         </div>
@@ -273,19 +272,19 @@ function AppShell() {
 
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<DashboardPageReview />} />
+          <Route path="/" element={<DashboardPageEnhanced />} />
           <Route path="/despesas" element={<ExpensesPageReview />} />
           <Route path="/alvaras" element={<ReceivablesPageReview />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
-          <Route path="/aprovacoes" element={<ApprovalsPageReview />} />
+          <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
           <Route path="/plano-contas" element={<AccountsPageOfficial />} />
           <Route path="/contabilidade" element={<AccountingPageFixed />} />
           <Route path="/documentos" element={<DocumentsPage />} />
           <Route path="/usuarios" element={<UsersPageReview />} />
           <Route path="/auditoria" element={<AuditPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/dicas" element={<TipsPage />} />
-          <Route path="/como-usar" element={<HowToPage />} />
+          <Route path="/dicas" element={<TipsPageEnhanced />} />
+          <Route path="/como-usar" element={<HowToPageEnhanced />} />
         </Routes>
       </main>
     </div>
