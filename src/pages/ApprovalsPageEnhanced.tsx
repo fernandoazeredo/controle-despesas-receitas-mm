@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, BadgeCheck, Eye, FileCheck2, X } from 'lucide-react'
 import { addDoc, collection, doc, onSnapshot, serverTimestamp, updateDoc, type DocumentData } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { DIRECTOR_EMAIL, useAuth } from '../auth/AuthContext'
+import { DIRECTOR_EMAIL, PRIMARY_ADMIN_EMAIL, useAuth } from '../auth/AuthContext'
 import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -43,6 +43,8 @@ export function ApprovalsPageEnhanced() {
   const { profile } = useAuth()
   const email = profile?.email?.trim().toLowerCase() ?? ''
   const isDirector = email === DIRECTOR_EMAIL && profile?.role === 'diretor'
+  const isMasterTester = email === PRIMARY_ADMIN_EMAIL && profile?.role === 'master'
+  const canDecide = isDirector || isMasterTester
   const records = useExpenses()
   const queue = records.filter((item) => ['enviado_aprovacao', 'em_analise'].includes(item.status))
   const [decision, setDecision] = useState<{ item: AnyRecord; status: DecisionStatus } | null>(null)
@@ -50,7 +52,7 @@ export function ApprovalsPageEnhanced() {
   const [busy, setBusy] = useState(false)
 
   async function approve(item: AnyRecord) {
-    if (!isDirector) return
+    if (!canDecide) return
     setBusy(true)
     try {
       await updateDoc(doc(db, 'expenses', item.id), {
@@ -63,14 +65,15 @@ export function ApprovalsPageEnhanced() {
         approvedAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
-      await writeAudit(profile, 'Despesa: Aprovado', `${item.nome ?? 'Despesa'} — ${money.format(Number(item.valorTotal ?? 0))} — Autorizado por Flávio Marques`, item.id)
+      const actor = profile?.displayName || profile?.email || 'Usuário autorizado'
+      await writeAudit(profile, 'Despesa: Aprovado', `${item.nome ?? 'Despesa'} — ${money.format(Number(item.valorTotal ?? 0))} — Autorizado por ${actor}`, item.id)
     } finally {
       setBusy(false)
     }
   }
 
   async function confirmDecision() {
-    if (!isDirector || !decision || !reason.trim()) return
+    if (!canDecide || !decision || !reason.trim()) return
     setBusy(true)
     try {
       const label = expenseStatusLabels[decision.status]
@@ -93,18 +96,19 @@ export function ApprovalsPageEnhanced() {
   }
 
   function openDecision(item: AnyRecord, status: DecisionStatus) {
-    if (!isDirector) return
+    if (!canDecide) return
     setReason('')
     setDecision({ item, status })
   }
 
   return <>
-    <div className="page-heading"><div><span className="eyebrow">Fluxo de aprovação</span><h1>Aprovações</h1><p>Todos os colaboradores ativos podem acompanhar a fila e o andamento das despesas. A autorização financeira permanece exclusiva do Diretor Flávio Marques.</p></div></div>
-    {!isDirector && <div className="warning-box"><Eye size={18} /><span><strong>Modo consulta:</strong> você pode acompanhar todos os itens da fila de aprovação, mas não pode Aprovar, Devolver ou Rejeitar.</span></div>}
+    <div className="page-heading"><div><span className="eyebrow">Fluxo de aprovação</span><h1>Aprovações</h1><p>Todos os colaboradores ativos podem acompanhar a fila. O Diretor Flávio Marques permanece como autorizador oficial; o Administrador Master Fernando possui as mesmas ações para testes e homologação do sistema.</p></div></div>
+    {!canDecide && <div className="warning-box"><Eye size={18} /><span><strong>Modo consulta:</strong> você pode acompanhar todos os itens da fila de aprovação, mas não pode Aprovar, Devolver ou Rejeitar.</span></div>}
+    {isMasterTester && <div className="warning-box"><BadgeCheck size={18} /><span><strong>Modo Master de homologação:</strong> você pode Aprovar, Devolver e Rejeitar para testar integralmente o fluxo. Todas as decisões ficam registradas na Auditoria com seu usuário.</span></div>}
     <section className="page-card module-card approval-card">
-      {queue.length === 0 ? <div className="module-empty"><FileCheck2 size={34} /><strong>Nenhuma aprovação pendente</strong><span>As despesas enviadas ou reenviadas pela operação aparecerão nesta fila.</span></div> : <div className="approval-list">{queue.map((item) => <article className="approval-item" key={item.id}><div><WorkflowStatusBadge status={item.status} label={expenseStatusLabels[item.status] || item.status} /><h3>{item.nome || 'Demonstrativo de despesa'}</h3><p>{item.fornecedor || 'Sem fornecedor informado'} · {item.competencia || 'Sem competência'} · {item.categoria || 'Sem categoria'}</p></div><strong className="expense-text">{money.format(Number(item.valorTotal ?? 0))}</strong>{isDirector ? <div className="row-actions"><button className="small-success-button" disabled={busy} onClick={() => approve(item)}><BadgeCheck size={15} /> Aprovar</button><button className="small-neutral-button" disabled={busy} onClick={() => openDecision(item, 'devolvido')}>Devolver</button><button className="small-expense-button" disabled={busy} onClick={() => openDecision(item, 'rejeitado')}>Rejeitar</button></div> : <div className="row-actions"><span className="status-badge neutral">Somente consulta</span></div>}</article>)}</div>}
+      {queue.length === 0 ? <div className="module-empty"><FileCheck2 size={34} /><strong>Nenhuma aprovação pendente</strong><span>As despesas enviadas ou reenviadas pela operação aparecerão nesta fila.</span></div> : <div className="approval-list">{queue.map((item) => <article className="approval-item" key={item.id}><div><WorkflowStatusBadge status={item.status} label={expenseStatusLabels[item.status] || item.status} /><h3>{item.nome || 'Demonstrativo de despesa'}</h3><p>{item.fornecedor || 'Sem fornecedor informado'} · {item.competencia || 'Sem competência'} · {item.categoria || 'Sem categoria'}</p></div><strong className="expense-text">{money.format(Number(item.valorTotal ?? 0))}</strong>{canDecide ? <div className="row-actions"><button className="small-success-button" disabled={busy} onClick={() => approve(item)}><BadgeCheck size={15} /> Aprovar</button><button className="small-neutral-button" disabled={busy} onClick={() => openDecision(item, 'devolvido')}>Devolver</button><button className="small-expense-button" disabled={busy} onClick={() => openDecision(item, 'rejeitado')}>Rejeitar</button></div> : <div className="row-actions"><span className="status-badge neutral">Somente consulta</span></div>}</article>)}</div>}
     </section>
 
-    {decision && isDirector && <div className="modal-backdrop"><section className={`decision-modal ${decision.status}`} role="dialog" aria-modal="true"><div className="modal-toolbar"><div><span className="eyebrow">Diretor autorizador</span><h2>{decision.status === 'devolvido' ? 'Devolver para correção' : 'Rejeitar despesa'}</h2></div><button className="icon-button" type="button" onClick={() => setDecision(null)}><X size={20} /></button></div><div className="decision-warning"><AlertTriangle size={20} /><div><strong>{decision.item.nome || 'Despesa'}</strong><span>{money.format(Number(decision.item.valorTotal ?? 0))}</span></div></div><label className="decision-reason"><span>{decision.status === 'devolvido' ? 'O que precisa ser corrigido?' : 'Justificativa da rejeição'}</span><textarea rows={5} autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Digite o motivo completo. Ele ficará registrado na Auditoria." /></label><div className="modal-actions"><button className="secondary-button" type="button" onClick={() => setDecision(null)}>Cancelar</button><button className={decision.status === 'rejeitado' ? 'expense-button' : 'warning-action-button'} type="button" disabled={busy || !reason.trim()} onClick={confirmDecision}>{busy ? 'Registrando...' : decision.status === 'devolvido' ? 'Confirmar devolução' : 'Confirmar rejeição'}</button></div></section></div>}
+    {decision && canDecide && <div className="modal-backdrop"><section className={`decision-modal ${decision.status}`} role="dialog" aria-modal="true"><div className="modal-toolbar"><div><span className="eyebrow">{isMasterTester ? 'Administrador Master · Homologação' : 'Diretor autorizador'}</span><h2>{decision.status === 'devolvido' ? 'Devolver para correção' : 'Rejeitar despesa'}</h2></div><button className="icon-button" type="button" onClick={() => setDecision(null)}><X size={20} /></button></div><div className="decision-warning"><AlertTriangle size={20} /><div><strong>{decision.item.nome || 'Despesa'}</strong><span>{money.format(Number(decision.item.valorTotal ?? 0))}</span></div></div><label className="decision-reason"><span>{decision.status === 'devolvido' ? 'O que precisa ser corrigido?' : 'Justificativa da rejeição'}</span><textarea rows={5} autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Digite o motivo completo. Ele ficará registrado na Auditoria." /></label><div className="modal-actions"><button className="secondary-button" type="button" onClick={() => setDecision(null)}>Cancelar</button><button className={decision.status === 'rejeitado' ? 'expense-button' : 'warning-action-button'} type="button" disabled={busy || !reason.trim()} onClick={confirmDecision}>{busy ? 'Registrando...' : decision.status === 'devolvido' ? 'Confirmar devolução' : 'Confirmar rejeição'}</button></div></section></div>}
   </>
 }
