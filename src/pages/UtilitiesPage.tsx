@@ -85,11 +85,13 @@ export function UtilitiesPage() {
   const [confirmWipe, setConfirmWipe] = useState(false)
   const [phrase, setPhrase] = useState('')
 
-  const isMaster = profile?.role === 'master' && profile.email.trim().toLowerCase() === PRIMARY_ADMIN_EMAIL
+  const isMaster = Boolean(profile && profile.role === 'master' && profile.email.trim().toLowerCase() === PRIMARY_ADMIN_EMAIL)
 
-  if (!isMaster) {
+  if (!isMaster || !profile) {
     return <section className="page-card module-empty"><AlertTriangle size={36} /><strong>Acesso restrito</strong><span>Utilitários são exclusivos do Administrador Master.</span></section>
   }
+
+  const masterProfile = profile
 
   async function buildBackup(download = true) {
     const collections: BackupFile['collections'] = {}
@@ -101,7 +103,7 @@ export function UtilitiesPage() {
       app: 'controle-despesas-receitas-mm',
       version: 1,
       createdAt: new Date().toISOString(),
-      createdBy: profile.email,
+      createdBy: masterProfile.email,
       collections,
     }
     if (download) {
@@ -141,8 +143,8 @@ export function UtilitiesPage() {
       }
       await setDoc(doc(db, 'settings', 'lastRestore'), {
         restoredAt: serverTimestamp(),
-        restoredBy: profile.uid,
-        restoredByEmail: profile.email,
+        restoredBy: masterProfile.uid,
+        restoredByEmail: masterProfile.email,
         sourceCreatedAt: parsed.createdAt,
       })
       setMessage('Backup JSON restaurado. Os documentos do Firestore foram regravados com os mesmos IDs.')
@@ -160,7 +162,6 @@ export function UtilitiesPage() {
     setBusy('wipe')
     setMessage('')
     try {
-      // Segurança: antes da limpeza, baixa automaticamente uma cópia JSON.
       await buildBackup(true)
 
       for (const name of WIPE_COLLECTIONS) {
