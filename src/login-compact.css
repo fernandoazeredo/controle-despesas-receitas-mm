@@ -1,0 +1,128 @@
+/* Ajuste de escala do login em desktop: aproximadamente 20% menor para caber em 100% de zoom */
+@media (min-width: 1101px) {
+  .auth-page:has(.auth-layout) {
+    padding: 24px clamp(22px, 3.2vw, 58px) 40px;
+  }
+
+  .auth-page:has(.auth-layout)::after {
+    bottom: 10px;
+    font-size: 10px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-layout {
+    width: min(1184px, 96%);
+    min-height: min(648px, calc(100vh - 64px));
+    grid-template-columns: minmax(0, 1.1fr) minmax(352px, .9fr);
+    gap: clamp(27px, 4vw, 66px);
+  }
+
+  .auth-page:has(.auth-layout) .auth-brand-panel {
+    min-height: 520px;
+    padding: clamp(27px, 4vw, 59px) clamp(10px, 1.6vw, 22px);
+  }
+
+  .auth-page:has(.auth-layout) .auth-brand-panel::before {
+    width: 416px;
+    height: 416px;
+    left: -168px;
+    bottom: -224px;
+    box-shadow:
+      0 0 0 46px rgba(32, 118, 216, .045),
+      0 0 0 93px rgba(32, 118, 216, .035);
+  }
+
+  .auth-page:has(.auth-layout) .auth-brand-panel img {
+    width: min(416px, 88%);
+    max-height: 101px;
+    margin-bottom: 42px;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-brand-panel h1 {
+    max-width: 520px;
+    margin-bottom: 19px;
+    padding-top: 27px;
+    font-size: clamp(37px, 4vw, 58px);
+    line-height: 1.02;
+  }
+
+  .auth-page:has(.auth-layout) .auth-brand-panel h1::before {
+    width: 56px;
+    height: 3px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-brand-panel p {
+    max-width: 448px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .auth-page:has(.auth-layout) .auth-card {
+    width: min(512px, 100%);
+    padding: clamp(30px, 3.6vw, 51px);
+    border-radius: 21px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-card .eyebrow {
+    font-size: 10px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-card h2 {
+    margin: 6px 0 8px;
+    font-size: clamp(30px, 3.2vw, 43px);
+  }
+
+  .auth-page:has(.auth-layout) .auth-helper {
+    margin-bottom: 22px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .auth-page:has(.auth-layout) .auth-form {
+    gap: 14px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-form label {
+    gap: 6px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-form label > span {
+    font-size: 11px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-form input {
+    min-height: 50px;
+    padding: 11px 13px;
+    border-radius: 11px;
+    font-size: 13px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-submit {
+    min-height: 51px;
+    border-radius: 11px;
+    font-size: 13px;
+  }
+
+  .auth-page:has(.auth-layout) .auth-divider {
+    margin: 19px 0;
+  }
+
+  .auth-page:has(.auth-layout) .google-button {
+    min-height: 50px;
+    border-radius: 11px;
+    font-size: 13px;
+  }
+
+  .auth-page:has(.auth-layout) .text-button {
+    margin-top: 18px;
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .auth-page:has(.auth-layout) .google-logo-svg {
+    width: 18px;
+    height: 18px;
+    flex-basis: 18px;
+  }
+}
