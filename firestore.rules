@@ -166,7 +166,7 @@ service cloud.firestore {
 
     match /chartOfAccounts/{document=**} {
       allow read: if activeUser();
-      allow write: if hasRole(['master']);
+      allow write: if isPrimaryAdminEmail() && hasRole(['master']);
     }
 
     match /accountingDispatches/{document=**} {
