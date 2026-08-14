@@ -30,4 +30,9 @@
 .brand-logo-only { display:flex; justify-content:center; align-items:center; padding:0 0 8px; }
 .brand-logo-only img { display:block; width:100%; max-width:205px; height:auto; object-fit:contain; }
 .google-logo-svg { width:21px; height:21px; flex:0 0 21px; }
+.metric-link { text-decoration:none; color:inherit; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.metric-link:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(25,39,52,.10); }
+.metric-link:focus-visible { outline:3px solid rgba(31,158,212,.22); outline-offset:2px; }
+.expense-metric.metric-link:hover { border-color:#e2a3a6; }
+.approval-metric-link:hover { border-color:#9fc3df; }
 @media (max-width:900px){ .enhanced-tips-grid { grid-template-columns:1fr; } }
