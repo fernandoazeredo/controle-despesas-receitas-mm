@@ -40,11 +40,11 @@ if (-not (Test-Path '.\.env')) {
   }
 }
 
-Write-Host '1/4 - Instalando dependencias...' -ForegroundColor Yellow
+Write-Host '1/3 - Instalando dependencias...' -ForegroundColor Yellow
 npm install
 if ($LASTEXITCODE -ne 0) { throw 'Falha no npm install.' }
 
-Write-Host '2/4 - Gerando build de producao...' -ForegroundColor Yellow
+Write-Host '2/3 - Gerando build de producao...' -ForegroundColor Yellow
 npm run build
 if ($LASTEXITCODE -ne 0) { throw 'Falha no build. Deploy cancelado.' }
 
@@ -52,12 +52,9 @@ if (-not (Test-Path '.\dist\index.html')) {
   throw 'dist\index.html nao encontrado. Deploy cancelado por seguranca.'
 }
 
-Write-Host '3/4 - Validando projeto Firebase...' -ForegroundColor Yellow
-firebase use $ProjectId
-if ($LASTEXITCODE -ne 0) { throw 'Nao foi possivel selecionar o projeto Firebase.' }
-
-Write-Host '4/4 - Publicando Firestore e Hosting...' -ForegroundColor Yellow
-firebase deploy --only firestore:rules,firestore:indexes,hosting --project $ProjectId
+Write-Host '3/3 - Publicando no projeto Firebase isolado...' -ForegroundColor Yellow
+Write-Host "Projeto fixado por parametro: $ProjectId" -ForegroundColor DarkCyan
+firebase deploy --only firestore:rules,firestore:indexes,hosting --project $ProjectId --non-interactive
 if ($LASTEXITCODE -ne 0) { throw 'Falha no deploy Firebase.' }
 
 Write-Host ''
