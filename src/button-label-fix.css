@@ -1,0 +1,9 @@
+.page-heading .revenue-button.button-link {
+  font-size: 0;
+}
+
+.page-heading .revenue-button.button-link::after {
+  content: '+ Receita';
+  font-size: 14px;
+  font-weight: 800;
+}
