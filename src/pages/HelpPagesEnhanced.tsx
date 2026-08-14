@@ -63,7 +63,7 @@ export function HowToPageEnhanced() {
     ['6', 'Corrigir uma devolução', 'Em Despesas, localize Devolvido p/ Correção, clique Corrigir e reenviar, faça os ajustes e envie novamente.'],
     ['7', 'Cadastrar uma receita / alvará', 'A área de origem preenche o demonstrativo completo, escolhe uma conta final 3.xx, anexa alvará/acordo e documentos do processo e envia à Tesouraria.'],
     ['8', 'Tratar a receita na Tesouraria', 'A Tesouraria recebe o demonstrativo pronto, confirma o recebimento e encerra a operação depois da conferência do crédito e dos repasses aplicáveis.'],
-    ['9', 'Consultar a Dashboard', 'Receitas ficam em azul, despesas em vermelho e saldo em verde. Somente despesas aprovadas entram no cálculo. Os cards funcionam como atalhos para os módulos.'],
+    ['9', 'Consultar a Dashboard', 'Receitas ficam em azul, despesas em vermelho e saldo em verde. Somente despesas aprovadas entram no cálculo. Os cards Receitas, Despesas e Aguardando Aprovação funcionam como atalhos; Saldo/Resultado é apenas informativo.'],
     ['10', 'Plano de Contas protegido', 'O Plano de Contas correto fica salvo no Firestore e é usado nos seletores dos lançamentos. A página de manutenção é exibida somente para Fernando, Administrador Master.'],
     ['11', 'Gerenciar usuários', 'Cada usuário solicita o próprio cadastro. Fernando visualiza os Pendentes, confere o perfil oficial e altera para Ativo, Inativo ou Bloqueado.'],
     ['12', 'Preparar o fechamento contábil', 'Em Contabilidade, escolha competência, unidade e movimento e anexe o extrato consolidado do banco. O sistema mostra quantas despesas, receitas e documentos estão aptos e sinaliza lançamentos sem anexo.'],
