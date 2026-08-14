@@ -5,20 +5,36 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    function currentUser() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function activeUser() {
+      return signedIn() && currentUser().data.status == 'active';
+    }
+
+    function hasRole(roles) {
+      return activeUser() && currentUser().data.role in roles;
+    }
+
     match /despesas/{userId}/{allPaths=**} {
-      allow read, write: if signedIn();
+      allow read: if activeUser();
+      allow write: if hasRole(['master', 'gerente', 'tesouraria', 'operador']);
     }
 
     match /recebimentos/{userId}/{allPaths=**} {
-      allow read, write: if signedIn();
+      allow read: if activeUser();
+      allow write: if hasRole(['master', 'gerente', 'tesouraria', 'operador']);
     }
 
     match /demonstrativos/{allPaths=**} {
-      allow read, write: if signedIn();
+      allow read: if activeUser();
+      allow write: if hasRole(['master', 'gerente', 'tesouraria', 'operador']);
     }
 
     match /pacotes-contabeis/{allPaths=**} {
-      allow read, write: if signedIn();
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow write: if hasRole(['master', 'gerente', 'tesouraria']);
     }
   }
 }
