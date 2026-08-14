@@ -1,0 +1,18 @@
+.review-expenses-table .data-row { grid-template-columns: 120px 1.3fr 1fr 1fr 130px 160px; }
+.return-note { margin: 16px 0; border: 1px solid #e5b2b4; background: #fff5f5; color: #8e191d; border-radius: 10px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; }
+.return-note div { display: grid; gap: 3px; }
+.return-note span { color: #6f3034; font-size: 12px; line-height: 1.45; }
+.rejected-row strong { color: var(--expense); }
+.muted-dash { color: #99a4af; }
+.user-invite-feedback { margin: -8px 0 16px; border: 1px solid #a9d3b9; background: #f1fbf5; color: #14643a; border-radius: 10px; padding: 11px 13px; font-size: 13px; font-weight: 700; }
+.invites-card { margin-top: 18px; }
+.invite-list { margin-top: 16px; display: grid; }
+.invite-list article { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 13px 0; border-top: 1px solid var(--border); }
+.invite-list article > div { display: grid; gap: 3px; }
+.invite-list article strong { font-size: 14px; }
+.invite-list article span, .invite-list article small { color: var(--muted); font-size: 12px; }
+.invite-modal { width: min(620px, 100%); margin: 40px auto; background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 24px 70px rgba(0,0,0,.25); }
+.invite-modal .form-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) {
+  .review-expenses-table .data-row { min-width: 980px; }
+}
