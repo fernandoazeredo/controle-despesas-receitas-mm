@@ -5,6 +5,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isPrimaryAdminEmail() {
+      return signedIn() && request.auth.token.email == 'fernandoazeredo64@gmail.com';
+    }
+
     function currentUser() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
@@ -17,11 +21,35 @@ service cloud.firestore {
       return activeUser() && currentUser().data.role in roles;
     }
 
+    function validSelfRegistration(userId) {
+      return signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && (
+          (isPrimaryAdminEmail()
+            && request.resource.data.role == 'master'
+            && request.resource.data.status == 'active')
+          ||
+          (!isPrimaryAdminEmail()
+            && request.resource.data.role == 'consulta'
+            && request.resource.data.status == 'pending')
+        );
+    }
+
+    function safeSelfUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['displayName', 'photoURL', 'lastLoginAt']);
+    }
+
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || hasRole(['master', 'admin']));
-      allow create: if signedIn() && request.auth.uid == userId;
-      allow update: if signedIn() && (request.auth.uid == userId || hasRole(['master', 'admin']));
-      allow delete: if hasRole(['master']);
+      allow create: if validSelfRegistration(userId);
+      allow update: if signedIn() && (
+        (request.auth.uid == userId && safeSelfUpdate())
+        || hasRole(['master', 'admin'])
+      );
+      allow delete: if hasRole(['master']) && request.auth.uid != userId;
     }
 
     match /expenses/{document=**} {
