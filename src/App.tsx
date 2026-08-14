@@ -22,22 +22,23 @@ import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
 import {
   AccountsPage,
-  ApprovalsPage,
   AuditPage,
-  DashboardPage,
   DocumentsPage,
   HowToPage,
   TipsPage,
   TreasuryPage,
 } from './pages/SystemPages'
+import { AccountingPageFixed } from './pages/FixedPages'
 import {
-  AccountingPageFixed,
-  ExpensesPageFixed,
-  ReceivablesPageFixed,
-  UsersPageFixed,
-} from './pages/FixedPages'
+  ApprovalsPageReview,
+  DashboardPageReview,
+  ExpensesPageReview,
+  ReceivablesPageReview,
+  UsersPageReview,
+} from './pages/ReviewFixPages'
 import './system.css'
 import './fixes.css'
+import './review-fixes.css'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -271,15 +272,15 @@ function AppShell() {
 
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/despesas" element={<ExpensesPageFixed />} />
-          <Route path="/alvaras" element={<ReceivablesPageFixed />} />
+          <Route path="/" element={<DashboardPageReview />} />
+          <Route path="/despesas" element={<ExpensesPageReview />} />
+          <Route path="/alvaras" element={<ReceivablesPageReview />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
-          <Route path="/aprovacoes" element={<ApprovalsPage />} />
+          <Route path="/aprovacoes" element={<ApprovalsPageReview />} />
           <Route path="/plano-contas" element={<AccountsPage />} />
           <Route path="/contabilidade" element={<AccountingPageFixed />} />
           <Route path="/documentos" element={<DocumentsPage />} />
-          <Route path="/usuarios" element={<UsersPageFixed />} />
+          <Route path="/usuarios" element={<UsersPageReview />} />
           <Route path="/auditoria" element={<AuditPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/dicas" element={<TipsPage />} />
