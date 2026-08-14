@@ -19,12 +19,16 @@ service firebase.storage {
 
     match /despesas/{userId}/{allPaths=**} {
       allow read: if activeUser();
-      allow write: if hasRole(['master', 'gerente', 'tesouraria', 'operador']);
+      allow write: if activeUser()
+        && request.auth.uid == userId
+        && hasRole(['master', 'gerente', 'tesouraria', 'operador']);
     }
 
     match /recebimentos/{userId}/{allPaths=**} {
       allow read: if activeUser();
-      allow write: if hasRole(['master', 'gerente', 'tesouraria', 'operador']);
+      allow write: if activeUser()
+        && request.auth.uid == userId
+        && hasRole(['master', 'gerente', 'tesouraria', 'operador']);
     }
 
     match /demonstrativos/{allPaths=**} {
