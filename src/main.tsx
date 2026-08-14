@@ -6,6 +6,7 @@ import { AuthProvider } from './auth/AuthContext'
 import './styles.css'
 import './button-label-fix.css'
 import './workflow-additions.css'
+import './login-compact.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
