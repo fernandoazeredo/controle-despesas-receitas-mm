@@ -130,28 +130,49 @@ export function UtilitiesPage() {
   async function restoreFile(file: File) {
     setBusy('restore')
     setMessage('')
+    const restoreControl = doc(db, 'systemControl', 'restore')
+    let restoreWindowOpened = false
+
     try {
       const parsed = JSON.parse(await file.text()) as BackupFile
       if (parsed.app !== 'controle-despesas-receitas-mm' || parsed.version !== 1 || !parsed.collections) {
         throw new Error('Arquivo de backup incompatível com este sistema.')
       }
+
+      // Abre uma janela curta e exclusiva para o Fernando restaurar estados que,
+      // no uso normal, são propositalmente imutáveis (ex.: aprovados e auditoria).
+      await setDoc(restoreControl, {
+        uid: masterProfile.uid,
+        email: masterProfile.email,
+        startedAt: serverTimestamp(),
+        expiresAt: Timestamp.fromMillis(Date.now() + 10 * 60 * 1000),
+      })
+      restoreWindowOpened = true
+
       for (const name of BACKUP_COLLECTIONS) {
         const rows = parsed.collections[name] ?? []
         for (const row of rows) {
+          // O perfil autenticado do Fernando é preservado para evitar que um
+          // backup antigo altere o próprio Master durante a restauração.
+          if (name === 'users' && row.id === masterProfile.uid) continue
           await setDoc(doc(db, name, row.id), decodeValue(row.data) as DocumentData, { merge: false })
         }
       }
+
       await setDoc(doc(db, 'settings', 'lastRestore'), {
         restoredAt: serverTimestamp(),
         restoredBy: masterProfile.uid,
         restoredByEmail: masterProfile.email,
         sourceCreatedAt: parsed.createdAt,
       })
-      setMessage('Backup JSON restaurado. Os documentos do Firestore foram regravados com os mesmos IDs.')
+      setMessage('Backup JSON restaurado com sucesso. Os documentos do Firestore foram regravados com os mesmos IDs; o perfil Master do Fernando foi preservado.')
     } catch (error) {
       console.error(error)
       setMessage(error instanceof Error ? error.message : 'Não foi possível restaurar o backup.')
     } finally {
+      if (restoreWindowOpened) {
+        try { await deleteDoc(restoreControl) } catch (error) { console.error('Não foi possível encerrar a janela de restauração:', error) }
+      }
       setBusy('')
       if (inputRef.current) inputRef.current.value = ''
     }
@@ -205,7 +226,7 @@ export function UtilitiesPage() {
 
       <section className="page-card utility-card">
         <Upload size={28} />
-        <div><h2>Restaurar backup JSON</h2><p>Selecione um JSON gerado por este próprio sistema para regravar os documentos com seus IDs originais.</p></div>
+        <div><h2>Restaurar backup JSON</h2><p>Exclusivo de Fernando Azeredo (Administrador Master). Selecione um JSON gerado por este sistema para regravar os documentos com seus IDs originais.</p></div>
         <button className="secondary-button" type="button" disabled={Boolean(busy)} onClick={() => inputRef.current?.click()}><Upload size={17} /> {busy === 'restore' ? 'Restaurando...' : 'Fazer upload do JSON'}</button>
         <input ref={inputRef} type="file" accept="application/json,.json" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void restoreFile(file) }} />
       </section>
