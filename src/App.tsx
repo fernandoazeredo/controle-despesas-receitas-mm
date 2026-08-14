@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import {
-  BadgeDollarSign,
   BookOpenCheck,
   Calculator,
   CircleDollarSign,
@@ -20,9 +19,21 @@ import {
   Users,
 } from 'lucide-react'
 import { NavLink, Route, Routes } from 'react-router-dom'
-import { useAuth } from './auth/AuthContext'
-
-const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+import { useAuth, type UserRole } from './auth/AuthContext'
+import {
+  AccountingPage,
+  AccountsPage,
+  ApprovalsPage,
+  AuditPage,
+  DashboardPage,
+  DocumentsPage,
+  ExpensesPage,
+  HowToPage,
+  ReceivablesPage,
+  TipsPage,
+  TreasuryPage,
+  UsersPage,
+} from './pages/SystemPages'
 
 const companyData = {
   razaoSocial: 'FLÁVIO MARQUES ADVOGADOS ASSOCIADOS',
@@ -30,18 +41,26 @@ const companyData = {
   endereco: 'Rua México, 21 / 1102 – Centro – Rio de Janeiro – RJ',
 }
 
-const menu = [
+type MenuItem = {
+  to: string
+  label: string
+  icon: typeof LayoutDashboard
+  tone?: 'expense' | 'revenue'
+  roles?: UserRole[]
+}
+
+const menu: MenuItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/despesas', label: 'Despesas', icon: ReceiptText },
-  { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText },
-  { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign },
-  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2 },
-  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck },
-  { to: '/contabilidade', label: 'Contabilidade', icon: Calculator },
+  { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'admin', 'tesouraria'] },
+  { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'admin', 'alvaras'] },
+  { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'admin', 'tesouraria'] },
+  { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'admin', 'diretoria'] },
+  { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master', 'admin', 'contabilidade', 'tesouraria'] },
+  { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'admin', 'contabilidade'] },
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive },
-  { to: '/usuarios', label: 'Usuários', icon: Users },
-  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck },
-  { to: '/configuracoes', label: 'Configurações', icon: Settings },
+  { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master', 'admin'] },
+  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'admin', 'diretoria'] },
+  { to: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['master', 'admin'] },
 ]
 
 function humanizeAuthError(error: unknown) {
@@ -178,91 +197,38 @@ function PendingScreen() {
   )
 }
 
-function Placeholder({ title, text }: { title: string; text: string }) {
-  return (
-    <section className="page-card">
-      <h2>{title}</h2>
-      <p>{text}</p>
-    </section>
-  )
-}
-
-function Dashboard() {
-  const metrics = [
-    ['Receitas / Honorários', money.format(0)],
-    ['Despesas', money.format(0)],
-    ['Resultado', money.format(0)],
-    ['Aguardando Aprovação', '0'],
-  ]
-
+function Configuracoes() {
   return (
     <>
       <div className="page-heading">
         <div>
-          <span className="eyebrow">Visão gerencial</span>
-          <h1>Dashboard Financeira</h1>
-          <p>Retrato consolidado das despesas, recebimentos, honorários, repasses e aprovações.</p>
-        </div>
-        <div className="quick-actions">
-          <button className="primary-button"><ReceiptText size={18} /> + Despesa</button>
-          <button className="secondary-button"><BadgeDollarSign size={18} /> + Recebimento</button>
+          <span className="eyebrow">Administração</span>
+          <h1>Configurações</h1>
+          <p>Dados institucionais, regras operacionais e situação dos serviços do aplicativo.</p>
         </div>
       </div>
-
-      <div className="metrics-grid">
-        {metrics.map(([label, value]) => (
-          <article className="metric" key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-            <small>Competência atual</small>
-          </article>
-        ))}
-      </div>
-
-      <div className="dashboard-grid">
-        <section className="page-card">
-          <h2>Movimento financeiro</h2>
-          <div className="empty-chart">Os gráficos serão alimentados automaticamente pelo Firestore.</div>
-        </section>
-        <section className="page-card">
-          <h2>Fluxo de aprovação</h2>
-          <div className="status-row"><span>Rascunhos</span><strong>0</strong></div>
-          <div className="status-row"><span>Em análise</span><strong>0</strong></div>
-          <div className="status-row"><span>Aprovados</span><strong>0</strong></div>
-          <div className="status-row"><span>Devolvidos</span><strong>0</strong></div>
-        </section>
+      <section className="page-card">
+        <span className="eyebrow">Dados institucionais</span>
+        <h2>Configurações do Aplicativo</h2>
+        <p>Cadastro utilizado nos demonstrativos, relatórios e documentos gerados pelo sistema.</p>
+        <div className="settings-grid">
+          <label><span>Razão Social</span><input value={companyData.razaoSocial} readOnly /></label>
+          <label><span>CNPJ</span><input value={companyData.cnpj} readOnly /></label>
+          <label className="settings-full-width"><span>Endereço</span><input value={companyData.endereco} readOnly /></label>
+        </div>
+      </section>
+      <div className="settings-panels">
+        <section className="page-card"><h2>Fluxo Financeiro</h2><div className="status-row"><span>Aprovação de despesas</span><strong>Ativa</strong></div><div className="status-row"><span>Classificação contábil</span><strong>Opcional</strong></div><div className="status-row"><span>Recebimento chega pronto à Tesouraria</span><strong>Ativo</strong></div></section>
+        <section className="page-card"><h2>Serviços Firebase</h2><div className="status-row"><span>Authentication</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Firestore</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Hosting</span><strong className="success-text">Ativo</strong></div><div className="status-row"><span>Storage</span><strong className="warning-text">Pendente Blaze</strong></div></section>
       </div>
     </>
   )
 }
 
-function Configuracoes() {
-  return (
-    <section className="page-card">
-      <span className="eyebrow">Dados institucionais</span>
-      <h2>Configurações do Aplicativo</h2>
-      <p>Cadastro institucional utilizado nos demonstrativos, relatórios e documentos gerados pelo sistema.</p>
-
-      <div className="settings-grid">
-        <label>
-          <span>Razão Social</span>
-          <input value={companyData.razaoSocial} readOnly />
-        </label>
-        <label>
-          <span>CNPJ</span>
-          <input value={companyData.cnpj} readOnly />
-        </label>
-        <label className="settings-full-width">
-          <span>Endereço</span>
-          <input value={companyData.endereco} readOnly />
-        </label>
-      </div>
-    </section>
-  )
-}
-
 function AppShell() {
   const { profile, logout } = useAuth()
+  const role = profile?.role ?? 'consulta'
+  const visibleMenu = menu.filter((item) => !item.roles || item.roles.includes(role))
 
   return (
     <div className="app-shell">
@@ -277,8 +243,8 @@ function AppShell() {
         </div>
 
         <nav>
-          {menu.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+          {visibleMenu.map(({ to, label, icon: Icon, tone }) => (
+            <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}${tone ? ` ${tone}-nav` : ''}`}>
               <Icon size={18} />
               <span>{label}</span>
             </NavLink>
@@ -301,19 +267,19 @@ function AppShell() {
 
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/despesas" element={<Placeholder title="Despesas / Tesouraria" text="Demonstrativo tradicional de despesas, comprovantes, aprovação, pagamento e arquivamento." />} />
-          <Route path="/alvaras" element={<Placeholder title="Recebimento de Alvarás" text="Origem do demonstrativo de recebimento de honorários e envio do documento pronto à Tesouraria." />} />
-          <Route path="/tesouraria" element={<Placeholder title="Tesouraria / Receitas" text="Conferência do recebimento, repasses, comprovantes e encerramento financeiro." />} />
-          <Route path="/aprovacoes" element={<Placeholder title="Aprovações da Diretoria" text="Fila de despesas e operações submetidas para análise, aprovação ou devolução." />} />
-          <Route path="/plano-contas" element={<Placeholder title="Plano de Contas" text="Cadastro hierárquico de contas e classificação opcional de despesas e componentes de recebimentos." />} />
-          <Route path="/contabilidade" element={<Placeholder title="Contabilidade" text="Movimento mensal, conferência documental, pacote ZIP, relatórios e envio à contabilidade." />} />
-          <Route path="/documentos" element={<Placeholder title="Arquivo de Documentos" text="Pesquisa e consulta dos dossiês digitais, demonstrativos e comprovantes." />} />
-          <Route path="/usuarios" element={<Placeholder title="Usuários e Permissões" text="Perfis de acesso separados por função e módulo." />} />
-          <Route path="/auditoria" element={<Placeholder title="Auditoria" text="Histórico imutável das ações, aprovações, devoluções e alterações relevantes." />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/despesas" element={<ExpensesPage />} />
+          <Route path="/alvaras" element={<ReceivablesPage />} />
+          <Route path="/tesouraria" element={<TreasuryPage />} />
+          <Route path="/aprovacoes" element={<ApprovalsPage />} />
+          <Route path="/plano-contas" element={<AccountsPage />} />
+          <Route path="/contabilidade" element={<AccountingPage />} />
+          <Route path="/documentos" element={<DocumentsPage />} />
+          <Route path="/usuarios" element={<UsersPage />} />
+          <Route path="/auditoria" element={<AuditPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/dicas" element={<Placeholder title="DICAS" text="Fluxograma operacional, passo a passo por perfil e soluções para situações comuns. Este módulo terá destaque em vermelho." />} />
-          <Route path="/como-usar" element={<Placeholder title="Como Usar" text="Tour guiado interativo e instruções simples para usuários com baixa familiaridade tecnológica." />} />
+          <Route path="/dicas" element={<TipsPage />} />
+          <Route path="/como-usar" element={<HowToPage />} />
         </Routes>
       </main>
     </div>
