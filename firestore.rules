@@ -93,8 +93,6 @@ service cloud.firestore {
         && request.resource.data.status in ['aprovado', 'devolvido', 'rejeitado'];
     }
 
-    // Rascunho e despesa devolvida só podem ser corrigidos pelo próprio criador.
-    // O Administrador Master pode atuar sobre qualquer lançamento para suporte/homologação.
     function operationalExpenseUpdate() {
       return hasRole(['master', 'gerente', 'tesouraria', 'operador'])
         && (hasRole(['master']) || resource.data.createdBy == request.auth.uid)
@@ -137,6 +135,31 @@ service cloud.firestore {
           ||
           (resource.data.status == 'recebido_tesouraria'
             && request.resource.data.status in ['recebido_tesouraria', 'encerrado'])
+        );
+    }
+
+    // Repasse de Alvarás e Comissões: Tesouraria programa/executa;
+    // Flávio autoriza oficialmente e Fernando Master homologa/testa.
+    function paymentControlDecision() {
+      return (
+          (isDirectorEmail() && hasRole(['diretor']))
+          || (isPrimaryAdminEmail() && hasRole(['master']))
+        )
+        && resource.data.status == 'aguardando_aprovacao'
+        && request.resource.data.status in ['aprovado', 'rejeitado'];
+    }
+
+    function paymentControlOperationalUpdate() {
+      return hasRole(['master', 'tesouraria'])
+        && (
+          (resource.data.status == 'rejeitado'
+            && request.resource.data.status == 'aguardando_aprovacao')
+          ||
+          (resource.data.status == 'aprovado'
+            && request.resource.data.status in ['aprovado', 'parcialmente_pago', 'pago'])
+          ||
+          (resource.data.status == 'parcialmente_pago'
+            && request.resource.data.status in ['parcialmente_pago', 'pago'])
         );
     }
 
@@ -183,6 +206,36 @@ service cloud.firestore {
         && request.resource.data.status in ['rascunho', 'enviado_tesouraria']
       );
       allow update: if masterRestoreMode() || originReceivableUpdate() || treasuryReceivableUpdate();
+      allow delete: if masterRestoreMode() || hasRole(['master']);
+    }
+
+    match /alvaraTransfers/{document=**} {
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow create: if masterRestoreMode() || (
+        hasRole(['master', 'tesouraria'])
+        && request.resource.data.status == 'aguardando_aprovacao'
+      );
+      allow update: if masterRestoreMode()
+        || paymentControlDecision()
+        || paymentControlOperationalUpdate();
+      allow delete: if masterRestoreMode() || hasRole(['master']);
+    }
+
+    match /agentCommissions/{document=**} {
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow create: if masterRestoreMode() || (
+        hasRole(['master', 'tesouraria'])
+        && request.resource.data.status == 'aguardando_aprovacao'
+      );
+      allow update: if masterRestoreMode()
+        || paymentControlDecision()
+        || paymentControlOperationalUpdate();
+      allow delete: if masterRestoreMode() || hasRole(['master']);
+    }
+
+    match /fiscalNotes/{document=**} {
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow create, update: if masterRestoreMode() || hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
       allow delete: if masterRestoreMode() || hasRole(['master']);
     }
 
