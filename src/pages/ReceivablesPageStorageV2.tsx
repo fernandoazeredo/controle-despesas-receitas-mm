@@ -40,6 +40,14 @@ function parseBrazilianNumber(value: string) {
   return Number.isFinite(number) ? number : 0
 }
 
+function roundPercentCustom(value: number) {
+  const safe = Math.max(0, Number.isFinite(value) ? value : 0)
+  const scaled = safe * 100
+  const base = Math.floor(scaled + 1e-10)
+  const thirdDecimalDigit = Math.floor(((scaled - base) + 1e-10) * 10)
+  return Number(((base + (thirdDecimalDigit >= 6 ? 1 : 0)) / 100).toFixed(2))
+}
+
 function BrazilianMoneyInput({ value, onChange, ariaLabel }: { value: number; onChange: (value: number) => void; ariaLabel?: string }) {
   const [focused, setFocused] = useState(false)
   const [text, setText] = useState(value > 0 ? decimalBR.format(value) : '')
@@ -75,7 +83,7 @@ function BrazilianPercentInput({ value, onChange, ariaLabel }: { value: number; 
   const [text, setText] = useState(value > 0 ? decimalBR.format(value) : '')
 
   useEffect(() => {
-    if (!focused) setText(value > 0 ? decimalBR.format(value) : '')
+    if (!focused) setText(value > 0 ? decimalBR.format(roundPercentCustom(value)) : '')
   }, [focused, value])
 
   return <input
@@ -92,11 +100,12 @@ function BrazilianPercentInput({ value, onChange, ariaLabel }: { value: number; 
       const next = event.target.value
       setText(next)
       const parsed = Math.max(0, parseBrazilianNumber(next))
-      onChange(Number(parsed.toFixed(2)))
+      onChange(roundPercentCustom(parsed))
     }}
     onBlur={() => {
       setFocused(false)
-      setText(value > 0 ? decimalBR.format(Number(value.toFixed(2))) : '')
+      const rounded = roundPercentCustom(value)
+      setText(value > 0 ? decimalBR.format(rounded) : '')
     }}
   />
 }
@@ -162,18 +171,19 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
   const uploaded = uploads.flatMap((item) => item.meta ? [item.meta] : [])
 
   function updatePercent(index: number, percentual: number) {
-    const roundedPercent = Number(Math.max(0, percentual).toFixed(2))
+    const roundedPercent = roundPercentCustom(percentual)
     setComponents((current) => current.map((item, i) => i === index ? { ...item, percentual: roundedPercent, valor: totalAlvara > 0 ? Number(((totalAlvara * roundedPercent) / 100).toFixed(2)) : 0 } : item))
   }
   function updateValue(index: number, valor: number) {
     const roundedValue = Number(Math.max(0, valor).toFixed(2))
-    setComponents((current) => current.map((item, i) => i === index ? { ...item, valor: roundedValue, percentual: totalAlvara > 0 ? Number(((roundedValue / totalAlvara) * 100).toFixed(2)) : 0 } : item))
+    const calculatedPercent = totalAlvara > 0 ? (roundedValue / totalAlvara) * 100 : 0
+    setComponents((current) => current.map((item, i) => i === index ? { ...item, valor: roundedValue, percentual: roundPercentCustom(calculatedPercent) } : item))
   }
   function changeTotal(value: number) {
     const previous = totalAlvara
     setTotalAlvara(value)
     setBaseCalculo((current) => current === 0 || current === previous ? value : current)
-    setComponents((current) => current.map((item) => ({ ...item, valor: value > 0 ? Number(((value * item.percentual) / 100).toFixed(2)) : 0 })))
+    setComponents((current) => current.map((item) => ({ ...item, percentual: roundPercentCustom(item.percentual), valor: value > 0 ? Number(((value * roundPercentCustom(item.percentual)) / 100).toFixed(2)) : 0 })))
   }
 
   function selectFiles(files: FileList | null) {
