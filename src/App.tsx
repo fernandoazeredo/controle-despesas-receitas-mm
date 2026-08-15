@@ -34,7 +34,7 @@ import { AccountingPageStorageV2 } from './pages/AccountingPageStorageV2'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
 import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
 import { UtilitiesPage } from './pages/UtilitiesPage'
-import { FiscalNotesPageV2 } from './pages/AlvaraControlPagesV2'
+import { FiscalNotesPageV3 } from './pages/FiscalNotesPageV3'
 import { AlvaraTransfersPageV3 } from './pages/AlvaraControlPagesV3'
 import { AgentCommissionsPageV4 } from './pages/AgentCommissionsPageV4'
 import { AuditPageEnhancedV2 } from './pages/AuditPageEnhancedV2'
@@ -220,7 +220,7 @@ function AppShell() {
           <Route path="/despesas" element={<ExpensesPageStorage />} />
           <Route path="/alvaras" element={<ReceivablesPageStorageV2 />} />
           <Route path="/repasse-alvaras" element={<AlvaraTransfersPageV3 />} />
-          <Route path="/nota-fiscal" element={<FiscalNotesPageV2 />} />
+          <Route path="/nota-fiscal" element={<FiscalNotesPageV3 />} />
           <Route path="/comissoes-agentes" element={<AgentCommissionsPageV4 />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
