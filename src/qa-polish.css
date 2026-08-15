@@ -1,0 +1,103 @@
+/* Polimentos derivados dos testes de homologação de 15/08/2026 */
+
+/* Feedback visual para digitação manual de datas no padrão brasileiro. */
+.date-mask-hint {
+  position: fixed;
+  z-index: 100000;
+  min-width: 178px;
+  padding: 7px 10px;
+  border: 1px solid #9fc8eb;
+  border-radius: 8px;
+  background: #f8fcff;
+  color: #18324d;
+  box-shadow: 0 8px 22px rgba(23, 52, 78, .14);
+  font-size: 11px;
+  font-weight: 800;
+  pointer-events: none;
+}
+.date-mask-hint.is-error {
+  border-color: #e5a7a7;
+  background: #fff7f7;
+  color: #a42828;
+}
+
+/* Repasse de Alvarás: mantém Próxima parcela, Status e Ação visíveis. */
+.obligation-list.enhanced {
+  position: relative;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+}
+.obligation-list.enhanced .obligation-list-row.enhanced {
+  min-width: 1380px;
+  grid-template-columns: minmax(250px, 1.5fr) 145px 145px 130px 130px 175px 180px 145px;
+}
+.obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(6),
+.obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(7),
+.obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(8) {
+  position: sticky;
+  z-index: 3;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #fff;
+}
+.obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(8) { right: 0; }
+.obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(7) { right: 157px; }
+.obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(6) {
+  right: 349px;
+  box-shadow: -12px 0 18px -18px rgba(20, 35, 55, .85);
+}
+.obligation-list.enhanced .obligation-list-head.enhanced > span:nth-child(6),
+.obligation-list.enhanced .obligation-list-head.enhanced > span:nth-child(7),
+.obligation-list.enhanced .obligation-list-head.enhanced > span:nth-child(8) {
+  background: #f7f9fb;
+  z-index: 5;
+}
+
+/* Comissões de Agentes: mesma prioridade visual das três colunas operacionais. */
+.commission-v4-list {
+  position: relative;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+}
+.commission-v4-row > span:nth-child(7),
+.commission-v4-row > span:nth-child(8),
+.commission-v4-row > span:nth-child(9) {
+  position: sticky;
+  z-index: 3;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #fff;
+}
+.commission-v4-row > span:nth-child(9) { right: 0; }
+.commission-v4-row > span:nth-child(8) { right: 132px; }
+.commission-v4-row > span:nth-child(7) {
+  right: 324px;
+  box-shadow: -12px 0 18px -18px rgba(20, 35, 55, .85);
+}
+.commission-v4-row.head > span:nth-child(7),
+.commission-v4-row.head > span:nth-child(8),
+.commission-v4-row.head > span:nth-child(9) {
+  background: #f7f9fb;
+  z-index: 5;
+}
+
+@media (max-width: 1100px) {
+  .obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(6),
+  .commission-v4-row > span:nth-child(7) {
+    position: static;
+    box-shadow: none;
+  }
+  .obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(7) { right: 157px; }
+  .commission-v4-row > span:nth-child(8) { right: 132px; }
+}
+
+@media (max-width: 700px) {
+  .obligation-list.enhanced .obligation-list-row.enhanced > span:nth-child(7),
+  .commission-v4-row > span:nth-child(8) {
+    position: static;
+  }
+}
