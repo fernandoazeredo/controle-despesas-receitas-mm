@@ -18,6 +18,9 @@ const BACKUP_COLLECTIONS = [
   'users',
   'expenses',
   'receivables',
+  'alvaraTransfers',
+  'agentCommissions',
+  'fiscalNotes',
   'accountingDispatches',
   'accountingPackages',
   'auditLogs',
@@ -139,8 +142,6 @@ export function UtilitiesPage() {
         throw new Error('Arquivo de backup incompatível com este sistema.')
       }
 
-      // Abre uma janela curta e exclusiva para o Fernando restaurar estados que,
-      // no uso normal, são propositalmente imutáveis (ex.: aprovados e auditoria).
       await setDoc(restoreControl, {
         uid: masterProfile.uid,
         email: masterProfile.email,
@@ -152,8 +153,6 @@ export function UtilitiesPage() {
       for (const name of BACKUP_COLLECTIONS) {
         const rows = parsed.collections[name] ?? []
         for (const row of rows) {
-          // O perfil autenticado do Fernando é preservado para evitar que um
-          // backup antigo altere o próprio Master durante a restauração.
           if (name === 'users' && row.id === masterProfile.uid) continue
           await setDoc(doc(db, name, row.id), decodeValue(row.data) as DocumentData, { merge: false })
         }
@@ -220,7 +219,7 @@ export function UtilitiesPage() {
     <div className="utilities-grid">
       <section className="page-card utility-card">
         <DatabaseBackup size={28} />
-        <div><h2>Backup JSON</h2><p>Baixa uma cópia dos dados do Firestore, incluindo usuários, despesas, receitas, auditoria, configurações e Plano de Contas.</p></div>
+        <div><h2>Backup JSON</h2><p>Baixa uma cópia dos dados do Firestore, incluindo usuários, despesas, receitas, repasses, comissões, Notas Fiscais, auditoria, configurações e Plano de Contas.</p></div>
         <button className="secondary-button" type="button" disabled={Boolean(busy)} onClick={() => void backupNow()}><Download size={17} /> {busy === 'backup' ? 'Gerando...' : 'Baixar backup JSON'}</button>
       </section>
 
@@ -233,7 +232,7 @@ export function UtilitiesPage() {
 
       <section className="page-card utility-card utility-danger-card">
         <Trash2 size={28} />
-        <div><h2>Apagar tudo exceto usuários</h2><p>Remove os dados operacionais, auditoria, configurações, Plano de Contas e referências de documentos. Os cadastros de usuários são preservados. Um backup JSON é baixado automaticamente antes da limpeza.</p></div>
+        <div><h2>Apagar tudo exceto usuários</h2><p>Remove os dados operacionais, inclusive repasses, comissões e Notas Fiscais, auditoria, configurações, Plano de Contas e referências de documentos. Os cadastros de usuários são preservados. Um backup JSON é baixado automaticamente antes da limpeza.</p></div>
         <button className="expense-button" type="button" disabled={Boolean(busy)} onClick={() => setConfirmWipe(true)}><Trash2 size={17} /> Limpeza total</button>
       </section>
     </div>
