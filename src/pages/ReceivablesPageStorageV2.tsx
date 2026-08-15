@@ -10,6 +10,7 @@ import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
 import type { ChartOfAccount } from '../data/chartOfAccounts'
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+const decimalBR = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 type AnyRecord = { id: string } & DocumentData
 type RevenueComponent = { nome: string; percentual: number; valor: number }
 type AttachmentMeta = { name: string; url: string; path: string; size: number; type: string; uploadedAt: string; uploadedBy: string }
@@ -23,6 +24,50 @@ function safeFileName(value: string) { return value.normalize('NFD').replace(/[\
 function toNumber(value: unknown) { const number = Number(value); return Number.isFinite(number) ? number : 0 }
 function formatBytes(bytes: number) { return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB` }
 function attachmentsOf(item: AnyRecord): AttachmentMeta[] { return Array.isArray(item.attachments) ? item.attachments as AttachmentMeta[] : [] }
+
+function parseBrazilianNumber(value: string) {
+  const cleaned = value.trim().replace(/\s/g, '').replace(/[^\d,.-]/g, '')
+  if (!cleaned) return 0
+  let normalized = cleaned
+  if (cleaned.includes(',')) {
+    normalized = cleaned.replace(/\./g, '').replace(',', '.')
+  } else {
+    const dots = cleaned.match(/\./g)?.length ?? 0
+    if (dots > 1 || (dots === 1 && /^-?\d{1,3}\.\d{3}$/.test(cleaned))) normalized = cleaned.replace(/\./g, '')
+  }
+  const number = Number(normalized)
+  return Number.isFinite(number) ? number : 0
+}
+
+function BrazilianMoneyInput({ value, onChange, ariaLabel }: { value: number; onChange: (value: number) => void; ariaLabel?: string }) {
+  const [focused, setFocused] = useState(false)
+  const [text, setText] = useState(value > 0 ? decimalBR.format(value) : '')
+
+  useEffect(() => {
+    if (!focused) setText(value > 0 ? decimalBR.format(value) : '')
+  }, [focused, value])
+
+  return <input
+    type="text"
+    inputMode="decimal"
+    aria-label={ariaLabel}
+    placeholder="0,00"
+    value={text}
+    onFocus={(event) => {
+      setFocused(true)
+      event.currentTarget.select()
+    }}
+    onChange={(event) => {
+      const next = event.target.value
+      setText(next)
+      onChange(Math.max(0, parseBrazilianNumber(next)))
+    }}
+    onBlur={() => {
+      setFocused(false)
+      setText(value > 0 ? decimalBR.format(value) : '')
+    }}
+  />
+}
 
 function useReceivables() {
   const [records, setRecords] = useState<AnyRecord[]>([])
@@ -161,7 +206,7 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     <div className="form-grid compact-grid"><label><span>Unidade</span><select value={unidade} onChange={(e) => setUnidade(e.target.value as 'RJ' | 'SP')}><option>RJ</option><option>SP</option></select></label><label><span>Data</span><input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label><label><span>Natureza</span><select value={natureza} onChange={(e) => setNatureza(e.target.value)}><option>Trabalhista</option><option>Cível</option></select></label><label className="span-2"><span>Número do processo</span><input value={processo} onChange={(e) => setProcesso(e.target.value)} /></label><label className="span-2"><span>Reclamada</span><input value={reclamada} onChange={(e) => setReclamada(e.target.value)} /></label><label className="span-2"><span>Reclamante</span><input value={reclamante} onChange={(e) => setReclamante(e.target.value)} /></label><label><span>Origem</span><select value={origem} onChange={(e) => setOrigem(e.target.value)}><option>Alvará</option><option>Acordo</option></select></label><label><span>Forma de recebimento</span><input value={formaRecebimento} onChange={(e) => setFormaRecebimento(e.target.value)} /></label><label><span>Data prevista</span><input type="date" value={dataPrevista} onChange={(e) => setDataPrevista(e.target.value)} /></label></div>
     <div className="account-integration-block revenue-account-block"><AccountSelector category="Receita" value={account?.code} onChange={setAccount} label="Categoria / Plano de Contas" placeholder="Digite código ou nome — ex.: 3.01, alvará, honorários..." /><p>A classificação permanece opcional.</p></div>
     <h3 className="form-section-title">Composição do Valor</h3>
-    <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><input type="number" min="0" step="0.01" value={totalAlvara || ''} onChange={(e) => changeTotal(Number(e.target.value))} /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><input type="number" min="0" step="0.01" value={baseCalculo || ''} onChange={(e) => setBaseCalculo(Number(e.target.value))} /></div>{components.map((component, index) => <div className="composition-row" key={component.nome}><span className={component.nome === 'Outras Deduções / Participações' ? 'commission-component-label' : ''}>{component.nome}{component.nome === 'Outras Deduções / Participações' && <input aria-label="Nome do agente ou beneficiário da comissão" placeholder="Nome do agente / beneficiário da comissão" value={agentName} onChange={(e) => setAgentName(e.target.value)} />}</span><input type="number" min="0" step="0.01" value={component.percentual || ''} onChange={(e) => updatePercent(index, Number(e.target.value))} /><input type="number" min="0" step="0.01" value={component.valor || ''} onChange={(e) => updateValue(index, Number(e.target.value))} /></div>)}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
+    <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={setBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>{components.map((component, index) => <div className="composition-row" key={component.nome}><span className={component.nome === 'Outras Deduções / Participações' ? 'commission-component-label' : ''}>{component.nome}{component.nome === 'Outras Deduções / Participações' && <input aria-label="Nome do agente ou beneficiário da comissão" placeholder="Nome do agente / beneficiário da comissão" value={agentName} onChange={(e) => setAgentName(e.target.value)} />}</span><input type="number" min="0" step="0.01" value={component.percentual || ''} onChange={(e) => updatePercent(index, Number(e.target.value))} /><BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${component.nome}`} /></div>)}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
     <h3 className="form-section-title">Dados bancários para crédito do cliente</h3>
     <div className="form-grid compact-grid"><label><span>Banco</span><input value={banco} onChange={(e) => setBanco(e.target.value)} /></label><label><span>Agência</span><input value={agencia} onChange={(e) => setAgencia(e.target.value)} /></label><label><span>Conta</span><input value={conta} onChange={(e) => setConta(e.target.value)} /></label><label className="span-2"><span>Nome / Titular</span><input value={titular} onChange={(e) => setTitular(e.target.value)} /></label><label><span>CPF</span><input value={cpf} onChange={(e) => setCpf(e.target.value)} /></label></div>
     <h3 className="form-section-title">Dados para emissão de Nota Fiscal</h3>
