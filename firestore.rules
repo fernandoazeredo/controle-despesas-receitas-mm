@@ -82,8 +82,6 @@ service cloud.firestore {
         .hasOnly(['displayName', 'photoURL', 'lastLoginAt']);
     }
 
-    // Flávio é o autorizador oficial. Fernando Master recebe a mesma permissão
-    // para homologação e testes completos do fluxo de Aprovações.
     function directorExpenseDecision() {
       return (
           (isDirectorEmail() && hasRole(['diretor']))
@@ -138,8 +136,6 @@ service cloud.firestore {
         );
     }
 
-    // Repasse de Alvarás e Comissões: Tesouraria programa/executa;
-    // Flávio autoriza oficialmente e Fernando Master homologa/testa.
     function paymentControlDecision() {
       return (
           (isDirectorEmail() && hasRole(['diretor']))
@@ -270,7 +266,7 @@ service cloud.firestore {
     }
 
     match /auditLogs/{document=**} {
-      allow read: if hasRole(['master', 'diretor', 'gerente']);
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
       allow create: if masterRestoreMode() || activeUser();
       allow update: if masterRestoreMode();
       allow delete: if masterRestoreMode() || (isPrimaryAdminEmail() && hasRole(['master']));
