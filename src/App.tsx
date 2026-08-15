@@ -24,7 +24,7 @@ import {
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
 import { AuditPage, TreasuryPage } from './pages/SystemPages'
-import { ReceivablesPageStorage } from './pages/ReceivablesPageStorage'
+import { ReceivablesPageStorageV2 } from './pages/ReceivablesPageStorageV2'
 import { ExpensesPageStorage } from './pages/ExpensesPageStorage'
 import { AccountsPageFernando } from './pages/AccountsPageFernando'
 import { DocumentsPageStorage } from './pages/DocumentsPageStorage'
@@ -34,6 +34,7 @@ import { AccountingPageStorage } from './pages/AccountingPageStorage'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
 import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
 import { UtilitiesPage } from './pages/UtilitiesPage'
+import { AgentCommissionsPageV2, AlvaraTransfersPageV2, FiscalNotesPageV2 } from './pages/AlvaraControlPagesV2'
 import { WorkflowStatusEnhancer } from './components/WorkflowStatusEnhancer'
 import './system.css'
 import './fixes.css'
@@ -65,6 +66,9 @@ const menu: MenuItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
+  { to: '/repasse-alvaras', label: 'Repasse de Alvarás', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
+  { to: '/nota-fiscal', label: 'Nota Fiscal', icon: FileText, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
+  { to: '/comissoes-agentes', label: 'Comissões de Agentes', icon: Users, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master'] },
@@ -197,14 +201,7 @@ function AppShell() {
       <WorkflowStatusEnhancer />
 
       <header className="mobile-app-header">
-        <button
-          type="button"
-          className="mobile-menu-toggle"
-          aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
-          aria-expanded={mobileMenuOpen}
-          aria-controls="app-sidebar"
-          onClick={() => setMobileMenuOpen((open) => !open)}
-        >
+        <button type="button" className="mobile-menu-toggle" aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileMenuOpen} aria-controls="app-sidebar" onClick={() => setMobileMenuOpen((open) => !open)}>
           {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
         </button>
         <div className="mobile-header-brand">
@@ -213,28 +210,24 @@ function AppShell() {
         </div>
       </header>
 
-      <button
-        type="button"
-        className={`mobile-menu-backdrop${mobileMenuOpen ? ' is-open' : ''}`}
-        aria-label="Fechar menu"
-        onClick={closeMobileMenu}
-      />
+      <button type="button" className={`mobile-menu-backdrop${mobileMenuOpen ? ' is-open' : ''}`} aria-label="Fechar menu" onClick={closeMobileMenu} />
 
       <aside id="app-sidebar" className={`sidebar${mobileMenuOpen ? ' is-open' : ''}`}>
-        <div className="mobile-sidebar-head">
-          <strong>Menu do sistema</strong>
-          <button type="button" className="mobile-sidebar-close" aria-label="Fechar menu" onClick={closeMobileMenu}><X size={21} /></button>
-        </div>
+        <div className="mobile-sidebar-head"><strong>Menu do sistema</strong><button type="button" className="mobile-sidebar-close" aria-label="Fechar menu" onClick={closeMobileMenu}><X size={21} /></button></div>
         <div className="brand"><div className="brand-logo-only"><img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" /></div><div className="app-name">Controle de Despesas e Receitas</div></div>
         <nav>{visibleMenu.map(({ to, label, icon: Icon, tone }) => <NavLink key={to} to={to} end={to === '/'} onClick={closeMobileMenu} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}${tone ? ` ${tone}-nav` : ''}`}><Icon size={18} /><span>{label}</span></NavLink>)}</nav>
         <div className="sidebar-help"><NavLink to="/dicas" onClick={closeMobileMenu} className="tips-button"><Lightbulb size={18} /> DICAS</NavLink><NavLink to="/como-usar" onClick={closeMobileMenu} className="howto-link"><Scale size={18} /> Como Usar</NavLink></div>
         <div className="sidebar-user"><div><strong>{profile?.displayName || 'Usuário'}</strong><span>{profile?.email}</span></div><button type="button" onClick={() => { closeMobileMenu(); void logout() }} title="Sair"><LogOut size={17} /></button></div>
       </aside>
+
       <main className="main-content">
         <Routes>
           <Route path="/" element={<DashboardPageEnhanced />} />
           <Route path="/despesas" element={<ExpensesPageStorage />} />
-          <Route path="/alvaras" element={<ReceivablesPageStorage />} />
+          <Route path="/alvaras" element={<ReceivablesPageStorageV2 />} />
+          <Route path="/repasse-alvaras" element={<AlvaraTransfersPageV2 />} />
+          <Route path="/nota-fiscal" element={<FiscalNotesPageV2 />} />
+          <Route path="/comissoes-agentes" element={<AgentCommissionsPageV2 />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
           <Route path="/plano-contas" element={<AccountsPageFernando />} />
