@@ -23,18 +23,20 @@ import {
 } from 'lucide-react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth, type UserRole } from './auth/AuthContext'
-import { AuditPage, TreasuryPage } from './pages/SystemPages'
+import { TreasuryPage } from './pages/SystemPages'
 import { ReceivablesPageStorageV2 } from './pages/ReceivablesPageStorageV2'
 import { ExpensesPageStorage } from './pages/ExpensesPageStorage'
 import { AccountsPageFernando } from './pages/AccountsPageFernando'
 import { DocumentsPageStorage } from './pages/DocumentsPageStorage'
 import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
 import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
-import { AccountingPageStorage } from './pages/AccountingPageStorage'
+import { AccountingPageStorageV2 } from './pages/AccountingPageStorageV2'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
 import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
 import { UtilitiesPage } from './pages/UtilitiesPage'
-import { AgentCommissionsPageV2, AlvaraTransfersPageV2, FiscalNotesPageV2 } from './pages/AlvaraControlPagesV2'
+import { FiscalNotesPageV2 } from './pages/AlvaraControlPagesV2'
+import { AgentCommissionsPageV3, AlvaraTransfersPageV3 } from './pages/AlvaraControlPagesV3'
+import { AuditPageEnhancedV2 } from './pages/AuditPageEnhancedV2'
 import { WorkflowStatusEnhancer } from './components/WorkflowStatusEnhancer'
 import './system.css'
 import './fixes.css'
@@ -75,7 +77,7 @@ const menu: MenuItem[] = [
   { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master'] },
-  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'diretor', 'gerente'] },
+  { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/utilitarios', label: 'Utilitários', icon: Wrench, roles: ['master'] },
   { to: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['master'] },
 ]
@@ -199,19 +201,11 @@ function AppShell() {
   return (
     <div className="app-shell">
       <WorkflowStatusEnhancer />
-
       <header className="mobile-app-header">
-        <button type="button" className="mobile-menu-toggle" aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileMenuOpen} aria-controls="app-sidebar" onClick={() => setMobileMenuOpen((open) => !open)}>
-          {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
-        </button>
-        <div className="mobile-header-brand">
-          <img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" />
-          <span>Controle de Despesas e Receitas</span>
-        </div>
+        <button type="button" className="mobile-menu-toggle" aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileMenuOpen} aria-controls="app-sidebar" onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}</button>
+        <div className="mobile-header-brand"><img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" /><span>Controle de Despesas e Receitas</span></div>
       </header>
-
       <button type="button" className={`mobile-menu-backdrop${mobileMenuOpen ? ' is-open' : ''}`} aria-label="Fechar menu" onClick={closeMobileMenu} />
-
       <aside id="app-sidebar" className={`sidebar${mobileMenuOpen ? ' is-open' : ''}`}>
         <div className="mobile-sidebar-head"><strong>Menu do sistema</strong><button type="button" className="mobile-sidebar-close" aria-label="Fechar menu" onClick={closeMobileMenu}><X size={21} /></button></div>
         <div className="brand"><div className="brand-logo-only"><img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" /></div><div className="app-name">Controle de Despesas e Receitas</div></div>
@@ -219,22 +213,21 @@ function AppShell() {
         <div className="sidebar-help"><NavLink to="/dicas" onClick={closeMobileMenu} className="tips-button"><Lightbulb size={18} /> DICAS</NavLink><NavLink to="/como-usar" onClick={closeMobileMenu} className="howto-link"><Scale size={18} /> Como Usar</NavLink></div>
         <div className="sidebar-user"><div><strong>{profile?.displayName || 'Usuário'}</strong><span>{profile?.email}</span></div><button type="button" onClick={() => { closeMobileMenu(); void logout() }} title="Sair"><LogOut size={17} /></button></div>
       </aside>
-
       <main className="main-content">
         <Routes>
           <Route path="/" element={<DashboardPageEnhanced />} />
           <Route path="/despesas" element={<ExpensesPageStorage />} />
           <Route path="/alvaras" element={<ReceivablesPageStorageV2 />} />
-          <Route path="/repasse-alvaras" element={<AlvaraTransfersPageV2 />} />
+          <Route path="/repasse-alvaras" element={<AlvaraTransfersPageV3 />} />
           <Route path="/nota-fiscal" element={<FiscalNotesPageV2 />} />
-          <Route path="/comissoes-agentes" element={<AgentCommissionsPageV2 />} />
+          <Route path="/comissoes-agentes" element={<AgentCommissionsPageV3 />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
           <Route path="/plano-contas" element={<AccountsPageFernando />} />
-          <Route path="/contabilidade" element={<AccountingPageStorage />} />
+          <Route path="/contabilidade" element={<AccountingPageStorageV2 />} />
           <Route path="/documentos" element={<DocumentsPageStorage />} />
           <Route path="/usuarios" element={<UsersPageKitFernando />} />
-          <Route path="/auditoria" element={<AuditPage />} />
+          <Route path="/auditoria" element={<AuditPageEnhancedV2 />} />
           <Route path="/utilitarios" element={<UtilitiesPage />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/dicas" element={<TipsPageEnhanced />} />
