@@ -8,6 +8,7 @@ import './button-label-fix.css'
 import './workflow-additions.css'
 import './responsive-shell.css'
 import './alvara-controls.css'
+import './financial-controls-v3.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
