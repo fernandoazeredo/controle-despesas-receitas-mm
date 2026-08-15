@@ -6,6 +6,7 @@ import {
   Calculator,
   DatabaseBackup,
   FileCheck2,
+  FileText,
   FolderArchive,
   Landmark,
   LayoutDashboard,
@@ -28,31 +29,34 @@ export function TipsPageEnhanced() {
     <Header eyebrow="Ajuda rápida" title="DICAS" description="Orientações objetivas para operar o Controle de Despesas e Receitas sem quebrar o fluxo financeiro." />
 
     <div className="tips-grid enhanced-tips-grid">
-      <article className="tip expense-tip"><ReceiptText /><h3>Despesa</h3><p><strong>Tesouraria/Operador → Nova Despesa → preencher demonstrativo → classificar no Plano de Contas, se desejar → anexar documentos → enviar para aprovação.</strong> O upload dos anexos começa imediatamente após a seleção e mostra o progresso. Depois do envio, a despesa segue para a fila de Aprovações.</p></article>
-      <article className="tip revenue-tip"><BadgeDollarSign /><h3>Receita / Alvará</h3><p><strong>Área de origem → Nova Receita → preencher o demonstrativo completo → classificar em uma conta 3.xx → anexar alvará/acordo e documentos → enviar à Tesouraria.</strong> Os anexos ficam disponíveis para o pacote mensal da Contabilidade.</p></article>
-      <article className="tip"><FileCheck2 /><h3>Aprovação</h3><p><strong>Flávio Marques é o autorizador financeiro oficial.</strong> Fernando, como Administrador Master, possui modo de homologação para testar Aprovar, Devolver e Rejeitar. Os demais usuários ativos apenas acompanham a fila em modo consulta.</p></article>
-      <article className="tip"><RefreshCw /><h3>Rascunho e correção</h3><p>Rascunhos podem ser editados pelo <strong>criador do lançamento ou pelo Master</strong>. Se uma despesa for devolvida, somente o criador ou o Master verá <strong>Corrigir e reenviar</strong>. Outro colaborador pode consultar, mas não alterar.</p></article>
+      <article className="tip expense-tip"><ReceiptText /><h3>Despesa</h3><p><strong>Tesouraria/Operador → Nova Despesa → preencher demonstrativo → classificar no Plano de Contas, se desejar → anexar documentos → enviar para aprovação.</strong> Depois do envio, a despesa segue para a fila de Aprovações.</p></article>
+      <article className="tip revenue-tip"><BadgeDollarSign /><h3>Receita / Alvará</h3><p><strong>Área de origem → Nova Receita → preencher o demonstrativo completo → anexar alvará/acordo e documentos → enviar à Tesouraria.</strong> O recebimento do Alvará não passa pela fila de Aprovações: a Tesouraria confirma o crédito e o evento fica registrado na Auditoria.</p></article>
+      <article className="tip"><BadgeDollarSign /><h3>Repasse de Alvarás</h3><p>Depois que a Tesouraria confirma o recebimento, o valor líquido devido ao cliente aparece automaticamente em <strong>Repasse de Alvarás</strong>. Programe à vista ou parcelado, envie para aprovação e registre cada pagamento pela data efetiva.</p></article>
+      <article className="tip"><Users /><h3>Comissões de Agentes</h3><p>Se o Demonstrativo tiver valor em <strong>Outras Deduções / Participações</strong> e nome do agente, a obrigação aparece automaticamente em Comissões de Agentes, com o mesmo fluxo de programação, aprovação e pagamento por parcela.</p></article>
+      <article className="tip"><FileText /><h3>Nota Fiscal</h3><p>O menu Nota Fiscal reaproveita automaticamente cliente, CPF, e-mail, endereço, processo e valor dos Honorários do Escritório para facilitar a emissão e o controle da NF.</p></article>
+      <article className="tip"><FileCheck2 /><h3>Aprovação</h3><p><strong>Flávio Marques é o autorizador financeiro oficial.</strong> Fernando, como Administrador Master, possui modo de homologação. A fila geral de Aprovações continua sendo de Despesas; Repasse de Alvarás e Comissões possuem aprovação dentro dos próprios módulos.</p></article>
+      <article className="tip"><RefreshCw /><h3>Status das parcelas</h3><p>Cada parcela de Repasse/Comissão segue <strong>Pendente → Aguardando aprovação → Aprovada → Paga</strong>. O alvará consolidado segue Aguardando programação → Aguardando aprovação → Aprovado → Parcialmente pago → Pago integralmente.</p></article>
       <article className="tip"><LayoutDashboard /><h3>Dashboard</h3><p>Receitas aparecem em azul, Despesas em vermelho e Saldo/Resultado em verde. Os cards <strong>Receitas, Despesas e Aguardando Aprovação</strong> funcionam como atalhos; <strong>Saldo/Resultado é informativo</strong>.</p></article>
-      <article className="tip"><BookOpenCheck /><h3>Plano de Contas</h3><p>Despesas pesquisam contas finais <strong>4.xx</strong> e Receitas/Alvarás contas finais <strong>3.xx</strong>. A página de manutenção é exclusiva do <strong>Administrador Master Fernando</strong>.</p></article>
-      <article className="tip"><Users /><h3>Usuários</h3><p>O próprio usuário solicita o cadastro e fica <strong>Pendente</strong>. Fernando libera o acesso. Perfis especiais: Flávio = Diretor/Autorizador; Reinaldo = Gerente; Socorro = Tesouraria; demais = Operador/Colaborador.</p></article>
-      <article className="tip"><Calculator /><h3>Contabilidade</h3><p>Escolha competência, unidade e movimento, anexe o <strong>extrato consolidado do banco</strong> e clique em <strong>Baixar ZIP completo</strong>. O ZIP leva uma planilha Excel, o extrato e todos os documentos disponíveis de despesas e receitas. Não há geração de link nem envio por e-mail pelo sistema.</p></article>
+      <article className="tip"><BookOpenCheck /><h3>Plano de Contas</h3><p>Despesas pesquisam contas finais <strong>4.xx</strong> e Receitas/Alvarás contas finais <strong>3.xx</strong>. A página de manutenção é exclusiva do Administrador Master.</p></article>
+      <article className="tip"><Users /><h3>Usuários</h3><p>O próprio usuário solicita o cadastro e fica <strong>Pendente</strong>. O Master libera o acesso. Perfis especiais: Flávio = Diretor/Autorizador; Reinaldo = Gerente; Socorro = Tesouraria; demais = Operador/Colaborador.</p></article>
+      <article className="tip"><Calculator /><h3>Contabilidade</h3><p>O pacote mensal separa <strong>Despesas, Receitas, Repasses de Alvarás e Comissões de Agentes</strong>. A receita entra na competência do recebimento; repasses/comissões entram na competência da data real do pagamento da parcela.</p></article>
       <article className="tip"><Landmark /><h3>Extrato bancário</h3><p>O extrato consolidado mensal é obrigatório para o pacote contábil. Aceita PDF, OFX, CSV e Excel e fica associado à competência/unidade selecionada.</p></article>
-      <article className="tip"><ShieldCheck /><h3>Auditoria</h3><p>Envios, aprovações, devoluções, rejeições, correções, alterações de usuários, extrato bancário, Plano de Contas e pacotes contábeis ficam registrados com autor e data.</p></article>
-      <article className="tip"><Paperclip /><h3>Documentos / Storage</h3><p>O Firebase Storage está <strong>ativo</strong>. Despesas e Receitas/Alvarás aceitam anexos, e o <strong>Arquivo de Documentos</strong> centraliza os arquivos gravados. Na lista de Despesas, o clipe com contador abre os anexos diretamente.</p></article>
-      <article className="tip"><Wrench /><h3>Utilitários</h3><p>Somente Fernando acessa o menu Utilitários. Ali é possível baixar backup JSON, restaurar esse JSON e executar a limpeza total preservando os usuários.</p></article>
-      <article className="tip"><DatabaseBackup /><h3>Backup / Restauração</h3><p>O backup JSON preserva os <strong>dados do Firestore</strong>. Ele não contém fisicamente PDFs ou outros arquivos do Storage e não recria contas apagadas do Firebase Authentication.</p></article>
+      <article className="tip"><ShieldCheck /><h3>Auditoria</h3><p>Recebimento do Alvará, confirmação pela Tesouraria, programação, aprovação e execução de Repasse/Comissão, além das demais ações financeiras, ficam registrados com usuário, data e detalhe. Master, Diretor, Gerente e Tesouraria podem consultar a Auditoria.</p></article>
+      <article className="tip"><Paperclip /><h3>Documentos / Storage</h3><p>O Firebase Storage está <strong>ativo</strong>. Despesas e Receitas/Alvarás aceitam anexos, e o <strong>Arquivo de Documentos</strong> centraliza os arquivos gravados.</p></article>
+      <article className="tip"><Wrench /><h3>Utilitários</h3><p>Somente o Administrador Master acessa o menu Utilitários. Ali é possível baixar backup JSON, restaurar esse JSON e executar a limpeza total preservando os usuários.</p></article>
+      <article className="tip"><DatabaseBackup /><h3>Backup / Restauração</h3><p>O backup JSON preserva os <strong>dados do Firestore</strong>, incluindo Repasse de Alvarás, Comissões de Agentes e Nota Fiscal. Ele não contém fisicamente PDFs ou outros arquivos do Storage.</p></article>
     </div>
 
     <section className="page-card help-situations-card">
       <h2>O que fazer em cada situação</h2>
       <div className="help-situation-list">
-        <div><AlertTriangle /><span><strong>Despesa devolvida:</strong> se você criou o lançamento, abra Despesas → Corrigir e reenviar → ajuste o que foi solicitado → Reenviar para Aprovação. O Master também pode corrigir para suporte/homologação.</span></div>
-        <div><BadgeCheck /><span><strong>Despesa aprovada:</strong> ela passa a compor o total de Despesas e o Saldo/Resultado da Dashboard.</span></div>
-        <div><RefreshCw /><span><strong>Despesa de outro usuário:</strong> você pode consultar o lançamento e os anexos, mas Editar, Excluir ou Corrigir ficam restritos ao criador ou ao Master, conforme o status.</span></div>
-        <div><BookOpenCheck /><span><strong>Precisa classificar um lançamento:</strong> digite parte do código ou nome da conta no próprio formulário.</span></div>
-        <div><UserCheck /><span><strong>Novo usuário:</strong> usuário solicita cadastro → fica Pendente → Fernando libera como perfil correspondente → status Ativo.</span></div>
+        <div><AlertTriangle /><span><strong>Despesa devolvida:</strong> se você criou o lançamento, abra Despesas → Corrigir e reenviar → ajuste o solicitado → Reenviar para Aprovação. O Master também pode corrigir para suporte/homologação.</span></div>
+        <div><BadgeCheck /><span><strong>Alvará recebido:</strong> confirme o crédito em Tesouraria / Receitas. Não envie o recebimento para Aprovações; depois da confirmação, os módulos Repasse, Nota Fiscal e Comissão são alimentados automaticamente.</span></div>
+        <div><BadgeDollarSign /><span><strong>Repasse parcelado:</strong> Repasse de Alvarás → Programar pagamento → escolha Parcelado → número de parcelas → datas/valores → Enviar para aprovação → depois registre cada parcela paga.</span></div>
+        <div><Users /><span><strong>Comissão parcelada:</strong> use exatamente o mesmo fluxo no menu Comissões de Agentes.</span></div>
+        <div><ShieldCheck /><span><strong>Precisa comprovar quem fez uma ação:</strong> abra Auditoria e pesquise por processo, usuário, módulo ou ação.</span></div>
         <div><FolderArchive /><span><strong>Precisa localizar um anexo:</strong> abra Arquivo de Documentos e pesquise por processo, fornecedor, cliente, status ou nome do arquivo.</span></div>
-        <div><Calculator /><span><strong>Fechamento mensal:</strong> Contabilidade → escolha competência → anexe extrato consolidado → confira pendências → Baixar ZIP completo.</span></div>
+        <div><Calculator /><span><strong>Fechamento mensal:</strong> Contabilidade → competência → extrato consolidado → Movimento completo. Repasses e comissões pagos em outro mês aparecerão no mês do pagamento real.</span></div>
       </div>
     </section>
   </>
@@ -61,26 +65,35 @@ export function TipsPageEnhanced() {
 export function HowToPageEnhanced() {
   const steps = [
     ['1', 'Entrar no sistema', 'Acesse com e-mail/senha ou Google. No primeiro acesso, o próprio usuário solicita o cadastro e fica Pendente até a liberação do Administrador Master.'],
-    ['2', 'Perfis e responsabilidades', 'Fernando administra o sistema e possui modo Master de homologação; Flávio é o autorizador financeiro oficial; Reinaldo atua como Gerente; Socorro atua na Tesouraria; os demais são Operadores/Colaboradores.'],
-    ['3', 'Cadastrar uma despesa', 'Clique em Nova Despesa, preencha o demonstrativo, classifique em uma conta 4.xx se desejar e selecione os documentos comprobatórios. O upload para o Firebase Storage começa imediatamente e mostra o progresso até a confirmação de envio.'],
-    ['4', 'Acompanhar o status', 'Rascunho, Enviado para Aprovação, Em Análise, Aprovado, Devolvido p/ Correção, Rejeitado, Pago e Arquivado ficam visíveis no próprio módulo.'],
-    ['5', 'Autorizar uma despesa', 'Todos os usuários ativos podem consultar Aprovações. Flávio é o autorizador oficial. Fernando, no modo Master de homologação, também pode Aprovar, Devolver ou Rejeitar para testes e suporte, com identificação correta na Auditoria.'],
-    ['6', 'Editar rascunho ou corrigir devolução', 'Rascunho e despesa Devolvida só podem ser alterados pelo criador do lançamento ou pelo Administrador Master. Se você for o criador, use Editar ou Corrigir e reenviar; os demais usuários ficam apenas em consulta.'],
-    ['7', 'Cadastrar uma receita / alvará', 'A área de origem preenche o demonstrativo completo, escolhe uma conta final 3.xx, anexa alvará/acordo e documentos do processo e envia à Tesouraria.'],
-    ['8', 'Tratar a receita na Tesouraria', 'A Tesouraria recebe o demonstrativo pronto, confirma o recebimento e encerra a operação depois da conferência do crédito e dos repasses aplicáveis.'],
-    ['9', 'Consultar a Dashboard', 'Receitas ficam em azul, despesas em vermelho e saldo em verde. Somente despesas aprovadas entram no cálculo. Os cards Receitas, Despesas e Aguardando Aprovação funcionam como atalhos; Saldo/Resultado é apenas informativo.'],
-    ['10', 'Plano de Contas protegido', 'O Plano de Contas correto fica salvo no Firestore e é usado nos seletores dos lançamentos. A página de manutenção é exibida somente para Fernando, Administrador Master.'],
-    ['11', 'Gerenciar usuários', 'Cada usuário solicita o próprio cadastro. Fernando visualiza os Pendentes, confere o perfil oficial e altera para Ativo, Inativo ou Bloqueado.'],
-    ['12', 'Preparar o fechamento contábil', 'Em Contabilidade, escolha competência, unidade e movimento e anexe o extrato consolidado do banco. O sistema mostra quantas despesas, receitas e documentos estão aptos e sinaliza lançamentos sem anexo.'],
-    ['13', 'Baixar o pacote da Contabilidade', 'Clique em Baixar ZIP completo. O pacote contém uma planilha Excel com Resumo, Despesas, Receitas, Documentos e Pendências, além do extrato bancário e dos anexos das despesas/receitas. O sistema não gera link nem envia o pacote por e-mail.'],
-    ['14', 'Backup e restauração', 'No menu Utilitários, exclusivo do Master, Baixar backup JSON salva os dados do Firestore e Fazer upload do JSON restaura um backup gerado pelo próprio sistema. O JSON não contém os arquivos binários do Storage nem recria usuários apagados do Firebase Authentication.'],
-    ['15', 'Limpeza total', 'Utilitários → Limpeza total remove os dados do sistema e preserva os usuários. Antes da exclusão, o sistema baixa automaticamente um backup JSON e exige a frase APAGAR TUDO.'],
-    ['16', 'Consultar Auditoria e documentos', 'Use Auditoria para rastrear ações e Arquivo de Documentos para localizar os anexos de despesas e receitas. Na lista de Despesas, o ícone de clipe com contador também abre os anexos diretamente.'],
+    ['2', 'Perfis e responsabilidades', 'O Master administra o sistema e homologa; Flávio é o autorizador financeiro oficial; Reinaldo atua como Gerente; Socorro atua na Tesouraria; os demais são Operadores/Colaboradores.'],
+    ['3', 'Cadastrar uma despesa', 'Clique em Nova Despesa, preencha o demonstrativo, classifique se desejar e selecione os documentos comprobatórios. Depois envie para Aprovação.'],
+    ['4', 'Autorizar uma despesa', 'Todos os usuários ativos podem consultar Aprovações. Flávio é o autorizador oficial e o Master também pode Aprovar, Devolver ou Rejeitar em homologação.'],
+    ['5', 'Cadastrar uma receita / alvará', 'A área de origem preenche o Demonstrativo de Recebimento de Honorários, informa processo, cliente, dados bancários, composição do valor, dados da Nota Fiscal e, quando houver participação, o nome do agente.'],
+    ['6', 'Enviar o Alvará à Tesouraria', 'O recebimento do Alvará não vai para a fila de Aprovações. Use Enviar à Tesouraria; a Tesouraria confere o crédito e usa Confirmar recebimento. Essas ações ficam registradas na Auditoria.'],
+    ['7', 'Repasse de Alvarás', 'Após a confirmação do crédito, o sistema leva automaticamente processo, cliente, dados bancários e Valor Líquido Devido ao Cliente para Repasse de Alvarás. Esse valor é dinheiro de terceiro e não é despesa operacional do escritório.'],
+    ['8', 'Programar o repasse', 'Escolha À vista ou Parcelado, informe quantidade, datas e valores. Ao enviar, o repasse consolidado fica Aguardando aprovação e cada parcela também fica Aguardando aprovação.'],
+    ['9', 'Aprovar o repasse', 'Flávio/Diretor é o autorizador oficial; o Master também pode homologar. Quando aprovado, as parcelas mudam para Aprovada. A rejeição devolve a programação para correção.'],
+    ['10', 'Registrar pagamentos do cliente', 'A Tesouraria marca cada parcela como paga e informa a data efetiva. O sistema calcula Já repassado, Saldo a repassar, Próxima parcela e status Parcialmente pago/Pago integralmente. Cada parcela executada gera Auditoria.'],
+    ['11', 'Comissões de Agentes', 'Se houver Outras Deduções / Participações com agente informado, a comissão aparece automaticamente em Comissões de Agentes e segue o mesmo tratamento: programação, aprovação, parcelamento e baixa por data efetiva.'],
+    ['12', 'Nota Fiscal', 'O menu Nota Fiscal recebe automaticamente os dados do cliente e o valor dos Honorários do Escritório. Registre status, número e data da NF quando emitida.'],
+    ['13', 'Consultar a Dashboard', 'Receitas ficam em azul, despesas em vermelho e saldo em verde. Os cards Receitas, Despesas e Aguardando Aprovação funcionam como atalhos; Saldo/Resultado é apenas informativo.'],
+    ['14', 'Plano de Contas protegido', 'O Plano de Contas correto fica salvo no Firestore e é usado nos seletores dos lançamentos. A página de manutenção é exibida somente para o Administrador Master.'],
+    ['15', 'Gerenciar usuários', 'Cada usuário solicita o próprio cadastro. O Master visualiza os Pendentes, confere o perfil e altera para Ativo, Inativo ou Bloqueado.'],
+    ['16', 'Preparar o fechamento contábil', 'Em Contabilidade, escolha competência, unidade e Movimento completo e anexe o extrato consolidado. Receitas são agrupadas pelo mês do recebimento; Repasse de Alvarás e Comissões pelo mês da data efetiva de pagamento da parcela.'],
+    ['17', 'Baixar o pacote da Contabilidade', 'O ZIP contém planilha Excel com Resumo, Despesas, Receitas, Repasses de Alvarás, Comissões de Agentes, Documentos e Pendências, além do extrato bancário e anexos disponíveis.'],
+    ['18', 'Consultar Auditoria', 'Auditoria registra quem criou/enviou/confirmou o Alvará, quem programou/aprovou o pagamento e quem executou cada parcela, além das demais ações relevantes.'],
+    ['19', 'Backup e restauração', 'No menu Utilitários, exclusivo do Master, o Backup JSON salva os dados do Firestore, inclusive os novos controles de Repasse, Comissão e Nota Fiscal.'],
   ]
 
   return <>
     <Header eyebrow="Guia operacional" title="Como Usar" description="Passo a passo completo do fluxo financeiro, usuários, aprovação, documentos, backup e contabilidade." />
     <div className="howto-steps enhanced-howto">{steps.map(([number, title, text]) => <article key={number}><span>{number}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
     <section className="page-card tour-callout"><Lightbulb size={24} /><div><h2>Tour Guiado</h2><p>O conteúdo definitivo do tour deve seguir estas etapas e respeitar as mesmas permissões descritas acima.</p></div></section>
+
+    <section className="page-card howto-flowchart-card">
+      <div><span className="eyebrow">Visão visual</span><h2>Fluxo Geral do Sistema – Visão Completa</h2><p>Este fluxograma resume, de forma visual, todo o funcionamento do aplicativo, desde o lançamento de despesas e receitas até a aprovação, execução, arquivamento e exportação para a Contabilidade.</p></div>
+      <a href="/fluxo-geral-sistema.svg" target="_blank" rel="noreferrer" className="howto-flowchart-link" title="Abrir fluxograma em tamanho maior"><img src="/fluxo-geral-sistema.svg" alt="Fluxo Geral do Sistema" /></a>
+      <a href="/fluxo-geral-sistema.svg" target="_blank" rel="noreferrer" className="secondary-button howto-flowchart-button">Abrir imagem em tamanho maior</a>
+    </section>
   </>
 }
