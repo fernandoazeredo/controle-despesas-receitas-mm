@@ -188,18 +188,6 @@ function handleDateKeydown(event: KeyboardEvent) {
   }
 }
 
-function roundPercentageInput(target: EventTarget | null) {
-  const input = target instanceof HTMLInputElement ? target : null
-  if (!input || input.type !== 'number' || !input.closest('.composition-table')) return
-  const value = Number(input.value)
-  if (!Number.isFinite(value) || input.value === '') return
-  const rounded = Math.round(value * 100) / 100
-  setNativeInputValue(input, String(rounded))
-  requestAnimationFrame(() => {
-    if (document.activeElement !== input) input.value = rounded.toFixed(2)
-  })
-}
-
 export function WorkflowStatusEnhancer() {
   useEffect(() => {
     applyStatusClasses()
@@ -226,7 +214,6 @@ export function WorkflowStatusEnhancer() {
         dateBuffers.set(event.target, '')
         hideDateHint()
       }
-      roundPercentageInput(event.target)
     }
     const onFocusIn = (event: FocusEvent) => {
       const input = event.target instanceof HTMLInputElement && event.target.type === 'date' ? event.target : null
