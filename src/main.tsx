@@ -7,6 +7,7 @@ import './styles.css'
 import './button-label-fix.css'
 import './workflow-additions.css'
 import './responsive-shell.css'
+import './alvara-controls.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
