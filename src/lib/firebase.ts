@@ -1,6 +1,6 @@
 import { getApps, initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, initializeFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
 /**
@@ -25,6 +25,17 @@ const firebaseConfig = {
 
 export const firebaseApp = getApps()[0] ?? initializeApp(firebaseConfig)
 export const auth = getAuth(firebaseApp)
-export const db = getFirestore(firebaseApp)
+
+// Os novos controles financeiros possuem metadados opcionais por parcela
+// (aprovação, baixa, usuário responsável). O Firestore deve ignorar campos
+// opcionais ainda não preenchidos, sem transformar isso em erro de gravação.
+let firestoreDb
+try {
+  firestoreDb = initializeFirestore(firebaseApp, { ignoreUndefinedProperties: true })
+} catch {
+  firestoreDb = getFirestore(firebaseApp)
+}
+export const db = firestoreDb
+
 export const storage = getStorage(firebaseApp)
 export const firebaseProjectId = firebaseConfig.projectId
