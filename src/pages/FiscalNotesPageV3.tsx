@@ -9,7 +9,7 @@ type AnyRecord = { id: string } & DocumentData
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const toNumber = (value: unknown) => { const number = Number(value); return Number.isFinite(number) ? number : 0 }
-const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>'\"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '\"': '&quot;' }[char] || char))
+const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char] || char))
 const dateBr = (value: unknown) => {
   const text = String(value ?? '')
   if (!text) return '—'
