@@ -46,6 +46,34 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.howto-flowchart-card {
+  margin-top: 20px;
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  text-align: center;
+}
+.howto-flowchart-card > div { max-width: 900px; }
+.howto-flowchart-card h2 { margin: 6px 0 8px; }
+.howto-flowchart-card p { margin: 0 auto; }
+.howto-flowchart-link {
+  display: block;
+  width: 100%;
+  max-width: 1180px;
+  border: 1px solid #d8e1e9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(31, 51, 72, .08);
+}
+.howto-flowchart-link img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+.howto-flowchart-button { text-decoration: none; }
+
 @media (min-width: 1025px) {
   .sidebar {
     position: sticky;
@@ -73,9 +101,12 @@
   .audit-toolbar { align-items: stretch; flex-direction: column; }
   .audit-toolbar select { width: 100%; min-width: 0; }
   .enhanced-audit-list .audit-heading { align-items: flex-start; flex-direction: column; }
+  .howto-flowchart-card { padding: 16px; }
 }
 
 @media (max-width: 520px) {
   .obligation-metrics.enhanced,
   .readiness-grid.accounting-six { grid-template-columns: 1fr; }
+  .howto-flowchart-card { padding: 13px; gap: 14px; }
+  .howto-flowchart-button { width: 100%; }
 }
