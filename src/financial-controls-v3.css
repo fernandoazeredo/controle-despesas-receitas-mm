@@ -1,0 +1,81 @@
+/* Ajustes dos controles financeiros derivados dos primeiros testes de Alvarás */
+.obligation-metrics.enhanced {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.obligation-list.enhanced .obligation-list-row.enhanced,
+.obligation-list-row.enhanced {
+  min-width: 1320px;
+  grid-template-columns: minmax(240px, 1.45fr) 145px 145px 135px 135px minmax(180px, .9fr) minmax(175px, .85fr) 145px;
+}
+
+.obligation-installment-head.enhanced,
+.obligation-installment-row.enhanced {
+  min-width: 940px;
+  grid-template-columns: 80px 150px 165px 185px 110px 170px;
+}
+.obligation-installment-total.enhanced { min-width: 940px; }
+
+.audit-explainer {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  border-color: #b9dbea;
+  background: #f3fbff;
+}
+.audit-explainer > svg { flex: 0 0 auto; color: #087faf; margin-top: 2px; }
+.audit-explainer > div { display: grid; gap: 5px; }
+.audit-explainer strong { color: #18344d; }
+.audit-explainer span { color: #586879; font-size: 13px; line-height: 1.55; }
+.audit-toolbar { align-items: center; gap: 12px; }
+.audit-toolbar select {
+  min-width: 230px;
+  border: 1px solid #ccd5df;
+  border-radius: 9px;
+  padding: 9px 10px;
+  background: #fff;
+  color: #243446;
+}
+.enhanced-audit-list .audit-main { min-width: 0; display: grid; gap: 4px; width: 100%; }
+.enhanced-audit-list .audit-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.enhanced-audit-list .audit-heading strong { min-width: 0; }
+.enhanced-audit-list .audit-heading .status-badge { flex: 0 0 auto; }
+
+.readiness-grid.accounting-six {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+@media (min-width: 1025px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .sidebar nav {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 1250px) {
+  .obligation-metrics.enhanced { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .readiness-grid.accounting-six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 800px) {
+  .obligation-metrics.enhanced,
+  .readiness-grid.accounting-six { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .audit-toolbar { align-items: stretch; flex-direction: column; }
+  .audit-toolbar select { width: 100%; min-width: 0; }
+  .enhanced-audit-list .audit-heading { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 520px) {
+  .obligation-metrics.enhanced,
+  .readiness-grid.accounting-six { grid-template-columns: 1fr; }
+}
