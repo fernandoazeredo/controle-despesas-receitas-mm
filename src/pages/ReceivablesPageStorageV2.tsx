@@ -26,26 +26,48 @@ function formatBytes(bytes: number) { return bytes < 1024 * 1024 ? `${Math.max(1
 function attachmentsOf(item: AnyRecord): AttachmentMeta[] { return Array.isArray(item.attachments) ? item.attachments as AttachmentMeta[] : [] }
 function componentLabel(name: string) { return name.startsWith('Outras Deduções / Participações') ? 'Outras Deduções / Participações' : name }
 
-function parseBrazilianNumber(value: string) {
+function normalizeBrazilianDecimal(value: string) {
   const cleaned = value.trim().replace(/\s/g, '').replace(/[^\d,.-]/g, '')
-  if (!cleaned) return 0
-  let normalized = cleaned
-  if (cleaned.includes(',')) {
-    normalized = cleaned.replace(/\./g, '').replace(',', '.')
-  } else {
-    const dots = cleaned.match(/\./g)?.length ?? 0
-    if (dots > 1 || (dots === 1 && /^-?\d{1,3}\.\d{3}$/.test(cleaned))) normalized = cleaned.replace(/\./g, '')
-  }
+  if (!cleaned) return ''
+  if (cleaned.includes(',')) return cleaned.replace(/\./g, '').replace(',', '.')
+  const dots = cleaned.match(/\./g)?.length ?? 0
+  if (dots > 1 || (dots === 1 && /^-?\d{1,3}\.\d{3}$/.test(cleaned))) return cleaned.replace(/\./g, '')
+  return cleaned
+}
+
+function parseBrazilianNumber(value: string) {
+  const normalized = normalizeBrazilianDecimal(value)
+  if (!normalized) return 0
   const number = Number(normalized)
   return Number.isFinite(number) ? number : 0
 }
 
-function roundPercentCustom(value: number) {
-  const safe = Math.max(0, Number.isFinite(value) ? value : 0)
-  const scaled = safe * 100
-  const base = Math.floor(scaled + 1e-10)
-  const thirdDecimalDigit = Math.floor(((scaled - base) + 1e-10) * 10)
-  return Number(((base + (thirdDecimalDigit >= 6 ? 1 : 0)) / 100).toFixed(2))
+function roundPercentTextCustom(value: string) {
+  const normalized = normalizeBrazilianDecimal(value)
+  if (!normalized || normalized.startsWith('-')) return 0
+  const match = normalized.match(/^(\d+)(?:\.(\d*))?$/)
+  if (!match) return 0
+  const integerPart = BigInt(match[1] || '0')
+  const decimals = `${match[2] || ''}000`
+  const hundredths = BigInt(decimals.slice(0, 2) || '0')
+  const thirdDecimalDigit = Number(decimals[2] || '0')
+  const basisPoints = integerPart * 100n + hundredths + (thirdDecimalDigit >= 6 ? 1n : 0n)
+  return Number(basisPoints) / 100
+}
+
+function percentFromMoneyCustom(value: number, total: number) {
+  const valueCents = BigInt(Math.max(0, Math.round(value * 100)))
+  const totalCents = BigInt(Math.max(0, Math.round(total * 100)))
+  if (totalCents === 0n) return 0
+  const thousandthsOfPercent = (valueCents * 100000n) / totalCents
+  const hundredthsOfPercent = thousandthsOfPercent / 10n
+  const thirdDecimalDigit = Number(thousandthsOfPercent % 10n)
+  const basisPoints = hundredthsOfPercent + (thirdDecimalDigit >= 6 ? 1n : 0n)
+  return Number(basisPoints) / 100
+}
+
+function normalizePercentStored(value: number) {
+  return Math.max(0, Math.round(value * 100)) / 100
 }
 
 function BrazilianMoneyInput({ value, onChange, ariaLabel }: { value: number; onChange: (value: number) => void; ariaLabel?: string }) {
@@ -83,7 +105,7 @@ function BrazilianPercentInput({ value, onChange, ariaLabel }: { value: number; 
   const [text, setText] = useState(value > 0 ? decimalBR.format(value) : '')
 
   useEffect(() => {
-    if (!focused) setText(value > 0 ? decimalBR.format(roundPercentCustom(value)) : '')
+    if (!focused) setText(value > 0 ? decimalBR.format(normalizePercentStored(value)) : '')
   }, [focused, value])
 
   return <input
@@ -99,12 +121,11 @@ function BrazilianPercentInput({ value, onChange, ariaLabel }: { value: number; 
     onChange={(event) => {
       const next = event.target.value
       setText(next)
-      const parsed = Math.max(0, parseBrazilianNumber(next))
-      onChange(roundPercentCustom(parsed))
+      onChange(roundPercentTextCustom(next))
     }}
     onBlur={() => {
       setFocused(false)
-      const rounded = roundPercentCustom(value)
+      const rounded = normalizePercentStored(value)
       setText(value > 0 ? decimalBR.format(rounded) : '')
     }}
   />
@@ -171,19 +192,22 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
   const uploaded = uploads.flatMap((item) => item.meta ? [item.meta] : [])
 
   function updatePercent(index: number, percentual: number) {
-    const roundedPercent = roundPercentCustom(percentual)
+    const roundedPercent = normalizePercentStored(percentual)
     setComponents((current) => current.map((item, i) => i === index ? { ...item, percentual: roundedPercent, valor: totalAlvara > 0 ? Number(((totalAlvara * roundedPercent) / 100).toFixed(2)) : 0 } : item))
   }
   function updateValue(index: number, valor: number) {
     const roundedValue = Number(Math.max(0, valor).toFixed(2))
-    const calculatedPercent = totalAlvara > 0 ? (roundedValue / totalAlvara) * 100 : 0
-    setComponents((current) => current.map((item, i) => i === index ? { ...item, valor: roundedValue, percentual: roundPercentCustom(calculatedPercent) } : item))
+    const calculatedPercent = totalAlvara > 0 ? percentFromMoneyCustom(roundedValue, totalAlvara) : 0
+    setComponents((current) => current.map((item, i) => i === index ? { ...item, valor: roundedValue, percentual: calculatedPercent } : item))
   }
   function changeTotal(value: number) {
     const previous = totalAlvara
     setTotalAlvara(value)
     setBaseCalculo((current) => current === 0 || current === previous ? value : current)
-    setComponents((current) => current.map((item) => ({ ...item, percentual: roundPercentCustom(item.percentual), valor: value > 0 ? Number(((value * roundPercentCustom(item.percentual)) / 100).toFixed(2)) : 0 })))
+    setComponents((current) => current.map((item) => {
+      const roundedPercent = normalizePercentStored(item.percentual)
+      return { ...item, percentual: roundedPercent, valor: value > 0 ? Number(((value * roundedPercent) / 100).toFixed(2)) : 0 }
+    }))
   }
 
   function selectFiles(files: FileList | null) {
