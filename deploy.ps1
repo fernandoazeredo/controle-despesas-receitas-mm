@@ -54,9 +54,15 @@ if (-not (Test-Path '.\dist\index.html')) {
 
 Write-Host '3/3 - Publicando Firestore, Storage e Hosting no projeto Firebase isolado...' -ForegroundColor Yellow
 Write-Host "Projeto fixado por parametro: $ProjectId" -ForegroundColor DarkCyan
-firebase deploy --only firestore:rules,firestore:indexes,storage,hosting --project $ProjectId --non-interactive
-if ($LASTEXITCODE -ne 0) {
-  throw 'Falha no deploy Firebase. Se o erro mencionar Storage/bucket, abra Firebase Console > Storage e conclua a criacao do bucket deste projeto antes de repetir o deploy.'
+
+# No Windows, executar a CLI via cmd evita o retorno incorreto observado pelo PowerShell
+# depois de um deploy que, na pratica, foi concluido pelo Firebase.
+$FirebaseCommand = "firebase deploy --only firestore:rules,firestore:indexes,storage,hosting --project $ProjectId --non-interactive"
+cmd /c $FirebaseCommand
+$FirebaseExitCode = $LASTEXITCODE
+
+if ($FirebaseExitCode -ne 0) {
+  throw "Falha real no deploy Firebase (codigo $FirebaseExitCode). Leia as linhas imediatamente acima para identificar se o erro ocorreu em Firestore, Storage ou Hosting."
 }
 
 Write-Host ''
