@@ -26,8 +26,21 @@ const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL
 const today = () => new Date().toISOString().slice(0, 10)
 const nowIso = () => new Date().toISOString()
 const toNumber = (value: unknown) => { const number = Number(value); return Number.isFinite(number) ? number : 0 }
-const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char] || char))
+const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>'\"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '\"': '&quot;' }[char] || char))
 const dateBr = (value: unknown) => { const text = String(value ?? ''); if (!text) return '—'; const [year, month, day] = text.slice(0, 10).split('-'); return year && month && day ? `${day}/${month}/${year}` : text }
+
+const financialComponentCards = [
+  { name: 'Imposto de Renda', label: 'Imposto de Renda' },
+  { name: 'INSS', label: 'INSS' },
+  { name: 'INSS Empregador', label: 'INSS Empregador' },
+  { name: 'Honorários do Escritório', label: 'Honorários do Escritório' },
+  { name: 'Honorários Perito', label: 'Honorários Perito' },
+  { name: 'Ressarcimento de Custas', label: 'Ressarcimento de Custas' },
+  { name: 'Despesas Bancárias / Tarifas', label: 'Despesas Bancárias / Tarifas' },
+  { name: 'Outras Deduções / Participações - Geral 1', label: 'Outras Deduções / Participações 1' },
+  { name: 'Outras Deduções / Participações - Geral 2', label: 'Outras Deduções / Participações 2' },
+  { name: 'Outras Deduções / Participações', label: 'Comissões / Participações' },
+] as const
 
 function useCollectionRecords(name: string) {
   const [records, setRecords] = useState<AnyRecord[]>([])
@@ -274,13 +287,13 @@ function PaymentControlPage({ kind }: { kind: PaymentKind }) {
   const [search, setSearch] = useState('')
   const [target, setTarget] = useState<AnyRecord | null>(null)
   const planMap = useMemo(() => new Map(plans.map((item) => [item.id, item])), [plans])
-  const sources = useMemo(() => receivables.filter((item) => {
-    if (!eligibleReceivable(item)) return false
+  const eligibleReceivables = useMemo(() => receivables.filter(eligibleReceivable), [receivables])
+  const sources = useMemo(() => eligibleReceivables.filter((item) => {
     const amount = sourceAmount(item, kind)
     if (amount <= 0) return false
     if (kind === 'agent' && !String(item.agentName || '').trim()) return false
     return `${item.processo ?? ''} ${item.reclamante ?? ''} ${item.reclamada ?? ''} ${sourceBeneficiary(item, kind)}`.toLowerCase().includes(search.toLowerCase())
-  }), [kind, receivables, search])
+  }), [eligibleReceivables, kind, search])
   const totals = useMemo(() => sources.reduce((acc, source) => {
     const plan = planMap.get(source.id)
     const due = sourceAmount(source, kind)
@@ -293,11 +306,19 @@ function PaymentControlPage({ kind }: { kind: PaymentKind }) {
     acc.overdue += planInstallments(plan).filter((item) => !item.paid && item.dueDate && item.dueDate < today() && ['aprovado', 'parcialmente_pago'].includes(String(plan?.status))).length
     return acc
   }, { received: 0, due: 0, paid: 0, pending: 0, approvals: 0, overdue: 0 }), [kind, planMap, sources])
+  const financialBreakdown = useMemo(() => {
+    const values = financialComponentCards.map((card) => ({
+      ...card,
+      value: eligibleReceivables.reduce((sum, source) => sum + componentValue(source, card.name), 0),
+    }))
+    return { values, total: values.reduce((sum, item) => sum + item.value, 0) }
+  }, [eligibleReceivables])
   const loading = loadingReceivables || loadingPlans
   const Icon = kind === 'client' ? BadgeDollarSign : Users
 
   return <><div className="page-heading"><div><span className="eyebrow">Controle financeiro separado</span><h1>{title}</h1><p>{subtitle}</p></div><div className="quick-actions"><button className="secondary-button" type="button" onClick={() => generatePaymentPdf(kind, sources, planMap)}><FileText size={17} /> Gerar PDF do relatório</button></div></div>
     <div className="obligation-metrics enhanced"><article><span>Valor recebido</span><strong>{money.format(totals.received)}</strong></article><article><span>{kind === 'client' ? 'Líquido devido' : 'Comissões devidas'}</span><strong>{money.format(totals.due)}</strong></article><article><span>Já pago</span><strong>{money.format(totals.paid)}</strong></article><article><span>Saldo a pagar</span><strong>{money.format(totals.pending)}</strong></article><article><span>Aguardando aprovação</span><strong>{totals.approvals}</strong></article><article><span>Parcelas vencidas</span><strong>{totals.overdue}</strong></article></div>
+    {kind === 'client' && <section className="page-card module-card"><div className="module-toolbar"><div><span className="eyebrow">Informação financeira acumulada</span><h2>Composição dos Demonstrativos de Alvarás</h2><p>Valores extraídos automaticamente dos demonstrativos confirmados pela Tesouraria. Este quadro é informativo e não altera o fluxo de aprovação, baixa ou Contabilidade.</p></div></div><div className="obligation-metrics enhanced">{financialBreakdown.values.map((item) => <article key={item.name}><span>{item.label}</span><strong>{money.format(item.value)}</strong></article>)}<article><span>Total dos componentes</span><strong>{money.format(financialBreakdown.total)}</strong></article></div></section>}
     <section className="page-card module-card"><div className="module-toolbar"><div className="search-box"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por processo, cliente, parte ou beneficiário" /></div></div>{loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando controle</strong></div> : sources.length === 0 ? <div className="module-empty"><Icon size={34} /><strong>Nenhum valor disponível para este controle</strong><span>Os registros entram automaticamente depois que a Tesouraria confirma o recebimento do Alvará.</span></div> : <div className="obligation-list enhanced"><div className="obligation-list-row obligation-list-head enhanced"><span>Processo / Beneficiário</span><span>Valor recebido</span><span>Valor devido</span><span>Já pago</span><span>Saldo</span><span>Próxima parcela</span><span>Status</span><span>Ação</span></div>{sources.map((source) => {
       const plan = planMap.get(source.id)
       const due = sourceAmount(source, kind)
