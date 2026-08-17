@@ -6,6 +6,7 @@ import { useSearchParams } from 'react-router-dom'
 import { db, storage } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import { AccountSelector } from '../components/AccountSelector'
+import { ExpenseManagementDashboard } from '../components/ExpenseManagementDashboard'
 import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
 import type { ChartOfAccount } from '../data/chartOfAccounts'
 
@@ -370,6 +371,7 @@ export function ExpensesPageStorage() {
 
   return <>
     <Header onNew={() => { setEditing(null); setOpen(true) }} />
+    <ExpenseManagementDashboard records={records} loading={loading} />
     <section className="page-card module-card expense-module-card"><div className="module-toolbar"><div className="search-box"><Search size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por responsável, fornecedor, competência, código ou conta" /></div><button className="secondary-button"><Filter size={17} /> Filtros</button></div>
       {loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando despesas</strong></div> : filtered.length === 0 ? <div className="module-empty"><ReceiptText size={34} /><strong>Nenhuma despesa encontrada</strong><span>Clique em Nova Despesa para preencher o primeiro demonstrativo.</span></div> : <div className="data-table review-expenses-table"><div className="data-row data-head"><span>Competência</span><span>Responsável / Favorecido</span><span>Plano de Contas</span><span>Status</span><span className="numeric">Valor</span><span>Ações</span></div>{filtered.map((item) => {
         const isDraft = item.status === 'rascunho'
