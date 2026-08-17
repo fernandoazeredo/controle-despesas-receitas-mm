@@ -12,7 +12,7 @@ import type { ChartOfAccount } from '../data/chartOfAccounts'
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const decimalBR = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 type AnyRecord = { id: string } & DocumentData
-type RevenueComponent = { nome: string; percentual: number; valor: number }
+type RevenueComponent = { nome: string; percentual: number; valor: number; detalhe?: string }
 type AttachmentMeta = { name: string; url: string; path: string; size: number; type: string; uploadedAt: string; uploadedBy: string }
 type UploadItem = { id: string; name: string; size: number; progress: number; status: 'uploading' | 'success' | 'error'; meta?: AttachmentMeta; error?: string }
 
@@ -180,9 +180,9 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     { nome: 'Honorários Perito', percentual: 0, valor: 0 },
     { nome: 'Ressarcimento de Custas', percentual: 0, valor: 0 },
     { nome: 'Despesas Bancárias / Tarifas', percentual: 0, valor: 0 },
-    { nome: 'Outras Deduções / Participações - Geral 1', percentual: 0, valor: 0 },
-    { nome: 'Outras Deduções / Participações - Geral 2', percentual: 0, valor: 0 },
-    { nome: 'Outras Deduções / Participações', percentual: 0, valor: 0 },
+    { nome: 'Outras Deduções / Participações - Geral 1', percentual: 0, valor: 0, detalhe: '' },
+    { nome: 'Outras Deduções / Participações - Geral 2', percentual: 0, valor: 0, detalhe: '' },
+    { nome: 'Outras Deduções / Participações', percentual: 0, valor: 0, detalhe: '' },
   ])
   const totalDeducoes = useMemo(() => components.reduce((sum, component) => sum + toNumber(component.valor), 0), [components])
   const liquidoCliente = useMemo(() => Math.max(0, Number((totalAlvara - totalDeducoes).toFixed(2))), [totalAlvara, totalDeducoes])
@@ -199,6 +199,9 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     const roundedValue = Number(Math.max(0, valor).toFixed(2))
     const calculatedPercent = totalAlvara > 0 ? percentFromMoneyCustom(roundedValue, totalAlvara) : 0
     setComponents((current) => current.map((item, i) => i === index ? { ...item, valor: roundedValue, percentual: calculatedPercent } : item))
+  }
+  function updateDetail(index: number, detalhe: string) {
+    setComponents((current) => current.map((item, i) => i === index ? { ...item, detalhe } : item))
   }
   function changeTotal(value: number) {
     const previous = totalAlvara
@@ -250,7 +253,12 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
   async function save(status: 'rascunho' | 'enviado_tesouraria') {
     if (uploading) { window.alert('Aguarde o término do envio dos documentos.'); return }
     if (!processo.trim() || !reclamante.trim() || totalAlvara <= 0) { window.alert('Preencha número do processo, reclamante e valor líquido do alvará.'); return }
+    const missingGeneralDetail = components.find((item) => item.nome.includes('Geral') && toNumber(item.valor) > 0 && !item.detalhe?.trim())
+    if (missingGeneralDetail) { window.alert('Informe do que se trata ou quem é o beneficiário em cada linha de Outras Deduções / Participações utilizada.'); return }
     if (agentCommissionValue > 0 && !agentName.trim()) { window.alert('Informe o nome do agente/beneficiário em Outras Deduções / Participações.'); return }
+    const componentsToSave = components.map((item) => item.nome === 'Outras Deduções / Participações'
+      ? { ...item, detalhe: agentName.trim() }
+      : item.nome.startsWith('Outras Deduções / Participações') ? { ...item, detalhe: item.detalhe?.trim() ?? '' } : item)
     setBusy(true)
     try {
       await setDoc(recordRef, {
@@ -259,7 +267,7 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
         categoriaReceita: account ? `${account.code} - ${account.name}` : '', classificacaoContabil: account?.code ?? null,
         revenueAccountCode: account?.code ?? null, revenueAccountName: account?.name ?? null, revenueAccountDre: account?.dre ?? null,
         planoConta: account ? { code: account.code, name: account.name, dre: account.dre, category: 'Receita' } : null,
-        valorAlvara: totalAlvara, baseCalculo, valorLiquidoCliente: liquidoCliente, totalDeducoes, components,
+        valorAlvara: totalAlvara, baseCalculo, valorLiquidoCliente: liquidoCliente, totalDeducoes, components: componentsToSave,
         agentName: agentName.trim(), agentCommissionValue, invoiceValue,
         banco, agencia, conta, titular, cpf, emailNf, enderecoNf, status,
         attachments: uploaded, attachmentCount: uploaded.length, storageStatus: 'active',
@@ -280,7 +288,7 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     <div className="form-grid compact-grid"><label><span>Unidade</span><select value={unidade} onChange={(e) => setUnidade(e.target.value as 'RJ' | 'SP')}><option>RJ</option><option>SP</option></select></label><label><span>Data</span><input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label><label><span>Natureza</span><select value={natureza} onChange={(e) => setNatureza(e.target.value)}><option>Trabalhista</option><option>Cível</option></select></label><label className="span-2"><span>Número do processo</span><input value={processo} onChange={(e) => setProcesso(e.target.value)} /></label><label className="span-2"><span>Reclamada</span><input value={reclamada} onChange={(e) => setReclamada(e.target.value)} /></label><label className="span-2"><span>Reclamante</span><input value={reclamante} onChange={(e) => setReclamante(e.target.value)} /></label><label><span>Origem</span><select value={origem} onChange={(e) => setOrigem(e.target.value)}><option>Alvará</option><option>Acordo</option></select></label><label><span>Forma de recebimento</span><input value={formaRecebimento} onChange={(e) => setFormaRecebimento(e.target.value)} /></label><label><span>Data prevista</span><input type="date" value={dataPrevista} onChange={(e) => setDataPrevista(e.target.value)} /></label></div>
     <div className="account-integration-block revenue-account-block"><AccountSelector category="Receita" value={account?.code} onChange={setAccount} label="Categoria / Plano de Contas" placeholder="Digite código ou nome — ex.: 3.01, alvará, honorários..." /><p>A classificação permanece opcional.</p></div>
     <h3 className="form-section-title">Composição do Valor</h3>
-    <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={setBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>{components.map((component, index) => { const isAgentCommission = component.nome === 'Outras Deduções / Participações'; return <div className="composition-row" key={component.nome}><span className={isAgentCommission ? 'commission-component-label' : ''}>{componentLabel(component.nome)}{isAgentCommission && <input aria-label="Nome do agente ou beneficiário da comissão" placeholder="Nome do agente / beneficiário da comissão" value={agentName} onChange={(e) => setAgentName(e.target.value)} />}</span><BrazilianPercentInput value={component.percentual} onChange={(value) => updatePercent(index, value)} ariaLabel={`Percentual de ${componentLabel(component.nome)}`} /><BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${componentLabel(component.nome)}`} /></div> })}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
+    <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={setBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>{components.map((component, index) => { const isAgentCommission = component.nome === 'Outras Deduções / Participações'; const isOtherDeduction = component.nome.startsWith('Outras Deduções / Participações'); return <div className="composition-row" key={component.nome}><span className={isOtherDeduction ? 'commission-component-label' : ''}>{componentLabel(component.nome)}{isOtherDeduction && <input aria-label={isAgentCommission ? 'Nome do agente ou beneficiário da comissão' : `Descrição ou beneficiário de ${componentLabel(component.nome)}`} placeholder={isAgentCommission ? 'Nome do agente / beneficiário da comissão' : 'Do que se trata / nome do beneficiário'} value={isAgentCommission ? agentName : component.detalhe ?? ''} onChange={(e) => isAgentCommission ? setAgentName(e.target.value) : updateDetail(index, e.target.value)} />}</span><BrazilianPercentInput value={component.percentual} onChange={(value) => updatePercent(index, value)} ariaLabel={`Percentual de ${componentLabel(component.nome)}`} /><BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${componentLabel(component.nome)}`} /></div> })}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
     <h3 className="form-section-title">Dados bancários para crédito do cliente</h3>
     <div className="form-grid compact-grid"><label><span>Banco</span><input value={banco} onChange={(e) => setBanco(e.target.value)} /></label><label><span>Agência</span><input value={agencia} onChange={(e) => setAgencia(e.target.value)} /></label><label><span>Conta</span><input value={conta} onChange={(e) => setConta(e.target.value)} /></label><label className="span-2"><span>Nome / Titular</span><input value={titular} onChange={(e) => setTitular(e.target.value)} /></label><label><span>CPF</span><input value={cpf} onChange={(e) => setCpf(e.target.value)} /></label></div>
     <h3 className="form-section-title">Dados para emissão de Nota Fiscal</h3>
