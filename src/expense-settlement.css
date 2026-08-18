@@ -1,0 +1,35 @@
+.expense-settlement-panel { margin-top: 18px; }
+.expense-settlement-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.expense-settlement-heading h2 { margin: 4px 0 8px; }
+.expense-settlement-heading p { margin: 0; }
+.expense-settlement-list { margin-top: 18px; display: grid; gap: 10px; }
+.expense-settlement-list article { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(230px, auto); gap: 16px; align-items: center; border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: #fff; }
+.expense-settlement-info { min-width: 0; display: grid; gap: 3px; }
+.expense-settlement-info > strong { font-size: 14px; }
+.expense-settlement-info > span, .expense-settlement-info > small { color: var(--muted); }
+.expense-settlement-info > span { font-size: 12px; }
+.expense-settlement-info > small { font-size: 11px; }
+.expense-settlement-value { display: grid; justify-items: end; gap: 7px; }
+.expense-settlement-value > strong { font-size: 17px; }
+.expense-settlement-actions { display: flex; align-items: end; justify-content: flex-end; gap: 9px; flex-wrap: wrap; }
+.expense-settlement-actions label { display: grid; gap: 5px; }
+.expense-settlement-actions label span { color: var(--muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.expense-settlement-actions input { min-width: 145px; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; background: #fff; color: #18202b; }
+.expense-settlement-empty { margin-top: 18px; min-height: 130px; display: grid; place-items: center; align-content: center; gap: 7px; border: 1px dashed var(--border); border-radius: 12px; color: var(--muted); text-align: center; }
+.expense-settlement-empty strong { color: #263344; }
+
+[data-theme='dark'] .expense-settlement-list article,
+[data-theme='dark'] .expense-settlement-actions input { background: #17212b; color: #eef3f7; border-color: #344454; }
+[data-theme='dark'] .expense-settlement-empty strong { color: #eef3f7; }
+
+@media (max-width: 900px) {
+  .expense-settlement-list article { grid-template-columns: 1fr; }
+  .expense-settlement-value { justify-items: start; }
+  .expense-settlement-actions { justify-content: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .expense-settlement-heading { flex-direction: column; }
+  .expense-settlement-actions { display: grid; grid-template-columns: 1fr; width: 100%; }
+  .expense-settlement-actions label, .expense-settlement-actions input, .expense-settlement-actions button { width: 100%; }
+}
