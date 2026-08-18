@@ -1,0 +1,18 @@
+.financial-movement-card{margin:20px 0;padding:18px;border:1px solid var(--line,#d8dee7);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(248,250,252,.98));box-shadow:0 8px 24px rgba(15,23,42,.05)}
+.financial-movement-heading{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.financial-movement-heading div{display:flex;flex-direction:column;gap:2px}
+.financial-movement-heading span{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
+.financial-movement-heading strong{font-size:18px;color:#0f172a}
+.financial-movement-grid{display:grid;grid-template-columns:2fr 1.2fr 1fr;gap:14px;align-items:end}
+.financial-movement-grid label,.financial-bank-details,.financial-movement-amount{display:flex;flex-direction:column;gap:6px}
+.financial-movement-grid label>span,.financial-bank-details>span,.financial-movement-amount>span{font-size:12px;font-weight:700;color:#475569}
+.financial-movement-grid select,.financial-movement-grid input{width:100%;min-height:42px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;background:#fff;color:#0f172a}
+.financial-bank-details{padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;min-height:42px}
+.financial-bank-details strong{font-size:13px;color:#0f172a}
+.financial-bank-details small,.financial-movement-amount small{font-size:11px;color:#64748b;line-height:1.35}
+.financial-movement-amount{padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0}
+.financial-movement-amount strong{font-size:18px;color:#0f172a}
+.financial-movement-card.is-receipt{border-left:4px solid #0f766e}
+.financial-movement-card.is-payment{border-left:4px solid #b45309}
+@media (max-width:900px){.financial-movement-grid{grid-template-columns:1fr 1fr}.financial-bank-select,.financial-bank-details{grid-column:1/-1}}
+@media (max-width:640px){.financial-movement-grid{grid-template-columns:1fr}.financial-bank-select,.financial-bank-details{grid-column:auto}}
