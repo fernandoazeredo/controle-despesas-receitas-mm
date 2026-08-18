@@ -5,9 +5,10 @@ import { AlertTriangle, CheckCircle2, ExternalLink, FileText, Filter, Paperclip,
 import { useSearchParams } from 'react-router-dom'
 import { db, storage } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
-import { AccountSelector } from '../components/AccountSelector'
 import { ExpenseManagementDashboard } from '../components/ExpenseManagementDashboard'
+import { FinancialMovementCard } from '../components/FinancialMovementCard'
 import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
+import { DEFAULT_BANK_ACCOUNT_ID, getBankAccount, type BankAccount } from '../data/bankAccounts'
 import type { ChartOfAccount } from '../data/chartOfAccounts'
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -100,7 +101,7 @@ async function writeAudit(profile: ReturnType<typeof useAuth>['profile'], action
 }
 
 function Header({ onNew }: { onNew: () => void }) {
-  return <div className="page-heading"><div><span className="eyebrow">Tesouraria</span><h1>Despesas</h1><p>Criação, Plano de Contas, anexos no Firebase Storage, correção e acompanhamento do demonstrativo.</p></div><div className="quick-actions"><button className="outline-expense-button" type="button"><FileText size={18} /> Extrato de Despesas</button><button className="expense-button" type="button" onClick={onNew}><Plus size={18} /> Nova Despesa</button></div></div>
+  return <div className="page-heading"><div><span className="eyebrow">Tesouraria</span><h1>Despesas</h1><p>Criação, documentos, movimentação financeira, correção e acompanhamento do demonstrativo.</p></div><div className="quick-actions"><button className="outline-expense-button" type="button"><FileText size={18} /> Extrato de Despesas</button><button className="expense-button" type="button" onClick={onNew}><Plus size={18} /> Nova Despesa</button></div></div>
 }
 
 function ExpenseModal({ record, onClose }: { record?: AnyRecord | null; onClose: () => void }) {
@@ -119,7 +120,10 @@ function ExpenseModal({ record, onClose }: { record?: AnyRecord | null; onClose:
   const [documento, setDocumento] = useState(String(record?.documento ?? ''))
   const [subcategoria, setSubcategoria] = useState(String(record?.subcategoria ?? ''))
   const [observacoes, setObservacoes] = useState(String(record?.observacoes ?? ''))
-  const [account, setAccount] = useState<ChartOfAccount | null>(null)
+  const [account] = useState<ChartOfAccount | null>(null)
+  const [paymentBankAccountId, setPaymentBankAccountId] = useState<BankAccount['id']>((record?.paymentBankAccountId as BankAccount['id']) || DEFAULT_BANK_ACCOUNT_ID)
+  const [paymentDate, setPaymentDate] = useState(String(record?.paymentDate ?? ''))
+  const [paymentMethod, setPaymentMethod] = useState(String(record?.paymentMethod ?? ''))
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const initialAccountCode = String(record?.expenseAccountCode ?? record?.classificacaoContabil ?? '')
   const initialItems = Array.isArray(record?.items) && record?.items.length
@@ -249,6 +253,7 @@ function ExpenseModal({ record, onClose }: { record?: AnyRecord | null; onClose:
       const chosenCode = account?.code || initialAccountCode || null
       const chosenName = account?.name || String(record?.expenseAccountName ?? '') || null
       const chosenDre = account?.dre || String(record?.expenseAccountDre ?? '') || null
+      const paymentBankAccount = getBankAccount(paymentBankAccountId)
       const payload = {
         unidade,
         nome: nome.trim(),
@@ -262,6 +267,10 @@ function ExpenseModal({ record, onClose }: { record?: AnyRecord | null; onClose:
         expenseAccountName: chosenName,
         expenseAccountDre: chosenDre,
         planoConta: chosenCode ? { code: chosenCode, name: chosenName, dre: chosenDre, category: 'Despesa' } : null,
+        paymentBankAccountId,
+        paymentBankAccount,
+        paymentDate,
+        paymentMethod,
         observacoes: observacoes.trim(),
         items: validItems.map((item) => ({ ...item, valor: parseBRL(item.valor) })),
         valorTotal: total,
@@ -281,7 +290,7 @@ function ExpenseModal({ record, onClose }: { record?: AnyRecord | null; onClose:
       let action = status === 'rascunho' ? 'Despesa salva como rascunho' : 'Despesa enviada para aprovação'
       if (record?.status === 'rascunho') action = status === 'rascunho' ? 'Rascunho de despesa atualizado' : 'Rascunho enviado para aprovação'
       if (record?.status === 'devolvido') action = status === 'enviado_aprovacao' ? 'Despesa corrigida e reenviada para aprovação' : 'Correção de despesa salva'
-      await writeAudit(profile, action, `${nome} — ${money.format(total)} · ${attachments.length} anexo(s)`, expenseRef.id)
+      await writeAudit(profile, action, `${nome} — ${money.format(total)} · ${paymentBankAccount.bank} · ${attachments.length} anexo(s)`, expenseRef.id)
       savedRef.current = true
       onClose()
     } catch (error) {
@@ -305,8 +314,9 @@ function ExpenseModal({ record, onClose }: { record?: AnyRecord | null; onClose:
     <div className="legacy-table expense-table"><div className="legacy-row legacy-head"><span>DATA</span><span>HISTÓRICO</span><span>VALOR</span><span></span></div>{items.map((item, index) => <div className="legacy-row" key={index}><input type="date" value={item.data} onChange={(e) => updateItem(index, 'data', e.target.value)} /><input value={item.historico} onChange={(e) => updateItem(index, 'historico', e.target.value)} /><input inputMode="numeric" value={item.valor} onChange={(e) => updateItem(index, 'valor', formatCurrencyFromDigits(e.target.value))} placeholder="R$ 0,00" /><button type="button" className="row-remove" onClick={() => setItems((current) => current.length > 1 ? current.filter((_, i) => i !== index) : current)}><Trash2 size={15} /></button></div>)}</div>
     <button type="button" className="add-row-button expense-text" onClick={() => setItems((current) => [...current, { data: '', historico: '', valor: '' }])}><Plus size={16} /> Adicionar linha</button>
 
-    <div className="account-integration-block expense-account-block"><AccountSelector category="Despesa" value={account?.code || initialAccountCode} onChange={setAccount} label="Categoria / Plano de Contas" placeholder="Digite código ou nome — ex.: 4.05, aluguel, telefone..." /><p>A classificação permanece opcional.</p></div>
     <div className="form-grid compact-grid section-gap"><label className="span-2"><span>Detalhamento complementar <small>(opcional)</small></span><input value={subcategoria} onChange={(e) => setSubcategoria(e.target.value)} /></label><label className="span-3"><span>OBS.</span><textarea rows={3} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} /></label></div>
+
+    <FinancialMovementCard mode="payment" bankAccountId={paymentBankAccountId} onBankAccountChange={setPaymentBankAccountId} movementDate={paymentDate} onMovementDateChange={setPaymentDate} amount={total} paymentMethod={paymentMethod} onPaymentMethodChange={setPaymentMethod} />
 
     <div className="document-zone storage-document-zone"><CheckCircle2 size={20} /><div><strong>Documentos comprobatórios · Storage ativo</strong><span>O upload começa imediatamente após selecionar. Limite de 20 MB por arquivo.</span></div><label className="storage-upload-button"><Upload size={16} /> Selecionar arquivos{attachmentCount > 0 && <span className="storage-upload-count">{attachmentCount}</span>}<input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" onChange={(e) => { selectFiles(e.target.files); e.currentTarget.value = '' }} /></label></div>
 
