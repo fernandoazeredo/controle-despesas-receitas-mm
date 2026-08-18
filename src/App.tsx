@@ -32,7 +32,7 @@ import { DocumentsPageStorage } from './pages/DocumentsPageStorage'
 import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
 import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
 import { AccountingPageStorageV2 } from './pages/AccountingPageStorageV2'
-import { DreGerencialPage } from './pages/DreGerencialPage'
+import { DreGerencialPageV2 } from './pages/DreGerencialPageV2'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
 import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
 import { UtilitiesPage } from './pages/UtilitiesPage'
@@ -227,7 +227,7 @@ function AppShell() {
           <Route path="/comissoes-agentes" element={<AgentCommissionsPageV4 />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
-          <Route path="/dre-gerencial" element={<DreGerencialPage />} />
+          <Route path="/dre-gerencial" element={<DreGerencialPageV2 />} />
           <Route path="/plano-contas" element={<AccountsPageFernando />} />
           <Route path="/contabilidade" element={<AccountingPageStorageV2 />} />
           <Route path="/documentos" element={<DocumentsPageStorage />} />
