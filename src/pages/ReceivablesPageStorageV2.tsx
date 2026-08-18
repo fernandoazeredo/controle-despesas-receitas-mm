@@ -5,9 +5,9 @@ import { BadgeDollarSign, CheckCircle2, ExternalLink, FileText, Paperclip, Plus,
 import { useSearchParams } from 'react-router-dom'
 import { db, storage } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
-import { AccountSelector } from '../components/AccountSelector'
+import { FinancialMovementCard } from '../components/FinancialMovementCard'
 import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
-import type { ChartOfAccount } from '../data/chartOfAccounts'
+import { DEFAULT_BANK_ACCOUNT_ID, getBankAccount, type BankAccount } from '../data/bankAccounts'
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const decimalBR = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -160,7 +160,8 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
   const [origem, setOrigem] = useState('Alvará')
   const [formaRecebimento, setFormaRecebimento] = useState('')
   const [dataPrevista, setDataPrevista] = useState('')
-  const [account, setAccount] = useState<ChartOfAccount | null>(null)
+  const [receivingBankAccountId, setReceivingBankAccountId] = useState<BankAccount['id']>(DEFAULT_BANK_ACCOUNT_ID)
+  const [receiptDate, setReceiptDate] = useState(new Date().toISOString().slice(0, 10))
   const [totalAlvara, setTotalAlvara] = useState(0)
   const [baseCalculo, setBaseCalculo] = useState(0)
   const [banco, setBanco] = useState('')
@@ -259,21 +260,20 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     const componentsToSave = components.map((item) => item.nome === 'Outras Deduções / Participações'
       ? { ...item, detalhe: agentName.trim() }
       : item.nome.startsWith('Outras Deduções / Participações') ? { ...item, detalhe: item.detalhe?.trim() ?? '' } : item)
+    const receivingBankAccount = getBankAccount(receivingBankAccountId)
     setBusy(true)
     try {
       await setDoc(recordRef, {
         unidade, data, natureza, processo: processo.trim(), reclamada: reclamada.trim(), reclamante: reclamante.trim(), origem,
         formaRecebimento: formaRecebimento.trim(), dataPrevista,
-        categoriaReceita: account ? `${account.code} - ${account.name}` : '', classificacaoContabil: account?.code ?? null,
-        revenueAccountCode: account?.code ?? null, revenueAccountName: account?.name ?? null, revenueAccountDre: account?.dre ?? null,
-        planoConta: account ? { code: account.code, name: account.name, dre: account.dre, category: 'Receita' } : null,
+        receivingBankAccountId, receivingBankAccount, receiptDate,
         valorAlvara: totalAlvara, baseCalculo, valorLiquidoCliente: liquidoCliente, totalDeducoes, components: componentsToSave,
         agentName: agentName.trim(), agentCommissionValue, invoiceValue,
         banco, agencia, conta, titular, cpf, emailNf, enderecoNf, status,
         attachments: uploaded, attachmentCount: uploaded.length, storageStatus: 'active',
         createdBy: profile?.uid, createdByName: profile?.displayName, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
       })
-      await audit(profile, status === 'rascunho' ? 'Receita salva como rascunho' : 'Receita enviada à Tesouraria', `Processo ${processo} — ${money.format(totalAlvara)} · ${uploaded.length} anexo(s)`, recordRef.id)
+      await audit(profile, status === 'rascunho' ? 'Receita salva como rascunho' : 'Receita enviada à Tesouraria', `Processo ${processo} — ${money.format(totalAlvara)} · ${receivingBankAccount.bank} · ${uploaded.length} anexo(s)`, recordRef.id)
       onClose()
     } catch (error) {
       console.error(error)
@@ -286,9 +286,11 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     <div className="legacy-title-block revenue-title"><strong>FLÁVIO MARQUES ADVOGADOS ASSOCIADOS</strong><span>DEMONSTRATIVO DE RECEBIMENTO DE HONORÁRIOS</span></div>
     <h3 className="form-section-title">Dados do Processo</h3>
     <div className="form-grid compact-grid"><label><span>Unidade</span><select value={unidade} onChange={(e) => setUnidade(e.target.value as 'RJ' | 'SP')}><option>RJ</option><option>SP</option></select></label><label><span>Data</span><input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label><label><span>Natureza</span><select value={natureza} onChange={(e) => setNatureza(e.target.value)}><option>Trabalhista</option><option>Cível</option></select></label><label className="span-2"><span>Número do processo</span><input value={processo} onChange={(e) => setProcesso(e.target.value)} /></label><label className="span-2"><span>Reclamada</span><input value={reclamada} onChange={(e) => setReclamada(e.target.value)} /></label><label className="span-2"><span>Reclamante</span><input value={reclamante} onChange={(e) => setReclamante(e.target.value)} /></label><label><span>Origem</span><select value={origem} onChange={(e) => setOrigem(e.target.value)}><option>Alvará</option><option>Acordo</option></select></label><label><span>Forma de recebimento</span><input value={formaRecebimento} onChange={(e) => setFormaRecebimento(e.target.value)} /></label><label><span>Data prevista</span><input type="date" value={dataPrevista} onChange={(e) => setDataPrevista(e.target.value)} /></label></div>
-    <div className="account-integration-block revenue-account-block"><AccountSelector category="Receita" value={account?.code} onChange={setAccount} label="Categoria / Plano de Contas" placeholder="Digite código ou nome — ex.: 3.01, alvará, honorários..." /><p>A classificação permanece opcional.</p></div>
     <h3 className="form-section-title">Composição do Valor</h3>
     <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={setBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>{components.map((component, index) => { const isAgentCommission = component.nome === 'Outras Deduções / Participações'; const isOtherDeduction = component.nome.startsWith('Outras Deduções / Participações'); return <div className="composition-row" key={component.nome}><span className={isOtherDeduction ? 'commission-component-label' : ''}>{componentLabel(component.nome)}{isOtherDeduction && <input aria-label={isAgentCommission ? 'Nome do agente ou beneficiário da comissão' : `Descrição ou beneficiário de ${componentLabel(component.nome)}`} placeholder={isAgentCommission ? 'Nome do agente / beneficiário da comissão' : 'Do que se trata / nome do beneficiário'} value={isAgentCommission ? agentName : component.detalhe ?? ''} onChange={(e) => isAgentCommission ? setAgentName(e.target.value) : updateDetail(index, e.target.value)} />}</span><BrazilianPercentInput value={component.percentual} onChange={(value) => updatePercent(index, value)} ariaLabel={`Percentual de ${componentLabel(component.nome)}`} /><BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${componentLabel(component.nome)}`} /></div> })}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
+
+    <FinancialMovementCard mode="receipt" bankAccountId={receivingBankAccountId} onBankAccountChange={setReceivingBankAccountId} movementDate={receiptDate} onMovementDateChange={setReceiptDate} amount={totalAlvara} />
+
     <h3 className="form-section-title">Dados bancários para crédito do cliente</h3>
     <div className="form-grid compact-grid"><label><span>Banco</span><input value={banco} onChange={(e) => setBanco(e.target.value)} /></label><label><span>Agência</span><input value={agencia} onChange={(e) => setAgencia(e.target.value)} /></label><label><span>Conta</span><input value={conta} onChange={(e) => setConta(e.target.value)} /></label><label className="span-2"><span>Nome / Titular</span><input value={titular} onChange={(e) => setTitular(e.target.value)} /></label><label><span>CPF</span><input value={cpf} onChange={(e) => setCpf(e.target.value)} /></label></div>
     <h3 className="form-section-title">Dados para emissão de Nota Fiscal</h3>
@@ -308,12 +310,12 @@ export function ReceivablesPageStorageV2() {
   const [attachmentsTarget, setAttachmentsTarget] = useState<AnyRecord | null>(null)
   const { records, loading } = useReceivables()
   useEffect(() => { if (params.get('novo') === '1') setOpen(true) }, [params])
-  const filtered = records.filter((item) => `${item.processo ?? ''} ${item.reclamante ?? ''} ${item.reclamada ?? ''} ${item.revenueAccountCode ?? ''} ${item.revenueAccountName ?? ''} ${item.agentName ?? ''}`.toLowerCase().includes(search.toLowerCase()))
+  const filtered = records.filter((item) => `${item.processo ?? ''} ${item.reclamante ?? ''} ${item.reclamada ?? ''} ${item.agentName ?? ''} ${item.receivingBankAccount?.bank ?? ''} ${item.receivingBankAccount?.account ?? ''}`.toLowerCase().includes(search.toLowerCase()))
   const close = () => { setOpen(false); setParams({}) }
 
   return <>
-    <div className="page-heading"><div><span className="eyebrow">Origem do recebimento</span><h1>Recebimento de Alvarás</h1><p>O departamento de origem preenche o demonstrativo, classifica a receita e anexa os documentos que seguirão para a Contabilidade.</p></div><div className="quick-actions"><button className="outline-revenue-button" type="button"><FileText size={18} /> Extrato de Receitas</button><button className="revenue-button" type="button" onClick={() => setOpen(true)}><Plus size={18} /> Nova Receita</button></div></div>
-    <section className="page-card module-card revenue-module-card"><div className="module-toolbar"><div className="search-box"><Search size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por processo, partes, agente, código ou conta de receita" /></div></div>{loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando receitas</strong></div> : filtered.length === 0 ? <div className="module-empty"><BadgeDollarSign size={34} /><strong>Nenhuma receita cadastrada</strong></div> : <div className="data-table receivable-integrated-table"><div className="data-row data-head"><span>Processo</span><span>Partes</span><span>Plano de Contas</span><span>Status</span><span className="numeric">Valor</span></div>{filtered.map((item) => { const attachments = attachmentsOf(item); return <div className="data-row" key={item.id}><span><strong>{item.processo || '—'}</strong><small>{item.natureza || ''}</small></span><span><strong>{item.reclamante || '—'}</strong><small>{item.reclamada || ''}{item.agentName ? ` · Agente: ${item.agentName}` : ''}</small></span><span><strong>{item.revenueAccountCode || item.classificacaoContabil || '—'}</strong><small>{item.revenueAccountName || item.categoriaReceita || 'Não classificada'}</small></span><span><WorkflowStatusBadge status={item.status} label={statusLabels[item.status] || item.status || '—'} /></span><span className="numeric revenue-text"><strong>{money.format(toNumber(item.valorAlvara))}</strong>{attachments.length > 0 && <button className="attachment-count-link" type="button" onClick={() => setAttachmentsTarget(item)}><Paperclip size={14} /> {attachments.length}</button>}</span></div> })}</div>}</section>
+    <div className="page-heading"><div><span className="eyebrow">Origem do recebimento</span><h1>Recebimento de Alvarás</h1><p>O departamento de origem preenche o demonstrativo, informa a conta em que o valor foi recebido e anexa os documentos que seguirão para a Tesouraria.</p></div><div className="quick-actions"><button className="outline-revenue-button" type="button"><FileText size={18} /> Extrato de Receitas</button><button className="revenue-button" type="button" onClick={() => setOpen(true)}><Plus size={18} /> Nova Receita</button></div></div>
+    <section className="page-card module-card revenue-module-card"><div className="module-toolbar"><div className="search-box"><Search size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por processo, partes, agente, banco ou conta de recebimento" /></div></div>{loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando receitas</strong></div> : filtered.length === 0 ? <div className="module-empty"><BadgeDollarSign size={34} /><strong>Nenhuma receita cadastrada</strong></div> : <div className="data-table receivable-integrated-table"><div className="data-row data-head"><span>Processo</span><span>Partes</span><span>Conta de Recebimento</span><span>Status</span><span className="numeric">Valor</span></div>{filtered.map((item) => { const attachments = attachmentsOf(item); const bank = item.receivingBankAccount; return <div className="data-row" key={item.id}><span><strong>{item.processo || '—'}</strong><small>{item.natureza || ''}</small></span><span><strong>{item.reclamante || '—'}</strong><small>{item.reclamada || ''}{item.agentName ? ` · Agente: ${item.agentName}` : ''}</small></span><span><strong>{bank?.bank || '—'}</strong><small>{bank ? `Ag. ${bank.agency} · C/C ${bank.account}` : 'Conta ainda não informada'}</small></span><span><WorkflowStatusBadge status={item.status} label={statusLabels[item.status] || item.status || '—'} /></span><span className="numeric revenue-text"><strong>{money.format(toNumber(item.valorAlvara))}</strong>{attachments.length > 0 && <button className="attachment-count-link" type="button" onClick={() => setAttachmentsTarget(item)}><Paperclip size={14} /> {attachments.length}</button>}</span></div> })}</div>}</section>
     {open && <ReceivableModal key="nova-receita-storage-v2" onClose={close} />}
     {attachmentsTarget && <div className="modal-backdrop"><section className="decision-modal" role="dialog" aria-modal="true"><div className="modal-toolbar"><div><span className="eyebrow">Documentos da receita</span><h2>{attachmentsTarget.processo || attachmentsTarget.reclamante || 'Recebimento'}</h2></div><button className="icon-button" onClick={() => setAttachmentsTarget(null)}><X size={20} /></button></div><div className="storage-dossier-files">{attachmentsOf(attachmentsTarget).map((file) => <a key={file.path} href={file.url} target="_blank" rel="noreferrer"><Paperclip size={14} /><span>{file.name}</span><ExternalLink size={13} /></a>)}</div></section></div>}
   </>
