@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
+import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
 import { ThemeControls } from './components/ThemeControls'
 import './styles.css'
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <ThemeControls />
         <App />
+        <ExpenseFiltersPanel />
         <ExpenseSettlementPanel />
       </AuthProvider>
     </BrowserRouter>
