@@ -247,6 +247,12 @@ service cloud.firestore {
       allow write: if masterRestoreMode() || (isPrimaryAdminEmail() && hasRole(['master']));
     }
 
+    match /managerialClassifications/{document=**} {
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow create, update: if masterRestoreMode() || hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow delete: if masterRestoreMode() || hasRole(['master']);
+    }
+
     match /accountingDispatches/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
       allow create: if masterRestoreMode() || hasRole(['master', 'gerente', 'tesouraria']);
