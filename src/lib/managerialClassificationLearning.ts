@@ -1,4 +1,5 @@
 import { officialChartOfAccounts, type ChartOfAccount } from '../data/chartOfAccounts'
+import { mmExpenseSeedSuggestion } from './mmExpenseSeedKnowledge'
 
 export type LearningSourceType = 'expense' | 'revenue'
 
@@ -52,6 +53,7 @@ export function learnedClassificationSuggestion(args: {
   const validHistory = history.filter((record) => record.confirmed && record.sourceType === type && record.sourceId !== sourceId && accountByCode(type, record.accountCode))
   const normalizedCounterparty = normalized(counterparty)
 
+  // 1) Memória real: classificações já confirmadas pelos usuários do sistema.
   if (normalizedCounterparty) {
     const sameCounterparty = validHistory.filter((record) => normalized(record.sourceCounterparty) === normalizedCounterparty)
     if (sameCounterparty.length > 0) {
@@ -90,6 +92,13 @@ export function learnedClassificationSuggestion(args: {
   if (bestMatch && bestMatch.score >= 0.55) {
     const account = accountByCode(type, bestMatch.record.accountCode)
     if (account) return { account, confidence: 82, reason: 'Histórico semelhante encontrado; requer conferência' }
+  }
+
+  // 2) Base inicial MM: padrões recorrentes observados no relatório real de despesas.
+  // A base apenas aponta para contas já existentes no Plano de Contas oficial.
+  if (type === 'expense') {
+    const seeded = mmExpenseSeedSuggestion({ counterparty, description })
+    if (seeded) return seeded
   }
 
   return null
