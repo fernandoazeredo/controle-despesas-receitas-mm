@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import {
+  BarChart3,
   BookOpenCheck,
   Calculator,
   CircleDollarSign,
@@ -31,6 +32,7 @@ import { DocumentsPageStorage } from './pages/DocumentsPageStorage'
 import { DashboardPageEnhanced } from './pages/DashboardPageEnhanced'
 import { ApprovalsPageEnhanced } from './pages/ApprovalsPageEnhanced'
 import { AccountingPageStorageV2 } from './pages/AccountingPageStorageV2'
+import { DreGerencialPage } from './pages/DreGerencialPage'
 import { HowToPageEnhanced, TipsPageEnhanced } from './pages/HelpPagesEnhanced'
 import { UsersPageKitFernando } from './pages/UsersPageKitFernando'
 import { UtilitiesPage } from './pages/UtilitiesPage'
@@ -74,6 +76,7 @@ const menu: MenuItem[] = [
   { to: '/comissoes-agentes', label: 'Comissões de Agentes', icon: Users, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/aprovacoes', label: 'Aprovações', icon: FileCheck2, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
+  { to: '/dre-gerencial', label: 'DRE Gerencial', icon: BarChart3, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master'] },
   { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
@@ -224,6 +227,7 @@ function AppShell() {
           <Route path="/comissoes-agentes" element={<AgentCommissionsPageV4 />} />
           <Route path="/tesouraria" element={<TreasuryPage />} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
+          <Route path="/dre-gerencial" element={<DreGerencialPage />} />
           <Route path="/plano-contas" element={<AccountsPageFernando />} />
           <Route path="/contabilidade" element={<AccountingPageStorageV2 />} />
           <Route path="/documentos" element={<DocumentsPageStorage />} />
