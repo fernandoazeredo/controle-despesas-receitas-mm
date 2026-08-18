@@ -1,0 +1,187 @@
+html[data-theme='dark'] {
+  --brand: #43bff0;
+  --brand-dark: #d9eef8;
+  --border: #334254;
+  --muted: #a8b4c2;
+  --danger: #e65d63;
+  --expense: #ef6a70;
+  --expense-dark: #f28a8f;
+  --expense-soft: #3a2024;
+  --revenue: #57b6ff;
+  --revenue-dark: #8acbff;
+  --revenue-soft: #182d40;
+  --success: #5bd091;
+  --success-soft: #173126;
+  --warning: #f2bf5b;
+  --warning-soft: #3a2e15;
+  color: #e9eef5;
+  background: #0f1720;
+}
+
+html[data-theme='dark'] body,
+html[data-theme='dark'] #root,
+html[data-theme='dark'] .app-shell,
+html[data-theme='dark'] .main-content,
+html[data-theme='dark'] .auth-page {
+  background: #0f1720 !important;
+  color: #e9eef5 !important;
+}
+
+html[data-theme='dark'] .sidebar,
+html[data-theme='dark'] .page-card,
+html[data-theme='dark'] .metric,
+html[data-theme='dark'] .modal-sheet,
+html[data-theme='dark'] .auth-layout,
+html[data-theme='dark'] .auth-card,
+html[data-theme='dark'] .pending-card,
+html[data-theme='dark'] .workflow-cards > article,
+html[data-theme='dark'] .module-card,
+html[data-theme='dark'] .accounting-panel,
+html[data-theme='dark'] .dre-classification-card,
+html[data-theme='dark'] .dre-report-card {
+  background: #17212c !important;
+  color: #e9eef5 !important;
+  border-color: #334254 !important;
+}
+
+html[data-theme='dark'] .auth-brand-panel,
+html[data-theme='dark'] .module-toolbar,
+html[data-theme='dark'] .data-head,
+html[data-theme='dark'] .legacy-head,
+html[data-theme='dark'] .document-zone,
+html[data-theme='dark'] .empty-chart,
+html[data-theme='dark'] .total-row,
+html[data-theme='dark'] .search-box,
+html[data-theme='dark'] .bank-statement-box,
+html[data-theme='dark'] .storage-ready-box {
+  background: #1d2936 !important;
+  color: #dce5ee !important;
+  border-color: #3b4b5e !important;
+}
+
+html[data-theme='dark'] input,
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] .settings-grid input,
+html[data-theme='dark'] .auth-form input,
+html[data-theme='dark'] .users-table select,
+html[data-theme='dark'] .form-grid input,
+html[data-theme='dark'] .form-grid select,
+html[data-theme='dark'] .form-grid textarea,
+html[data-theme='dark'] .composition-row input {
+  background: #111a24 !important;
+  color: #edf3f8 !important;
+  border-color: #425267 !important;
+}
+
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder {
+  color: #7f8d9d !important;
+}
+
+html[data-theme='dark'] .secondary-button,
+html[data-theme='dark'] .google-button,
+html[data-theme='dark'] .icon-button,
+html[data-theme='dark'] .small-neutral-button,
+html[data-theme='dark'] .sidebar-user button,
+html[data-theme='dark'] .howto-link,
+html[data-theme='dark'] .outline-expense-button,
+html[data-theme='dark'] .outline-revenue-button,
+html[data-theme='dark'] .row-remove {
+  background: #1c2835 !important;
+  color: #e5edf5 !important;
+  border-color: #435368 !important;
+}
+
+html[data-theme='dark'] .nav-link { color: #c8d3df !important; }
+html[data-theme='dark'] .nav-link:hover { background: #202f3d !important; }
+html[data-theme='dark'] .nav-link.active { background: #18384a !important; color: #69ccf4 !important; }
+html[data-theme='dark'] .nav-link.expense-nav.active { background: #3a2024 !important; color: #ff858b !important; }
+html[data-theme='dark'] .nav-link.revenue-nav.active { background: #182d40 !important; color: #78c7ff !important; }
+
+html[data-theme='dark'] .page-heading h1,
+html[data-theme='dark'] .page-card h2,
+html[data-theme='dark'] .module-empty strong,
+html[data-theme='dark'] .document-zone strong,
+html[data-theme='dark'] .form-grid label > span,
+html[data-theme='dark'] .settings-grid label > span,
+html[data-theme='dark'] .auth-form label > span,
+html[data-theme='dark'] .loading-box,
+html[data-theme='dark'] strong {
+  color: #edf3f8;
+}
+
+html[data-theme='dark'] .page-heading p,
+html[data-theme='dark'] .page-card p,
+html[data-theme='dark'] .app-name,
+html[data-theme='dark'] .sidebar-user span,
+html[data-theme='dark'] .data-row small,
+html[data-theme='dark'] .module-empty,
+html[data-theme='dark'] .auth-helper,
+html[data-theme='dark'] .auth-brand-panel p,
+html[data-theme='dark'] .pending-card p,
+html[data-theme='dark'] small {
+  color: #a8b4c2;
+}
+
+html[data-theme='dark'] .data-row,
+html[data-theme='dark'] .status-row,
+html[data-theme='dark'] .approval-item,
+html[data-theme='dark'] .legacy-row + .legacy-row,
+html[data-theme='dark'] .composition-row + .composition-row {
+  border-color: #334254 !important;
+}
+
+html[data-theme='dark'] .status-badge:not(.expense):not(.revenue):not(.success):not(.warning) {
+  background: #263341 !important;
+  color: #c7d2de !important;
+}
+
+html[data-theme='dark'] .client-row { background: #173126 !important; }
+html[data-theme='dark'] .composition-head { background: #183247 !important; color: #8acbff !important; }
+html[data-theme='dark'] .form-error { background: #3a2024 !important; border-color: #704048 !important; color: #ff9aa0 !important; }
+html[data-theme='dark'] .mobile-app-header { background: #17212c !important; color: #edf3f8 !important; border-color: #334254 !important; }
+
+.theme-toggle {
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  z-index: 130;
+  border: 1px solid #cbd5df;
+  background: rgba(255,255,255,.96);
+  color: #263344;
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(15,23,32,.12);
+  backdrop-filter: blur(8px);
+}
+
+html[data-theme='dark'] .theme-toggle {
+  background: rgba(28,40,53,.96);
+  color: #eef4f9;
+  border-color: #435368;
+  box-shadow: 0 8px 24px rgba(0,0,0,.32);
+}
+
+.theme-toggle:hover { transform: translateY(-1px); }
+.theme-toggle:focus-visible { outline: 3px solid rgba(36,175,227,.35); outline-offset: 2px; }
+
+@media (max-width: 720px) {
+  .theme-toggle {
+    top: 11px;
+    right: 12px;
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+  .theme-toggle span { display: none; }
+}
