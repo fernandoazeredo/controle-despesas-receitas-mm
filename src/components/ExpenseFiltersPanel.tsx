@@ -21,22 +21,44 @@ const statusOptions = [
   ['Arquivado', 'Arquivado'],
 ] as const
 
+function normalize(value: string) {
+  return value.replace(/\s+/g, ' ').trim().toLocaleLowerCase('pt-BR')
+}
+
 function rowText(row: HTMLElement, selector: string) {
   return row.querySelector<HTMLElement>(selector)?.textContent?.trim() ?? ''
 }
 
 function applyFilters(filters: FilterState) {
   const table = document.querySelector<HTMLElement>('.review-expenses-table')
-  if (!table) return
+  if (!table) return 0
+
+  const wantedStatus = normalize(filters.status)
+  const wantedCompetence = normalize(filters.competence)
+  let visible = 0
 
   const rows = Array.from(table.querySelectorAll<HTMLElement>('.data-row:not(.data-head)'))
   rows.forEach((row) => {
-    const competence = rowText(row, ':scope > span:nth-child(1)')
-    const status = rowText(row, ':scope > span:nth-child(4)')
-    const matchesStatus = !filters.status || status === filters.status
-    const matchesCompetence = !filters.competence || competence === filters.competence
-    row.hidden = !(matchesStatus && matchesCompetence)
+    const competence = normalize(rowText(row, ':scope > span:nth-child(1)'))
+    const status = normalize(rowText(row, ':scope > span:nth-child(4)'))
+    const matchesStatus = !wantedStatus || status === wantedStatus
+    const matchesCompetence = !wantedCompetence || competence === wantedCompetence
+    const show = matchesStatus && matchesCompetence
+
+    // A tabela usa display:grid. Alguns estilos do sistema podem prevalecer sobre
+    // o atributo HTML "hidden"; por isso o filtro precisa controlar display
+    // diretamente e com prioridade.
+    if (show) {
+      row.style.removeProperty('display')
+      row.removeAttribute('aria-hidden')
+      visible += 1
+    } else {
+      row.style.setProperty('display', 'none', 'important')
+      row.setAttribute('aria-hidden', 'true')
+    }
   })
+
+  return visible
 }
 
 export function ExpenseFiltersPanel() {
@@ -46,6 +68,7 @@ export function ExpenseFiltersPanel() {
   const [host, setHost] = useState<HTMLElement | null>(null)
   const [toolbarButton, setToolbarButton] = useState<HTMLButtonElement | null>(null)
   const [competences, setCompetences] = useState<string[]>([])
+  const [visibleCount, setVisibleCount] = useState<number | null>(null)
 
   const activeCount = useMemo(() => Number(Boolean(filters.status)) + Number(Boolean(filters.competence)), [filters])
 
@@ -54,6 +77,7 @@ export function ExpenseFiltersPanel() {
       setHost(null)
       setToolbarButton(null)
       setOpen(false)
+      setVisibleCount(null)
       return
     }
 
@@ -91,10 +115,15 @@ export function ExpenseFiltersPanel() {
 
   useEffect(() => {
     if (location.pathname !== '/despesas') return
-    applyFilters(filters)
-    const observer = new MutationObserver(() => applyFilters(filters))
+
+    const apply = () => setVisibleCount(applyFilters(filters))
+    apply()
+
     const table = document.querySelector<HTMLElement>('.review-expenses-table')
-    if (table) observer.observe(table, { childList: true, subtree: true, characterData: true })
+    if (!table) return
+
+    const observer = new MutationObserver(apply)
+    observer.observe(table, { childList: true, subtree: true, characterData: true })
     return () => observer.disconnect()
   }, [filters, location.pathname])
 
@@ -126,7 +155,7 @@ export function ExpenseFiltersPanel() {
         </label>
       </div>
       <div className="expense-filter-footer">
-        <span>{activeCount > 0 ? `${activeCount} filtro(s) ativo(s)` : 'Nenhum filtro ativo'}</span>
+        <span>{activeCount > 0 ? `${activeCount} filtro(s) ativo(s) · ${visibleCount ?? 0} resultado(s)` : `${visibleCount ?? 0} despesa(s)`}</span>
         <button type="button" className="secondary-button" onClick={clearFilters}><RotateCcw size={15} /> Limpar filtros</button>
       </div>
     </div>,
