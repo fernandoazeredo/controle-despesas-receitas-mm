@@ -137,7 +137,7 @@ export function AccountingPageStorageV2() {
       ['Receitas aptas', receivableCount], ['Total receitas', revenueTotal],
       ['Repasses de Alvarás pagos no mês', transferCount], ['Total repassado a clientes', transferTotal],
       ['Comissões de Agentes pagas no mês', commissionCount], ['Total de comissões pagas', commissionTotal],
-      ['Documentos anexados', documentCount], ['Lançamentos sem documento', missingDocs.length], ['Extrato consolidado', statement?.fileName || 'NÃO ANEXADO'],
+      ['Documentos anexados', documentCount], ['Lançamentos sem documento', missingDocs.length], ['Extrato consolidado', statement?.fileName || 'NÃO ANEXADO (OPCIONAL)'],
       ['Gerado por', profile?.displayName || profile?.email || 'Usuário'], ['Gerado em', dateTimeBR.format(new Date())],
     ]
     const expenseRows: (string | number)[][] = [['Competência', 'Unidade', 'Responsável', 'Fornecedor/Favorecido', 'CPF/CNPJ', 'Plano de Contas', 'Descrição da Conta', 'DRE', 'Status', 'Valor', 'Documentos']]
@@ -153,7 +153,7 @@ export function AccountingPageStorageV2() {
     selectedReceivables.forEach((item) => attachmentsOf(item).forEach((file) => documentRows.push(['Receita', `${item.processo ?? ''} · ${item.reclamante ?? ''}`, file.name ?? 'Documento', toNumber(file.size)])))
     const pendingRows: (string | number)[][] = [['Tipo', 'Referência', 'Valor', 'Pendência']]
     missingDocs.forEach(({ type, item }) => pendingRows.push([type, type === 'Despesa' ? `${item.nome ?? ''} · ${item.fornecedor ?? ''}` : `${item.processo ?? ''} · ${item.reclamante ?? ''}`, type === 'Despesa' ? toNumber(item.valorTotal) : toNumber(item.valorAlvara), 'Sem documento anexado']))
-    if (!statement) pendingRows.push(['Extrato bancário', competence, 0, 'Extrato consolidado não anexado'])
+    if (!statement) pendingRows.push(['Extrato bancário', competence, 0, 'Extrato consolidado não anexado — opcional'])
     return [
       { name: 'Resumo', rows: summaryRows as (string | number)[][], currencyColumns: [1] },
       { name: 'Despesas', rows: expenseRows, currencyColumns: [9] },
@@ -167,12 +167,17 @@ export function AccountingPageStorageV2() {
 
   async function buildPackage() {
     if (totalEntries === 0) throw new Error('Nenhum lançamento apto foi encontrado para a competência e filtros selecionados.')
-    if (!statement?.storagePath) throw new Error('Anexe o extrato consolidado do banco antes de gerar o ZIP para a Contabilidade.')
     setMessage('Montando planilha Excel e incorporando documentos ao ZIP...')
     const workbook = createXlsx(workbookSheets())
     const entries: Array<{ name: string; content: string | Uint8Array }> = [{ name: `Movimento_Contabilidade_${competence}_${safeName(unit)}.xlsx`, content: workbook }]
-    const statementBytes = new Uint8Array(await getBytes(storageRef(storage, String(statement.storagePath))))
-    entries.push({ name: `Extrato_Bancario/${safeName(String(statement.fileName ?? 'Extrato_Consolidado'))}`, content: statementBytes })
+    if (statement?.storagePath) {
+      try {
+        const statementBytes = new Uint8Array(await getBytes(storageRef(storage, String(statement.storagePath))))
+        entries.push({ name: `Extrato_Bancario/${safeName(String(statement.fileName ?? 'Extrato_Consolidado'))}`, content: statementBytes })
+      } catch (error) {
+        console.warn('Extrato bancário não incluído no ZIP:', error)
+      }
+    }
     for (let index = 0; index < selectedExpenses.length; index += 1) for (const file of attachmentsOf(selectedExpenses[index])) {
       try { entries.push({ name: `Documentos_Despesas/${String(index + 1).padStart(3, '0')}_${safeName(String(selectedExpenses[index].fornecedor || selectedExpenses[index].nome || selectedExpenses[index].id))}/${safeName(file.name || 'documento')}`, content: await bytesFromAttachment(file) }) } catch (error) { console.warn('Documento de despesa não incluído:', file, error) }
     }
@@ -189,8 +194,8 @@ export function AccountingPageStorageV2() {
     try {
       const { blob, fileName } = await buildPackage()
       downloadBlob(blob, fileName)
-      await audit('Pacote completo da Contabilidade baixado', `${competence} · ${unit} · ${expenseCount} despesa(s) · ${receivableCount} receita(s) · ${transferCount} repasse(s) · ${commissionCount} comissão(ões)`)
-      setMessage(`ZIP completo gerado: ${fileName}`)
+      await audit('Pacote completo da Contabilidade baixado', `${competence} · ${unit} · ${expenseCount} despesa(s) · ${receivableCount} receita(s) · ${transferCount} repasse(s) · ${commissionCount} comissão(ões) · extrato ${statement ? 'anexado' : 'não anexado'}`)
+      setMessage(`ZIP completo gerado: ${fileName}${statement ? '' : ' (sem extrato bancário)'}`)
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Não foi possível gerar o ZIP.') } finally { setBusy('') }
   }
 
@@ -209,9 +214,9 @@ export function AccountingPageStorageV2() {
     <div className="page-heading"><div><span className="eyebrow">Fechamento mensal</span><h1>Contabilidade</h1><p>Pacote mensal por competência real: receitas no mês do recebimento e repasses/comissões no mês do pagamento efetivo.</p></div></div>
     <section className="page-card accounting-panel">
       <div className="accounting-config"><label><span>Competência</span><input type="month" value={competence} onChange={(e) => setCompetence(e.target.value)} /></label><label><span>Unidade</span><select value={unit} onChange={(e) => setUnit(e.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label><label><span>Movimento</span><select value={movement} onChange={(e) => setMovement(e.target.value)}><option>Movimento completo</option><option>Somente Despesas</option><option>Somente Recebimentos</option><option>Somente Repasses / Comissões</option></select></label></div>
-      <div className="readiness-grid accounting-six"><article><ReceiptText /><span>Despesas aptas</span><strong>{expenseCount}</strong><small>{money.format(expenseTotal)}</small></article><article><BadgeDollarSign /><span>Receitas aptas</span><strong>{receivableCount}</strong><small>{money.format(revenueTotal)}</small></article><article><Send /><span>Repasses pagos</span><strong>{transferCount}</strong><small>{money.format(transferTotal)}</small></article><article><Calculator /><span>Comissões pagas</span><strong>{commissionCount}</strong><small>{money.format(commissionTotal)}</small></article><article><Paperclip /><span>Documentos</span><strong>{documentCount}</strong><small>{missingDocs.length} lançamento(s) sem anexo</small></article><article className={statement ? 'storage-ready-card' : ''}><Landmark /><span>Extrato bancário</span><strong>{statement ? 'Anexado' : 'Pendente'}</strong><small>{statement?.fileName || 'Consolidado do mês'}</small></article></div>
-      <div className="bank-statement-box"><div><Landmark size={21} /><div><strong>Extrato consolidado do banco</strong><span>Obrigatório para gerar o pacote mensal. Aceita PDF, OFX, CSV e Excel.</span>{statement && <small><CheckCircle2 size={13} /> {statement.fileName}</small>}</div></div><label className="secondary-button accounting-file-button"><Upload size={17} /> {busy === 'statement' ? 'Enviando...' : statement ? 'Substituir extrato' : 'Anexar extrato'}<input type="file" hidden accept=".pdf,.ofx,.csv,.xlsx,.xls" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadStatement(file); e.currentTarget.value = '' }} /></label></div>
-      <div className="storage-ready-box"><FileSpreadsheet size={18} /><span><strong>Pacote para a Contabilidade:</strong> planilha Excel com Resumo, Despesas, Receitas, Repasses de Alvarás, Comissões de Agentes, Documentos e Pendências + extrato bancário + anexos.</span></div>
+      <div className="readiness-grid accounting-six"><article><ReceiptText /><span>Despesas aptas</span><strong>{expenseCount}</strong><small>{money.format(expenseTotal)}</small></article><article><BadgeDollarSign /><span>Receitas aptas</span><strong>{receivableCount}</strong><small>{money.format(revenueTotal)}</small></article><article><Send /><span>Repasses pagos</span><strong>{transferCount}</strong><small>{money.format(transferTotal)}</small></article><article><Calculator /><span>Comissões pagas</span><strong>{commissionCount}</strong><small>{money.format(commissionTotal)}</small></article><article><Paperclip /><span>Documentos</span><strong>{documentCount}</strong><small>{missingDocs.length} lançamento(s) sem anexo</small></article><article className={statement ? 'storage-ready-card' : ''}><Landmark /><span>Extrato bancário</span><strong>{statement ? 'Anexado' : 'Não anexado'}</strong><small>{statement?.fileName || 'Opcional para gerar o ZIP'}</small></article></div>
+      <div className="bank-statement-box"><div><Landmark size={21} /><div><strong>Extrato consolidado do banco</strong><span>Opcional para gerar o pacote mensal. Se anexado, será incluído no ZIP. Aceita PDF, OFX, CSV e Excel.</span>{statement && <small><CheckCircle2 size={13} /> {statement.fileName}</small>}</div></div><label className="secondary-button accounting-file-button"><Upload size={17} /> {busy === 'statement' ? 'Enviando...' : statement ? 'Substituir extrato' : 'Anexar extrato'}<input type="file" hidden accept=".pdf,.ofx,.csv,.xlsx,.xls" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadStatement(file); e.currentTarget.value = '' }} /></label></div>
+      <div className="storage-ready-box"><FileSpreadsheet size={18} /><span><strong>Pacote para a Contabilidade:</strong> planilha Excel com Resumo, Despesas, Receitas, Repasses de Alvarás, Comissões de Agentes, Documentos e Pendências + anexos. O extrato bancário é incluído somente quando estiver anexado.</span></div>
       <div className="accounting-feedback success"><strong>Regra contábil operacional:</strong> Repasse de Alvará é dinheiro de terceiro e não entra como despesa operacional/DRE. A saída aparece na competência da data efetiva de pagamento da parcela.</div>
       {message && <div className={`accounting-feedback ${message.includes('sucesso') || message.includes('gerado') || message.includes('anexado') ? 'success' : 'warning'}`} role="status">{message}</div>}
       <div className="accounting-actions"><button className="secondary-button" type="button" disabled={Boolean(busy)} onClick={() => void downloadPackage()}><Download size={17} /> {busy === 'download' ? 'Montando ZIP...' : 'Baixar ZIP completo'}</button><button className="revenue-button" type="button" disabled={Boolean(busy)} onClick={() => void sendMovement()}><Calculator size={17} /> {busy === 'send' ? 'Registrando...' : 'Registrar envio à Contabilidade'}</button></div>
