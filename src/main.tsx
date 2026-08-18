@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
+import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
 import { ThemeControls } from './components/ThemeControls'
 import './styles.css'
 import './button-label-fix.css'
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <ThemeControls />
         <App />
+        <ExpenseSettlementPanel />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
