@@ -280,17 +280,12 @@
   font-size: 13px !important;
 }
 
-.auth-page.login-light-only .auth-secure-note {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #526579;
-  font-size: 12px;
-  font-weight: 650;
+/* Removido definitivamente: rodapé "Ambiente seguro e sigiloso" e respectivo ícone. */
+.auth-page.login-light-only .auth-secure-note,
+.auth-page.login-light-only .auth-secure-note *,
+.auth-page.login-light-only [class*="secure-note"] {
+  display: none !important;
+  visibility: hidden !important;
 }
 
 /* Notebook: preserva o layout lado a lado, mas reduz altura e espaçamento. */
@@ -411,10 +406,6 @@
 
   .auth-page.login-light-only .auth-card {
     padding: 36px 30px !important;
-  }
-
-  .auth-page.login-light-only .auth-secure-note {
-    display: none;
   }
 }
 
