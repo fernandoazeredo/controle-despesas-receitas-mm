@@ -9,6 +9,14 @@ html[data-theme='dark'] .audit-explainer > svg { color: #7dd3fc !important; }
 html[data-theme='dark'] .audit-explainer strong { color: #7dd3fc !important; }
 html[data-theme='dark'] .audit-explainer span { color: #cbd5e1 !important; }
 
+/* Auditoria: detalhe secundário dos eventos */
+html[data-theme='dark'] .enhanced-audit-list .audit-main > span {
+  color: #94a3b8 !important;
+}
+html[data-theme='dark'] .enhanced-audit-list .audit-main > small {
+  color: #94a3b8 !important;
+}
+
 /* Configurações: rótulos de formulário */
 html[data-theme='dark'] .settings-grid label > span,
 html[data-theme='dark'] .auth-form label > span,
@@ -21,7 +29,8 @@ html[data-theme='dark'] .dre-report-filters span {
   color: #94a3b8 !important;
 }
 
-/* Aprovações: banner Master/homologação */
+/* Aprovações: banner Master/homologação e modo consulta */
+html[data-theme='dark'] .warning-box,
 html[data-theme='dark'] .master-mode-banner,
 html[data-theme='dark'] .approval-banner,
 html[data-theme='dark'] .warning-banner {
@@ -29,11 +38,15 @@ html[data-theme='dark'] .warning-banner {
   border-color: #8a6a2d !important;
   color: #fcd34d !important;
 }
+html[data-theme='dark'] .warning-box > svg,
+html[data-theme='dark'] .warning-box strong,
 html[data-theme='dark'] .master-mode-banner strong,
 html[data-theme='dark'] .approval-banner strong,
 html[data-theme='dark'] .warning-banner strong {
   color: #fde68a !important;
 }
+html[data-theme='dark'] .warning-box span,
+html[data-theme='dark'] .warning-box p,
 html[data-theme='dark'] .master-mode-banner span,
 html[data-theme='dark'] .approval-banner span,
 html[data-theme='dark'] .warning-banner span,
