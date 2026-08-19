@@ -33,6 +33,25 @@ function revenueAmount(record: AnyRecord) {
   return toNumber(components.find((item) => item.nome === 'Honorários do Escritório')?.valor)
 }
 
+function expenseCompetence(item: AnyRecord) {
+  const direct = String(item.competencia ?? '').slice(0, 7)
+  if (direct) return direct
+  const firstItemDate = Array.isArray(item.items) ? String(item.items[0]?.data ?? '').slice(0, 7) : ''
+  return firstItemDate
+}
+
+function expenseCashPeriod(item: AnyRecord) {
+  return String(item.paymentDate ?? '').slice(0, 7)
+}
+
+function revenueCompetence(item: AnyRecord) {
+  return String(item.competencia ?? item.data ?? item.receiptDate ?? '').slice(0, 7)
+}
+
+function revenueCashPeriod(item: AnyRecord) {
+  return String(item.receiptDate ?? item.data ?? '').slice(0, 7)
+}
+
 export function DreRegimeViewEnhancer() {
   const [expenses, setExpenses] = useState<AnyRecord[]>([])
   const [revenues, setRevenues] = useState<AnyRecord[]>([])
@@ -50,24 +69,33 @@ export function DreRegimeViewEnhancer() {
   }, [])
 
   useEffect(() => {
+    let scheduled = false
     const sync = () => {
-      const original = document.querySelector<HTMLElement>('.dre-report-card')
-      if (!original) { setTarget(null); return }
-      original.style.display = 'none'
-      let mount = document.getElementById('dre-regime-view-root')
-      if (!mount) {
-        mount = document.createElement('div')
-        mount.id = 'dre-regime-view-root'
-        original.parentElement?.insertBefore(mount, original)
-      }
-      setTarget(mount)
+      if (scheduled) return
+      scheduled = true
+      window.requestAnimationFrame(() => {
+        scheduled = false
+        const original = document.querySelector<HTMLElement>('.dre-report-card:not(.dre-regime-card)')
+        if (!original) {
+          setTarget(null)
+          return
+        }
+        original.style.display = 'none'
+        let mount = document.getElementById('dre-regime-view-root')
+        if (!mount) {
+          mount = document.createElement('div')
+          mount.id = 'dre-regime-view-root'
+          original.parentElement?.insertBefore(mount, original)
+        }
+        setTarget((current) => current === mount ? current : mount)
+      })
     }
     sync()
     const observer = new MutationObserver(sync)
     observer.observe(document.body, { childList: true, subtree: true })
     return () => {
       observer.disconnect()
-      document.querySelector<HTMLElement>('.dre-report-card')?.style.removeProperty('display')
+      document.querySelector<HTMLElement>('.dre-report-card:not(.dre-regime-card)')?.style.removeProperty('display')
       document.getElementById('dre-regime-view-root')?.remove()
     }
   }, [])
@@ -83,9 +111,7 @@ export function DreRegimeViewEnhancer() {
       const status = String(item.status ?? '')
       const validStatus = regime === 'competencia' ? EXPENSE_COMPETENCE_STATUSES.has(status) : EXPENSE_CASH_STATUSES.has(status)
       if (!validStatus) continue
-      const selectedPeriod = regime === 'competencia'
-        ? String(item.competencia ?? '').slice(0, 7)
-        : String(item.paymentDate ?? '').slice(0, 7)
+      const selectedPeriod = regime === 'competencia' ? expenseCompetence(item) : expenseCashPeriod(item)
       if (!selectedPeriod) continue
       result.push({ id: item.id, type: 'expense', period: selectedPeriod, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
     }
@@ -94,9 +120,7 @@ export function DreRegimeViewEnhancer() {
       const classification = classificationMap.get(`revenue__${item.id}`)
       if (!classification?.confirmed || !classification.accountDre || classification.accountDre === 'Não mostrar no DRE Gerencial') continue
       if (!REVENUE_STATUSES.has(String(item.status ?? ''))) continue
-      const selectedPeriod = regime === 'competencia'
-        ? String(item.data ?? item.receiptDate ?? '').slice(0, 7)
-        : String(item.receiptDate ?? item.data ?? '').slice(0, 7)
+      const selectedPeriod = regime === 'competencia' ? revenueCompetence(item) : revenueCashPeriod(item)
       if (!selectedPeriod) continue
       result.push({ id: item.id, type: 'revenue', period: selectedPeriod, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group: String(classification.accountDre) })
     }
@@ -123,7 +147,7 @@ export function DreRegimeViewEnhancer() {
   if (!target) return null
 
   return createPortal(
-    <section className="page-card dre-report-card dre-regime-card">
+    <section className="page-card dre-regime-card">
       <div className="dre-section-heading"><div><span className="eyebrow">Demonstrativo Gerencial</span><h2>Resultado do Período</h2><p>Alterne entre competência econômica e movimentação efetiva de caixa sem duplicar lançamentos.</p></div></div>
 
       <div className="dre-regime-toggle" role="group" aria-label="Regime de visualização">
@@ -132,7 +156,7 @@ export function DreRegimeViewEnhancer() {
       </div>
 
       <div className="dre-regime-explanation">{regime === 'competencia'
-        ? 'Competência: despesas aparecem no mês a que pertencem; receitas usam a data econômica do recebimento.'
+        ? 'Competência: despesas aparecem no mês a que pertencem; receitas usam a competência ou data econômica do recebimento.'
         : 'Caixa: despesas entram somente quando pagas, pela Data do Pagamento; receitas entram pela data efetiva de recebimento.'}</div>
 
       <div className="dre-report-filters"><label><span>Período</span><input type="month" value={period} onChange={(event) => setPeriod(event.target.value)} /></label><label><span>Unidade</span><select value={unit} onChange={(event) => setUnit(event.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label></div>
