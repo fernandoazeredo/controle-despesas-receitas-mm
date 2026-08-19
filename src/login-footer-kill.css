@@ -1,0 +1,17 @@
+/* Remove qualquer rodapé/legenda residual da tela de login. */
+.auth-page.login-light-only::before,
+.auth-page.login-light-only::after,
+.auth-page.login-light-only .auth-secure-note,
+.auth-page.login-light-only .auth-secure-note *,
+.auth-page.login-light-only [class*="secure-note"],
+.auth-page.login-light-only [class*="secure-footer"],
+.auth-page.login-light-only [class*="auth-footer"] {
+  content: none !important;
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
