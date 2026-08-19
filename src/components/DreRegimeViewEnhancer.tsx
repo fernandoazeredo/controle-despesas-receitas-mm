@@ -31,20 +31,80 @@ function todayMonthRange() {
   return { start, end }
 }
 
-function normalizeDate(value: unknown) {
-  const raw = String(value ?? '').trim()
+function normalizeStatus(value: unknown) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_')
+}
+
+function normalizeDate(value: unknown): string {
+  if (!value) return ''
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10)
+  }
+
+  if (typeof value === 'object') {
+    const candidate = value as { toDate?: () => Date; seconds?: number; _seconds?: number }
+    if (typeof candidate.toDate === 'function') {
+      const date = candidate.toDate()
+      if (date instanceof Date && !Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10)
+    }
+    const seconds = Number(candidate.seconds ?? candidate._seconds)
+    if (Number.isFinite(seconds) && seconds > 0) return new Date(seconds * 1000).toISOString().slice(0, 10)
+  }
+
+  const raw = String(value).trim()
   if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10)
   if (/^\d{4}-\d{2}$/.test(raw)) return `${raw}-01`
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+    const [day, month, year] = raw.split('/')
+    return `${year}-${month}-${day}`
+  }
+  return ''
+}
+
+function firstValidDate(...values: unknown[]) {
+  for (const value of values) {
+    const normalized = normalizeDate(value)
+    if (normalized) return normalized
+  }
   return ''
 }
 
 function expenseCompetenceDate(record: AnyRecord) {
   const itemDate = Array.isArray(record.items) ? record.items.find((item: DocumentData) => item?.data)?.data : ''
-  return normalizeDate(itemDate) || normalizeDate(record.competencia)
+  return firstValidDate(itemDate, record.competencia)
+}
+
+function expenseCashDate(record: AnyRecord) {
+  return firstValidDate(
+    record.paymentDate,
+    record.paidDate,
+    record.dataPagamento,
+    record.payment?.date,
+    record.financialMovement?.date,
+    record.paidAt,
+  )
 }
 
 function revenueCompetenceDate(record: AnyRecord) {
-  return normalizeDate(record.competencia) || normalizeDate(record.data) || normalizeDate(record.receiptDate)
+  return firstValidDate(record.competencia, record.data, record.receiptDate)
+}
+
+function revenueCashDate(record: AnyRecord) {
+  return firstValidDate(
+    record.receiptDate,
+    record.creditDate,
+    record.dataCredito,
+    record.data,
+    record.receivedAt,
+    record.receivedTreasuryAt,
+    record.treasuryReceivedAt,
+  )
 }
 
 function toNumber(value: unknown) {
@@ -108,19 +168,34 @@ export function DreRegimeViewEnhancer() {
     for (const item of expenses) {
       const classification = classificationMap.get(`expense__${item.id}`)
       if (!classification?.confirmed || !classification.accountDre || classification.accountDre === 'Não mostrar no DRE Gerencial') continue
-      const status = String(item.status ?? '')
-      const validStatus = regime === 'competencia' ? EXPENSE_COMPETENCE_STATUSES.has(status) : EXPENSE_CASH_STATUSES.has(status)
-      if (!validStatus) continue
-      const selectedDate = regime === 'competencia' ? expenseCompetenceDate(item) : normalizeDate(item.paymentDate)
-      if (!selectedDate) continue
-      result.push({ id: item.id, type: 'expense', date: selectedDate, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
+
+      const status = normalizeStatus(item.status)
+      const cashDate = expenseCashDate(item)
+
+      if (regime === 'competencia') {
+        if (!EXPENSE_COMPETENCE_STATUSES.has(status)) continue
+        const selectedDate = expenseCompetenceDate(item)
+        if (!selectedDate) continue
+        result.push({ id: item.id, type: 'expense', date: selectedDate, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
+        continue
+      }
+
+      // Na visão Caixa, a existência de uma data efetiva de pagamento é a evidência principal
+      // da movimentação. Isso também mantém compatibilidade com registros antigos em que o
+      // status pode ter grafia diferente, mas a baixa financeira foi registrada.
+      if (!cashDate) continue
+      if (!EXPENSE_CASH_STATUSES.has(status) && status !== 'aprovado') continue
+      result.push({ id: item.id, type: 'expense', date: cashDate, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
     }
 
     for (const item of revenues) {
       const classification = classificationMap.get(`revenue__${item.id}`)
       if (!classification?.confirmed || !classification.accountDre || classification.accountDre === 'Não mostrar no DRE Gerencial') continue
-      if (!REVENUE_STATUSES.has(String(item.status ?? ''))) continue
-      const selectedDate = regime === 'competencia' ? revenueCompetenceDate(item) : normalizeDate(item.receiptDate) || normalizeDate(item.data)
+
+      const status = normalizeStatus(item.status)
+      if (!REVENUE_STATUSES.has(status)) continue
+
+      const selectedDate = regime === 'competencia' ? revenueCompetenceDate(item) : revenueCashDate(item)
       if (!selectedDate) continue
       result.push({ id: item.id, type: 'revenue', date: selectedDate, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group: String(classification.accountDre) })
     }
@@ -162,7 +237,7 @@ export function DreRegimeViewEnhancer() {
 
       <div className="dre-regime-explanation">{regime === 'competencia'
         ? 'Competência: despesas são consideradas pela data do lançamento vinculada à competência; receitas usam a data econômica disponível.'
-        : 'Caixa: despesas entram somente quando pagas, pela Data do Pagamento; receitas entram pela data efetiva de recebimento.'}</div>
+        : 'Caixa: considera a data efetiva de pagamento das despesas e a data efetiva de crédito/recebimento das receitas.'}</div>
 
       <div className="dre-report-filters dre-date-range-filters">
         <label><span>Data inicial</span><input type="date" value={startDate} max={endDate || undefined} onChange={(event) => setStartDate(event.target.value)} /></label>
