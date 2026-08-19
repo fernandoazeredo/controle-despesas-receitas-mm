@@ -13,14 +13,36 @@ const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL
 const EXPENSE_COMPETENCE_STATUSES = new Set(['aprovado', 'pago', 'arquivado'])
 const FILTER_STORAGE_KEY = 'dre-gerencial-periodo'
 
+function isoLocal(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function todayMonthRange() {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth()
-  const start = `${year}-${String(month + 1).padStart(2, '0')}-01`
-  const lastDay = new Date(year, month + 1, 0).getDate()
-  const end = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
-  return { start, end }
+  return {
+    start: isoLocal(new Date(year, month, 1)),
+    end: isoLocal(new Date(year, month + 1, 0)),
+  }
+}
+
+function currentYearRange() {
+  const now = new Date()
+  return {
+    start: isoLocal(new Date(now.getFullYear(), 0, 1)),
+    end: isoLocal(new Date(now.getFullYear(), 11, 31)),
+  }
+}
+
+function last30DaysRange() {
+  const end = new Date()
+  const start = new Date(end)
+  start.setDate(start.getDate() - 29)
+  return { start: isoLocal(start), end: isoLocal(end) }
 }
 
 function initialRange() {
@@ -37,15 +59,15 @@ function normalizeStatus(value: unknown) {
 
 function normalizeDate(value: unknown): string {
   if (!value) return ''
-  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10)
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return isoLocal(value)
   if (typeof value === 'object') {
     const candidate = value as { toDate?: () => Date; seconds?: number; _seconds?: number }
     if (typeof candidate.toDate === 'function') {
       const date = candidate.toDate()
-      if (!Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10)
+      if (!Number.isNaN(date.getTime())) return isoLocal(date)
     }
     const seconds = Number(candidate.seconds ?? candidate._seconds)
-    if (Number.isFinite(seconds) && seconds > 0) return new Date(seconds * 1000).toISOString().slice(0, 10)
+    if (Number.isFinite(seconds) && seconds > 0) return isoLocal(new Date(seconds * 1000))
   }
   const raw = String(value).trim()
   if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10)
@@ -207,10 +229,14 @@ export function DreRegimeViewEnhancer() {
   const totalExpense = rows.filter((item) => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0)
   const balance = totalRevenue - totalExpense
 
+  function applyRange(range: { start: string; end: string }) {
+    setStartDate(range.start)
+    setEndDate(range.end)
+  }
+
   function showAllPeriod() {
     if (!availableRange) return
-    setStartDate(availableRange.start)
-    setEndDate(availableRange.end)
+    applyRange(availableRange)
   }
 
   if (!target) return null
@@ -233,7 +259,13 @@ export function DreRegimeViewEnhancer() {
         <label><span>Data final</span><input type="date" value={endDate} min={startDate || undefined} onChange={(event) => setEndDate(event.target.value)} /></label>
         <label><span>Unidade</span><select value={unit} onChange={(event) => setUnit(event.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label>
         <label><span>Movimento</span><select value={movement} onChange={(event) => setMovement(event.target.value as MovementFilter)}><option value="all">Todos</option><option value="revenue">Somente Receitas</option><option value="expense">Somente Despesas</option></select></label>
-        <button className="secondary-button dre-clear-period" type="button" disabled={!availableRange} onClick={showAllPeriod}>Mostrar todo o período</button>
+      </div>
+
+      <div className="dre-period-presets" role="group" aria-label="Atalhos de período">
+        <button className="secondary-button" type="button" onClick={() => applyRange(last30DaysRange())}>Últimos 30 dias</button>
+        <button className="secondary-button" type="button" onClick={() => applyRange(todayMonthRange())}>Mês atual</button>
+        <button className="secondary-button" type="button" onClick={() => applyRange(currentYearRange())}>Ano atual</button>
+        <button className="secondary-button" type="button" disabled={!availableRange} onClick={showAllPeriod}>Todo o período</button>
       </div>
 
       <div className="dre-kpis"><div><span>Receitas</span><strong>{money.format(totalRevenue)}</strong></div><div><span>Despesas</span><strong>{money.format(totalExpense)}</strong></div><div className={balance >= 0 ? 'positive' : 'negative'}><span>Resultado {regime === 'caixa' ? 'de Caixa' : 'Gerencial'}</span><strong>{money.format(balance)}</strong></div><div><span>Lançamentos</span><strong>{rows.length}</strong></div></div>
