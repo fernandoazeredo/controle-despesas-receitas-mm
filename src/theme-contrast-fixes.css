@@ -132,26 +132,41 @@ html[data-theme='dark'] .dre-suggestion.confidence-low {
   color: #cbd5e1 !important;
 }
 
-/* Usuários: select de status com seta própria e visível no dark mode */
-html[data-theme='dark'] .user-status-pill {
+/* Usuários: select de status com seta própria e visível em ambos os temas */
+html[data-theme='dark'] .user-status-pill,
+html[data-theme='light'] .user-status-pill {
   appearance: none !important;
   -webkit-appearance: none !important;
   padding-right: 42px !important;
+  background-repeat: no-repeat !important;
+  background-size: 5px 5px, 5px 5px !important;
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50% !important;
+}
+html[data-theme='dark'] .user-status-pill {
   background-color: #111f2b !important;
   color: #f4f7fa !important;
   border-color: #4c6c84 !important;
   background-image:
     linear-gradient(45deg, transparent 50%, #cbd5e1 50%),
     linear-gradient(135deg, #cbd5e1 50%, transparent 50%) !important;
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 13px) 50% !important;
-  background-size: 5px 5px, 5px 5px !important;
-  background-repeat: no-repeat !important;
+}
+html[data-theme='light'] .user-status-pill {
+  background-color: #ffffff !important;
+  color: #182433 !important;
+  border-color: #bac9d5 !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #111827 50%),
+    linear-gradient(135deg, #111827 50%, transparent 50%) !important;
 }
 html[data-theme='dark'] .user-status-pill:hover,
 html[data-theme='dark'] .user-status-pill:focus {
   border-color: #7dd3fc !important;
+}
+html[data-theme='light'] .user-status-pill:hover,
+html[data-theme='light'] .user-status-pill:focus {
+  border-color: #1678c8 !important;
 }
 
 /* Arquivo de Documentos: badges usam o mesmo contraste legível do fluxo de Despesas */
