@@ -15,12 +15,31 @@ function initialTheme(): ThemeMode {
 
 export function ThemeControls() {
   const [theme, setTheme] = useState<ThemeMode>(initialTheme)
+  const [authVisible, setAuthVisible] = useState(false)
 
   useEffect(() => {
+    const syncAuthState = () => {
+      const visible = Boolean(document.querySelector('.auth-page'))
+      setAuthVisible(visible)
+      const activeTheme: ThemeMode = visible ? 'light' : theme
+      document.documentElement.dataset.theme = activeTheme
+      document.documentElement.style.colorScheme = activeTheme
+    }
+
+    syncAuthState()
+    const observer = new MutationObserver(syncAuthState)
+    observer.observe(document.body, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [theme])
+
+  useEffect(() => {
+    if (authVisible) return
     document.documentElement.dataset.theme = theme
     document.documentElement.style.colorScheme = theme
     window.localStorage.setItem(STORAGE_KEY, theme)
-  }, [theme])
+  }, [theme, authVisible])
+
+  if (authVisible) return null
 
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const label = theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'
