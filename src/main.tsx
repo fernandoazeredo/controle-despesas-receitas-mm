@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
 import { CpfCnpjValidationEnhancer } from './components/CpfCnpjValidationEnhancer'
+import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
 import { ThemeControls } from './components/ThemeControls'
@@ -24,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <ThemeControls />
         <CpfCnpjValidationEnhancer />
+        <ExpenseFormSemanticsEnhancer />
         <App />
         <ExpenseFiltersPanel />
         <ExpenseSettlementPanel />
