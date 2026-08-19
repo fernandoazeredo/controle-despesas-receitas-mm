@@ -1,0 +1,17 @@
+.cpf-cnpj-invalid {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, .12) !important;
+}
+
+.cpf-cnpj-field-error {
+  display: block;
+  margin-top: 4px;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+html[data-theme='dark'] .cpf-cnpj-field-error {
+  color: #fca5a5;
+}
