@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "controle-despesas-receitas-mm"
+  },
+  "targets": {
+    "controle-despesas-receitas-mm": {
+      "hosting": {
+        "legacy": [
+          "controle-despesas-receitas-mm"
+        ],
+        "fm": [
+          "controle-despesas-receitas-fm"
+        ]
+      }
+    }
   }
 }
