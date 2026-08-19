@@ -46,7 +46,7 @@ export function FinancialMovementCard({
       </label>
 
       <div className="financial-bank-details">
-        <span>Titular / Cliente</span>
+        <span>Titular</span>
         <strong>{selected.holder}</strong>
         <small>{selected.holderType} · {selected.bank} · Ag. {selected.agency} · C/C {selected.account}</small>
       </div>
