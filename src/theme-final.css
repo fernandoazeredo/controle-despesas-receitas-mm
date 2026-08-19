@@ -1,0 +1,307 @@
+/*
+  TEMA FINAL — PADRÃO GLOBAL DO APLICATIVO
+  Regra: nenhuma superfície estrutural deve depender de branco fixo no modo escuro.
+  A Dashboard Financeira é a referência visual do dark mode.
+*/
+
+html[data-theme='light'] {
+  --ui-page: #f4f7fa;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #f7fafc;
+  --ui-surface-3: #eef4f8;
+  --ui-input: #ffffff;
+  --ui-border: #d6e0e8;
+  --ui-border-strong: #bac9d5;
+  --ui-text: #182433;
+  --ui-text-2: #435368;
+  --ui-muted: #6d7d8f;
+  --ui-blue: #1678c8;
+  --ui-red: #c9363d;
+  --ui-green: #168653;
+  --ui-amber: #a96d00;
+}
+
+html[data-theme='dark'] {
+  --ui-page: #0e1822;
+  --ui-surface: #192a38;
+  --ui-surface-2: #1d3040;
+  --ui-surface-3: #223746;
+  --ui-input: #111f2b;
+  --ui-border: #385267;
+  --ui-border-strong: #4c6c84;
+  --ui-text: #f4f7fa;
+  --ui-text-2: #c5d5e2;
+  --ui-muted: #98b1c6;
+  --ui-blue: #50b6f8;
+  --ui-red: #ff626d;
+  --ui-green: #53d394;
+  --ui-amber: #f1b943;
+}
+
+/* ---------- SUPERFÍCIES ---------- */
+html[data-theme='dark'] body,
+html[data-theme='dark'] #root,
+html[data-theme='dark'] .app-shell,
+html[data-theme='dark'] .main-content {
+  background: var(--ui-page) !important;
+  color: var(--ui-text) !important;
+}
+
+html[data-theme='dark'] .page-card,
+html[data-theme='dark'] .module-card,
+html[data-theme='dark'] .metric,
+html[data-theme='dark'] .modal-sheet,
+html[data-theme='dark'] .decision-modal,
+html[data-theme='dark'] .accounting-panel,
+html[data-theme='dark'] .dre-classification-card,
+html[data-theme='dark'] .dre-report-card,
+html[data-theme='dark'] .expense-settlement-panel,
+html[data-theme='dark'] .storage-documents-card,
+html[data-theme='dark'] .official-accounts-card,
+html[data-theme='dark'] .users-kit-card {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+  border-color: var(--ui-border) !important;
+}
+
+html[data-theme='dark'] .module-toolbar,
+html[data-theme='dark'] .search-box,
+html[data-theme='dark'] .accounts-toolbar,
+html[data-theme='dark'] .audit-toolbar,
+html[data-theme='dark'] .storage-toolbar {
+  background: var(--ui-surface-2) !important;
+  border-color: var(--ui-border) !important;
+  color: var(--ui-text) !important;
+}
+
+/* ---------- DASHBOARDS / KPIs ---------- */
+html[data-theme='dark'] .metrics-grid .metric,
+html[data-theme='dark'] .expense-dashboard-card,
+html[data-theme='dark'] .obligation-metrics article,
+html[data-theme='dark'] .commission-v4-metrics article,
+html[data-theme='dark'] .accounts-summary-grid article,
+html[data-theme='dark'] .user-access-summary article,
+html[data-theme='dark'] .readiness-grid article,
+html[data-theme='dark'] .dre-summary-grid article,
+html[data-theme='dark'] .dre-kpi,
+html[data-theme='dark'] .summary-card,
+html[data-theme='dark'] .kpi-card,
+html[data-theme='dark'] .stat-card {
+  background: var(--ui-surface) !important;
+  background-image: none !important;
+  color: var(--ui-text) !important;
+  border-color: var(--ui-border) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme='dark'] .user-pending-card { border-left-color: var(--ui-amber) !important; }
+html[data-theme='dark'] .user-active-card { border-left-color: var(--ui-green) !important; }
+html[data-theme='dark'] .user-blocked-card { border-left-color: var(--ui-red) !important; }
+
+html[data-theme='dark'] .accounts-summary-grid article:first-child { border-left: 4px solid #8aa2b7 !important; }
+html[data-theme='dark'] .accounts-summary-grid article.account-revenue { border-left: 4px solid var(--ui-blue) !important; }
+html[data-theme='dark'] .accounts-summary-grid article.account-expense { border-left: 4px solid var(--ui-red) !important; }
+html[data-theme='dark'] .accounts-summary-grid article.account-patrimonial { border-left: 4px solid #a98be6 !important; }
+
+html[data-theme='dark'] .expense-dashboard-card.is-total { border-left: 4px solid var(--ui-amber) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-taxes { border-left: 4px solid var(--ui-red) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-payroll { border-left: 4px solid var(--ui-blue) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-operational { border-left: 4px solid var(--ui-green) !important; }
+
+html[data-theme='dark'] .metrics-grid span,
+html[data-theme='dark'] .metrics-grid small,
+html[data-theme='dark'] .expense-dashboard-card span,
+html[data-theme='dark'] .expense-dashboard-card small,
+html[data-theme='dark'] .obligation-metrics span,
+html[data-theme='dark'] .commission-v4-metrics span,
+html[data-theme='dark'] .accounts-summary-grid span,
+html[data-theme='dark'] .accounts-summary-grid small,
+html[data-theme='dark'] .user-access-summary span,
+html[data-theme='dark'] .user-access-summary small,
+html[data-theme='dark'] .readiness-grid span,
+html[data-theme='dark'] .readiness-grid small {
+  color: var(--ui-muted) !important;
+}
+
+html[data-theme='dark'] .user-access-summary strong,
+html[data-theme='dark'] .accounts-summary-grid strong,
+html[data-theme='dark'] .readiness-grid strong {
+  color: var(--ui-text) !important;
+}
+html[data-theme='dark'] .user-pending-card strong { color: var(--ui-amber) !important; }
+html[data-theme='dark'] .user-active-card strong { color: var(--ui-green) !important; }
+html[data-theme='dark'] .user-blocked-card strong { color: var(--ui-red) !important; }
+
+/* ---------- DOCUMENTOS ---------- */
+html[data-theme='dark'] .storage-dossier,
+html[data-theme='dark'] .storage-dossier-files a,
+html[data-theme='dark'] .storage-dossier-files > span,
+html[data-theme='dark'] .attachment-confirmed,
+html[data-theme='dark'] .attachment-upload-row,
+html[data-theme='dark'] .attachment-viewer-heading,
+html[data-theme='dark'] .attachment-viewer-list a,
+html[data-theme='dark'] .expense-attachment-list a,
+html[data-theme='dark'] .expense-attachment-list > span {
+  background: var(--ui-surface-2) !important;
+  color: var(--ui-text) !important;
+  border-color: var(--ui-border) !important;
+}
+html[data-theme='dark'] .storage-dossier-heading small,
+html[data-theme='dark'] .storage-dossier-heading span,
+html[data-theme='dark'] .storage-dossier-meta span,
+html[data-theme='dark'] .storage-dossier-files a,
+html[data-theme='dark'] .storage-dossier-files > span,
+html[data-theme='dark'] .attachment-viewer-list span {
+  color: var(--ui-muted) !important;
+}
+html[data-theme='dark'] .storage-dossier.expense { border-left-color: var(--ui-red) !important; }
+html[data-theme='dark'] .storage-dossier.revenue { border-left-color: var(--ui-blue) !important; }
+
+/* ---------- TABELAS: REGRA ÚNICA ---------- */
+html[data-theme='dark'] .data-head,
+html[data-theme='dark'] .obligation-list-head,
+html[data-theme='dark'] .commission-v4-row.head,
+html[data-theme='dark'] .official-account-head,
+html[data-theme='dark'] thead,
+html[data-theme='dark'] thead tr,
+html[data-theme='dark'] th {
+  background: var(--ui-surface-3) !important;
+  color: var(--ui-text-2) !important;
+  border-color: var(--ui-border) !important;
+}
+
+html[data-theme='dark'] .data-head > span,
+html[data-theme='dark'] .obligation-list-head > span,
+html[data-theme='dark'] .commission-v4-row.head > span,
+html[data-theme='dark'] .official-account-head > span,
+html[data-theme='dark'] th > * {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+html[data-theme='dark'] .data-row:not(.data-head),
+html[data-theme='dark'] .obligation-list-row:not(.obligation-list-head),
+html[data-theme='dark'] .commission-v4-row:not(.head),
+html[data-theme='dark'] .official-account-row:not(.official-account-head),
+html[data-theme='dark'] tbody tr {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+  border-color: var(--ui-border) !important;
+}
+
+html[data-theme='dark'] .official-group-row {
+  background: var(--ui-surface-2) !important;
+  color: var(--ui-text) !important;
+}
+html[data-theme='dark'] .official-group-row .account-code,
+html[data-theme='dark'] .official-account-row strong,
+html[data-theme='dark'] .official-account-row span {
+  color: var(--ui-text) !important;
+}
+html[data-theme='dark'] .official-account-row small { color: var(--ui-muted) !important; }
+
+html[data-theme='dark'] .data-row:not(.data-head):hover,
+html[data-theme='dark'] .obligation-list-row:not(.obligation-list-head):hover,
+html[data-theme='dark'] .commission-v4-row:not(.head):hover,
+html[data-theme='dark'] .official-account-row:not(.official-account-head):hover,
+html[data-theme='dark'] tbody tr:hover {
+  background: var(--ui-surface-3) !important;
+}
+
+/* impede blocos brancos residuais dentro de tabelas */
+html[data-theme='dark'] .obligation-list-row > span,
+html[data-theme='dark'] .commission-v4-row > span,
+html[data-theme='dark'] .official-account-row > span,
+html[data-theme='dark'] .data-row > span {
+  background: transparent !important;
+}
+
+/* ---------- FORMULÁRIOS ---------- */
+html[data-theme='dark'] input,
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] .search-box input,
+html[data-theme='dark'] .accounts-toolbar select,
+html[data-theme='dark'] .user-status-pill {
+  background: var(--ui-input) !important;
+  color: var(--ui-text) !important;
+  border-color: var(--ui-border-strong) !important;
+}
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder { color: var(--ui-muted) !important; opacity: 1; }
+html[data-theme='dark'] option { background: var(--ui-surface-2) !important; color: var(--ui-text) !important; }
+
+/* ---------- TEXTOS ---------- */
+html[data-theme='dark'] .page-heading h1,
+html[data-theme='dark'] .page-heading h2,
+html[data-theme='dark'] .page-card h1,
+html[data-theme='dark'] .page-card h2,
+html[data-theme='dark'] .page-card h3,
+html[data-theme='dark'] .card-title-row h2,
+html[data-theme='dark'] .card-title-row strong,
+html[data-theme='dark'] .data-row strong,
+html[data-theme='dark'] .obligation-list-row strong,
+html[data-theme='dark'] .commission-v4-row strong {
+  color: var(--ui-text) !important;
+}
+html[data-theme='dark'] .page-heading p,
+html[data-theme='dark'] .page-card p,
+html[data-theme='dark'] .data-row small,
+html[data-theme='dark'] .obligation-list-row small,
+html[data-theme='dark'] .commission-v4-row small {
+  color: var(--ui-muted) !important;
+}
+
+/* ---------- SEMÂNTICA ---------- */
+html[data-theme='dark'] .revenue-text,
+html[data-theme='dark'] .revenue-metric strong { color: var(--ui-blue) !important; }
+html[data-theme='dark'] .expense-text,
+html[data-theme='dark'] .expense-metric strong { color: var(--ui-red) !important; }
+html[data-theme='dark'] .success-text,
+html[data-theme='dark'] .balance-metric strong { color: var(--ui-green) !important; }
+html[data-theme='dark'] .warning-text { color: var(--ui-amber) !important; }
+
+html[data-theme='dark'] .account-category.account-revenue { background: #153249 !important; color: #70c5ff !important; }
+html[data-theme='dark'] .account-category.account-expense { background: #3b2329 !important; color: #ff858e !important; }
+html[data-theme='dark'] .account-category.account-patrimonial { background: #31284a !important; color: #c6b1f5 !important; }
+
+/* ---------- GRÁFICOS ---------- */
+html[data-theme='dark'] .expense-dashboard-chart-card,
+html[data-theme='dark'] .chart-card,
+html[data-theme='dark'] .dashboard-chart,
+html[data-theme='dark'] .chart-container,
+html[data-theme='dark'] .dre-chart {
+  background: var(--ui-surface) !important;
+  border-color: var(--ui-border) !important;
+  color: var(--ui-text) !important;
+}
+html[data-theme='dark'] .expense-dashboard-chart {
+  background: repeating-linear-gradient(to top,var(--ui-surface) 0,var(--ui-surface) 57px,#294151 58px) !important;
+  border-color: var(--ui-border) !important;
+}
+
+/* ---------- LIGHT MODE: coerência global ---------- */
+html[data-theme='light'] .page-card,
+html[data-theme='light'] .metric,
+html[data-theme='light'] .module-card,
+html[data-theme='light'] .user-access-summary article,
+html[data-theme='light'] .accounts-summary-grid article,
+html[data-theme='light'] .storage-dossier,
+html[data-theme='light'] .obligation-metrics article,
+html[data-theme='light'] .commission-v4-metrics article {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+  border-color: var(--ui-border) !important;
+}
+html[data-theme='light'] .data-head,
+html[data-theme='light'] .obligation-list-head,
+html[data-theme='light'] .commission-v4-row.head,
+html[data-theme='light'] .official-account-head {
+  background: var(--ui-surface-3) !important;
+  color: var(--ui-text-2) !important;
+}
+
+/* scrollbar coerente no dark */
+html[data-theme='dark'] * { scrollbar-color: #6f8292 #202a32; }
+html[data-theme='dark'] *::-webkit-scrollbar-track { background: #202a32; }
+html[data-theme='dark'] *::-webkit-scrollbar-thumb { background: #6f8292; border-radius: 999px; }
