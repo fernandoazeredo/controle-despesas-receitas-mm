@@ -13,7 +13,7 @@ html[data-theme='light'] {
   --text-muted: #6d7d8f;
   --border-default: #d6e0e8;
   --border-strong: #b9c8d4;
-  --shadow-soft: 0 10px 28px rgba(15, 35, 52, .08);
+  --shadow-soft: 0 10px 28px rgba(15,35,52,.08);
   --brand: #149fd5;
   --brand-dark: #173149;
   --muted: #6d7d8f;
@@ -33,39 +33,38 @@ html[data-theme='light'] {
 }
 
 html[data-theme='dark'] {
-  --bg-page: #0f1822;
-  --bg-sidebar: #111d28;
-  --bg-card: #182633;
-  --bg-card-2: #1d2d3b;
-  --bg-elevated: #203140;
-  --bg-input: #111d28;
-  --bg-table-head: #223442;
-  --bg-hover: #263b4a;
-  --text-primary: #f2f6f9;
-  --text-secondary: #c7d3dd;
-  --text-muted: #98aabd;
-  --border-default: #354a5d;
-  --border-strong: #486176;
-  --shadow-soft: 0 12px 32px rgba(0, 0, 0, .28);
-  --brand: #46c2ef;
-  --brand-dark: #e3f4fb;
-  --muted: #98aabd;
-  --border: #354a5d;
-  --danger: #ff6d74;
-  --expense: #ff686f;
-  --expense-dark: #ff8d92;
-  --expense-soft: #3a2229;
-  --revenue: #58b9ff;
-  --revenue-dark: #91d0ff;
-  --revenue-soft: #173249;
-  --success: #59d292;
-  --success-soft: #183729;
-  --warning: #f2bc53;
-  --warning-soft: #3c3018;
+  --bg-page: #0e1822;
+  --bg-sidebar: #101c27;
+  --bg-card: #192a38;
+  --bg-card-2: #1d3040;
+  --bg-elevated: #223746;
+  --bg-input: #111f2b;
+  --bg-table-head: #203442;
+  --bg-hover: #273d4d;
+  --text-primary: #f4f7fa;
+  --text-secondary: #b9cee0;
+  --text-muted: #98b1c6;
+  --border-default: #385267;
+  --border-strong: #4c6c84;
+  --shadow-soft: 0 12px 32px rgba(0,0,0,.24);
+  --brand: #19a9df;
+  --brand-dark: #eef8fd;
+  --muted: #98b1c6;
+  --border: #385267;
+  --danger: #ff606b;
+  --expense: #ff626d;
+  --expense-dark: #ff8a92;
+  --expense-soft: #3b2329;
+  --revenue: #50b6f8;
+  --revenue-dark: #91d2ff;
+  --revenue-soft: #153249;
+  --success: #53d394;
+  --success-soft: #18382b;
+  --warning: #f1b943;
+  --warning-soft: #3b301a;
   color-scheme: dark;
 }
 
-/* Base global */
 html[data-theme] body,
 html[data-theme] #root,
 html[data-theme] .app-shell,
@@ -127,7 +126,6 @@ html[data-theme] th {
   border-color: var(--border-default) !important;
 }
 
-/* Tipografia */
 html[data-theme] .page-heading h1,
 html[data-theme] .page-heading h2,
 html[data-theme] .page-card h1,
@@ -175,56 +173,92 @@ html[data-theme] tr {
   border-color: var(--border-default) !important;
 }
 
-/* KPIs e cards financeiros */
-html[data-theme] .metrics-grid .metric,
-html[data-theme] .obligation-metrics article,
-html[data-theme] .commission-v4-metrics article,
-html[data-theme] .expense-management-metrics article,
-html[data-theme] .expense-dashboard-metrics article,
-html[data-theme] .dre-summary-grid article,
-html[data-theme] .dre-kpi,
-html[data-theme] .account-summary-card,
-html[data-theme] .user-metric,
-html[data-theme] .users-metrics article {
-  background: var(--bg-card) !important;
-  border-color: var(--border-default) !important;
-  color: var(--text-primary) !important;
-  box-shadow: var(--shadow-soft);
+/* PADRÃO MESTRE DE DASHBOARD — mesmo visual da Dashboard Financeira */
+html[data-theme='dark'] .metrics-grid .metric,
+html[data-theme='dark'] .obligation-metrics article,
+html[data-theme='dark'] .commission-v4-metrics article,
+html[data-theme='dark'] .expense-management-metrics article,
+html[data-theme='dark'] .expense-dashboard-metrics article,
+html[data-theme='dark'] .expense-dashboard-card,
+html[data-theme='dark'] .dre-summary-grid article,
+html[data-theme='dark'] .dre-kpi,
+html[data-theme='dark'] .account-summary-card,
+html[data-theme='dark'] .user-metric,
+html[data-theme='dark'] .users-metrics article,
+html[data-theme='dark'] .accounts-summary article,
+html[data-theme='dark'] .admin-metric,
+html[data-theme='dark'] .summary-card,
+html[data-theme='dark'] .kpi-card,
+html[data-theme='dark'] .financial-card,
+html[data-theme='dark'] .stat-card,
+html[data-theme='dark'] .dashboard-card,
+html[data-theme='dark'] .expense-dashboard-chart-card,
+html[data-theme='dark'] .chart-card,
+html[data-theme='dark'] .dashboard-chart,
+html[data-theme='dark'] .dre-chart,
+html[data-theme='dark'] .chart-container,
+html[data-theme='dark'] .chart-area {
+  background: #192a38 !important;
+  background-image: none !important;
+  color: #f4f7fa !important;
+  border: 1px solid #385267 !important;
+  box-shadow: none !important;
 }
 
-html[data-theme] .metric span,
-html[data-theme] .metric small,
-html[data-theme] .obligation-metrics span,
-html[data-theme] .commission-v4-metrics span,
-html[data-theme] .expense-management-metrics span,
-html[data-theme] .expense-dashboard-metrics span,
-html[data-theme] .dre-summary-grid span,
-html[data-theme] .account-summary-card span,
-html[data-theme] .user-metric span,
-html[data-theme] .users-metrics span {
-  color: var(--text-muted) !important;
+html[data-theme='dark'] .expense-dashboard-card.is-total,
+html[data-theme='dark'] .expense-dashboard-card.is-taxes,
+html[data-theme='dark'] .expense-dashboard-card.is-payroll,
+html[data-theme='dark'] .expense-dashboard-card.is-operational {
+  background: #192a38 !important;
+  background-image: none !important;
 }
 
-html[data-theme] .metric strong,
-html[data-theme] .obligation-metrics strong,
-html[data-theme] .commission-v4-metrics strong,
-html[data-theme] .expense-management-metrics strong,
-html[data-theme] .expense-dashboard-metrics strong,
-html[data-theme] .dre-summary-grid strong,
-html[data-theme] .account-summary-card strong,
-html[data-theme] .user-metric strong,
-html[data-theme] .users-metrics strong {
-  color: var(--text-primary) !important;
+html[data-theme='dark'] .expense-dashboard-card.is-total { border-left: 4px solid var(--warning) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-taxes { border-left: 4px solid var(--expense) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-payroll { border-left: 4px solid var(--revenue) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-operational { border-left: 4px solid var(--success) !important; }
+
+html[data-theme='dark'] .metric span,
+html[data-theme='dark'] .metric small,
+html[data-theme='dark'] .obligation-metrics span,
+html[data-theme='dark'] .commission-v4-metrics span,
+html[data-theme='dark'] .expense-dashboard-card span,
+html[data-theme='dark'] .expense-dashboard-card small,
+html[data-theme='dark'] .dre-summary-grid span,
+html[data-theme='dark'] .account-summary-card span,
+html[data-theme='dark'] .user-metric span,
+html[data-theme='dark'] .users-metrics span,
+html[data-theme='dark'] .summary-card span,
+html[data-theme='dark'] .kpi-card span,
+html[data-theme='dark'] .stat-card span {
+  color: #a9bfd2 !important;
 }
+
+html[data-theme='dark'] .metric strong,
+html[data-theme='dark'] .obligation-metrics strong,
+html[data-theme='dark'] .commission-v4-metrics strong,
+html[data-theme='dark'] .expense-dashboard-card strong,
+html[data-theme='dark'] .dre-summary-grid strong,
+html[data-theme='dark'] .account-summary-card strong,
+html[data-theme='dark'] .user-metric strong,
+html[data-theme='dark'] .users-metrics strong,
+html[data-theme='dark'] .summary-card strong,
+html[data-theme='dark'] .kpi-card strong,
+html[data-theme='dark'] .stat-card strong {
+  color: #f4f7fa !important;
+}
+
+html[data-theme='dark'] .expense-dashboard-card.is-total strong { color: var(--warning) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-taxes strong { color: var(--expense) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-payroll strong { color: var(--revenue) !important; }
+html[data-theme='dark'] .expense-dashboard-card.is-operational strong { color: var(--success) !important; }
 
 /* preserva semântica financeira */
 html[data-theme] .expense-text,
 html[data-theme] .expense-metric strong,
 html[data-theme] .commission-v4-metrics article:nth-child(2) strong,
 html[data-theme] .obligation-metrics article:nth-child(3) strong,
-html[data-theme] .obligation-metrics article:nth-child(5) strong {
-  color: var(--expense) !important;
-}
+html[data-theme] .obligation-metrics article:nth-child(5) strong { color: var(--expense) !important; }
 html[data-theme] .revenue-text,
 html[data-theme] .revenue-metric strong { color: var(--revenue) !important; }
 html[data-theme] .success-text,
@@ -234,40 +268,62 @@ html[data-theme] .warning-text,
 html[data-theme] .commission-v4-metrics article:nth-child(6) strong,
 html[data-theme] .obligation-metrics article:nth-child(4) strong { color: var(--warning) !important; }
 
-/* Repasse, NF, Comissões e modais específicos */
-html[data-theme] .obligation-source-grid,
-html[data-theme] .fiscal-client-card,
-html[data-theme] .commission-v4-source > div,
-html[data-theme] .commission-deductions-box,
-html[data-theme] .commission-deduction-table,
-html[data-theme] .commission-calculation > div,
-html[data-theme] .obligation-installments,
-html[data-theme] .obligation-approval-note {
-  background: var(--bg-card-2) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border-default) !important;
+/* Repasse, NF, Comissões, documentos, usuários e Plano de Contas */
+html[data-theme='dark'] .obligation-source-grid,
+html[data-theme='dark'] .fiscal-client-card,
+html[data-theme='dark'] .commission-v4-source > div,
+html[data-theme='dark'] .commission-deductions-box,
+html[data-theme='dark'] .commission-deduction-table,
+html[data-theme='dark'] .commission-calculation > div,
+html[data-theme='dark'] .obligation-installments,
+html[data-theme='dark'] .obligation-approval-note,
+html[data-theme='dark'] .document-card,
+html[data-theme='dark'] .document-item,
+html[data-theme='dark'] .attachment-viewer-list a,
+html[data-theme='dark'] .attachment-confirmed,
+html[data-theme='dark'] .expense-attachment-list > *,
+html[data-theme='dark'] .account-row,
+html[data-theme='dark'] .user-card,
+html[data-theme='dark'] .audit-card,
+html[data-theme='dark'] .tip,
+html[data-theme='dark'] .howto-steps article {
+  background: #1d3040 !important;
+  background-image: none !important;
+  color: #f4f7fa !important;
+  border-color: #385267 !important;
 }
 
-html[data-theme] .obligation-source-grid strong,
-html[data-theme] .fiscal-client-card strong,
-html[data-theme] .commission-v4-source strong,
-html[data-theme] .commission-account-field > span,
-html[data-theme] .obligation-form-grid label > span,
-html[data-theme] .obligation-notes > span {
-  color: var(--text-secondary) !important;
+html[data-theme='dark'] .obligation-list-row,
+html[data-theme='dark'] .commission-v4-row,
+html[data-theme='dark'] .data-row,
+html[data-theme='dark'] tbody tr {
+  background: #192a38 !important;
+  color: #f4f7fa !important;
+  border-color: #385267 !important;
 }
+html[data-theme='dark'] .obligation-list-row:hover,
+html[data-theme='dark'] .commission-v4-row:hover,
+html[data-theme='dark'] .data-row:not(.data-head):hover,
+html[data-theme='dark'] tbody tr:hover { background: #223746 !important; }
 
-html[data-theme] .obligation-source-value,
-html[data-theme] .fiscal-value,
-html[data-theme] .commission-v4-source .gross,
-html[data-theme] .commission-calculation .net {
-  background: var(--success-soft) !important;
-  border-color: color-mix(in srgb, var(--success) 45%, var(--border-default)) !important;
+html[data-theme='dark'] .obligation-source-grid strong,
+html[data-theme='dark'] .fiscal-client-card strong,
+html[data-theme='dark'] .commission-v4-source strong,
+html[data-theme='dark'] .commission-account-field > span,
+html[data-theme='dark'] .obligation-form-grid label > span,
+html[data-theme='dark'] .obligation-notes > span { color: #c5d5e2 !important; }
+
+html[data-theme='dark'] .obligation-source-value,
+html[data-theme='dark'] .fiscal-value,
+html[data-theme='dark'] .commission-v4-source .gross,
+html[data-theme='dark'] .commission-calculation .net {
+  background: #18382b !important;
+  border-color: #39765b !important;
 }
 
 html[data-theme='dark'] .obligation-approval-box {
-  background: var(--warning-soft) !important;
-  border-color: #72582a !important;
+  background: #3b301a !important;
+  border-color: #785f28 !important;
 }
 html[data-theme='dark'] .obligation-approval-box > strong { color: #ffd477 !important; }
 html[data-theme='dark'] .obligation-approval-box > span { color: #d7bd87 !important; }
@@ -295,14 +351,13 @@ html[data-theme] .commission-component-label input {
   color: var(--text-primary) !important;
   border-color: var(--border-strong) !important;
 }
-
 html[data-theme] input::placeholder,
 html[data-theme] textarea::placeholder { color: var(--text-muted) !important; opacity: 1; }
 html[data-theme] input:focus,
 html[data-theme] select:focus,
 html[data-theme] textarea:focus {
   border-color: var(--brand) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb,var(--brand) 22%,transparent) !important;
   outline: none;
 }
 html[data-theme] option { background: var(--bg-elevated); color: var(--text-primary); }
@@ -325,13 +380,6 @@ html[data-theme] .secondary-button:hover,
 html[data-theme] .icon-button:hover,
 html[data-theme] .small-neutral-button:hover,
 html[data-theme] .howto-link:hover { background: var(--bg-hover) !important; }
-html[data-theme] button:focus-visible,
-html[data-theme] a:focus-visible,
-html[data-theme] select:focus-visible,
-html[data-theme] input:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--brand) 35%, transparent);
-  outline-offset: 2px;
-}
 
 /* Navegação */
 html[data-theme] .nav-link { color: var(--text-secondary) !important; }
@@ -352,59 +400,50 @@ html[data-theme] .status-badge.revenue { background: var(--revenue-soft) !import
 html[data-theme] .status-badge.success { background: var(--success-soft) !important; color: var(--success) !important; }
 html[data-theme] .status-badge.warning { background: var(--warning-soft) !important; color: var(--warning) !important; }
 
-/* Gráficos e visualizações */
-html[data-theme] .chart-card,
-html[data-theme] .expense-chart,
-html[data-theme] .expense-chart-card,
-html[data-theme] .dashboard-chart,
-html[data-theme] .dre-chart,
-html[data-theme] .chart-container,
-html[data-theme] .chart-area,
-html[data-theme] .recharts-wrapper,
-html[data-theme] .recharts-surface {
-  background: var(--bg-card) !important;
-  color: var(--text-primary) !important;
+/* Gráfico manual de despesas */
+html[data-theme='dark'] .expense-dashboard-chart {
+  background: repeating-linear-gradient(to top,#192a38 0,#192a38 57px,#294151 58px) !important;
+  border-left-color: #385267 !important;
+  border-bottom-color: #385267 !important;
+  color: #f4f7fa !important;
 }
-html[data-theme='dark'] .recharts-cartesian-grid line { stroke: #385065 !important; }
+html[data-theme='dark'] .expense-dashboard-chart-title strong,
+html[data-theme='dark'] .expense-chart-value,
+html[data-theme='dark'] .expense-chart-column > strong { color: #f4f7fa !important; }
+html[data-theme='dark'] .expense-dashboard-chart-title span,
+html[data-theme='dark'] .expense-chart-value small { color: #98b1c6 !important; }
+html[data-theme='dark'] .expense-chart-bar {
+  background: linear-gradient(180deg,#50b6f8,#1678c8) !important;
+  box-shadow: 0 6px 16px rgba(22,120,200,.28) !important;
+}
+
+/* Recharts */
+html[data-theme='dark'] .recharts-wrapper,
+html[data-theme='dark'] .recharts-surface { background: transparent !important; }
+html[data-theme='dark'] .recharts-cartesian-grid line { stroke: #385267 !important; }
 html[data-theme='dark'] .recharts-cartesian-axis-tick text,
 html[data-theme='dark'] .recharts-legend-item-text,
 html[data-theme='dark'] .recharts-label,
-html[data-theme='dark'] .recharts-text { fill: #c8d5df !important; color: #c8d5df !important; }
+html[data-theme='dark'] .recharts-text { fill: #c8d6e1 !important; color: #c8d6e1 !important; }
 html[data-theme='dark'] .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #172633 !important;
-  border-color: #425b70 !important;
-  color: #f3f7fa !important;
+  background: #192a38 !important;
+  border-color: #4c6c84 !important;
+  color: #f4f7fa !important;
 }
 
-/* Cartões/documentos listados: remove ilhas brancas no escuro */
-html[data-theme='dark'] .document-card,
-html[data-theme='dark'] .document-item,
-html[data-theme='dark'] .attachment-viewer-list a,
-html[data-theme='dark'] .attachment-confirmed,
-html[data-theme='dark'] .expense-attachment-list > *,
-html[data-theme='dark'] .account-row,
-html[data-theme='dark'] .user-card,
-html[data-theme='dark'] .audit-card,
-html[data-theme='dark'] .tip,
-html[data-theme='dark'] .howto-steps article {
-  background: var(--bg-card-2) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border-default) !important;
-}
-
-/* Aprovações e alertas */
+/* Aprovações */
 html[data-theme='dark'] .master-mode-banner,
 html[data-theme='dark'] .approval-banner,
 html[data-theme='dark'] .warning-banner {
-  background: #3b2d12 !important;
+  background: #3b301a !important;
   border-color: #9a7130 !important;
   color: #f4d89c !important;
 }
 html[data-theme='dark'] .master-mode-banner strong,
 html[data-theme='dark'] .approval-banner strong { color: #fff1c7 !important; }
 
-/* Evita sobreposição do alternador com ações do cabeçalho */
-@media (min-width: 721px) {
+/* alternador sem sobreposição */
+@media (min-width:721px) {
   html[data-theme] .main-content > .page-heading,
   html[data-theme] .main-content .page-heading:first-child { padding-right: 150px; }
 }
@@ -415,7 +454,7 @@ html[data-theme='dark'] .approval-banner strong { color: #fff1c7 !important; }
   top: 14px;
   z-index: 130;
   border: 1px solid var(--border-strong);
-  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  background: color-mix(in srgb,var(--bg-elevated) 94%,transparent);
   color: var(--text-primary);
   border-radius: 999px;
   min-height: 40px;
@@ -430,17 +469,9 @@ html[data-theme='dark'] .approval-banner strong { color: #fff1c7 !important; }
   backdrop-filter: blur(10px);
 }
 .theme-toggle:hover { transform: translateY(-1px); background: var(--bg-hover); }
-.theme-toggle:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 35%, transparent); outline-offset: 2px; }
+.theme-toggle:focus-visible { outline: 3px solid color-mix(in srgb,var(--brand) 35%,transparent); outline-offset: 2px; }
 
-@media (max-width: 720px) {
-  .theme-toggle {
-    top: 10px;
-    right: 11px;
-    min-width: 40px;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    justify-content: center;
-  }
-  .theme-toggle span { display: none; }
+@media (max-width:720px) {
+  .theme-toggle { top:10px; right:11px; min-width:40px; width:40px; height:40px; padding:0; justify-content:center; }
+  .theme-toggle span { display:none; }
 }
