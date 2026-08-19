@@ -10,7 +10,7 @@ type Regime = 'competencia' | 'caixa'
 type DreRow = {
   id: string
   type: 'revenue' | 'expense'
-  period: string
+  date: string
   unit: string
   amount: number
   group: string
@@ -20,6 +20,32 @@ const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL
 const EXPENSE_COMPETENCE_STATUSES = new Set(['aprovado', 'pago', 'arquivado'])
 const EXPENSE_CASH_STATUSES = new Set(['pago', 'arquivado'])
 const REVENUE_STATUSES = new Set(['recebido_tesouraria', 'encerrado'])
+
+function todayMonthRange() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+  const start = `${year}-${String(month + 1).padStart(2, '0')}-01`
+  const lastDay = new Date(year, month + 1, 0).getDate()
+  const end = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+  return { start, end }
+}
+
+function normalizeDate(value: unknown) {
+  const raw = String(value ?? '').trim()
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10)
+  if (/^\d{4}-\d{2}$/.test(raw)) return `${raw}-01`
+  return ''
+}
+
+function expenseCompetenceDate(record: AnyRecord) {
+  const itemDate = Array.isArray(record.items) ? record.items.find((item: DocumentData) => item?.data)?.data : ''
+  return normalizeDate(itemDate) || normalizeDate(record.competencia)
+}
+
+function revenueCompetenceDate(record: AnyRecord) {
+  return normalizeDate(record.competencia) || normalizeDate(record.data) || normalizeDate(record.receiptDate)
+}
 
 function toNumber(value: unknown) {
   const number = Number(value)
@@ -33,32 +59,15 @@ function revenueAmount(record: AnyRecord) {
   return toNumber(components.find((item) => item.nome === 'Honorários do Escritório')?.valor)
 }
 
-function expenseCompetence(item: AnyRecord) {
-  const direct = String(item.competencia ?? '').slice(0, 7)
-  if (direct) return direct
-  const firstItemDate = Array.isArray(item.items) ? String(item.items[0]?.data ?? '').slice(0, 7) : ''
-  return firstItemDate
-}
-
-function expenseCashPeriod(item: AnyRecord) {
-  return String(item.paymentDate ?? '').slice(0, 7)
-}
-
-function revenueCompetence(item: AnyRecord) {
-  return String(item.competencia ?? item.data ?? item.receiptDate ?? '').slice(0, 7)
-}
-
-function revenueCashPeriod(item: AnyRecord) {
-  return String(item.receiptDate ?? item.data ?? '').slice(0, 7)
-}
-
 export function DreRegimeViewEnhancer() {
+  const currentRange = useMemo(todayMonthRange, [])
   const [expenses, setExpenses] = useState<AnyRecord[]>([])
   const [revenues, setRevenues] = useState<AnyRecord[]>([])
   const [classifications, setClassifications] = useState<AnyRecord[]>([])
   const [target, setTarget] = useState<HTMLElement | null>(null)
   const [regime, setRegime] = useState<Regime>('competencia')
-  const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7))
+  const [startDate, setStartDate] = useState(currentRange.start)
+  const [endDate, setEndDate] = useState(currentRange.end)
   const [unit, setUnit] = useState('Todas')
 
   useEffect(() => {
@@ -69,26 +78,17 @@ export function DreRegimeViewEnhancer() {
   }, [])
 
   useEffect(() => {
-    let scheduled = false
     const sync = () => {
-      if (scheduled) return
-      scheduled = true
-      window.requestAnimationFrame(() => {
-        scheduled = false
-        const original = document.querySelector<HTMLElement>('.dre-report-card:not(.dre-regime-card)')
-        if (!original) {
-          setTarget(null)
-          return
-        }
-        original.style.display = 'none'
-        let mount = document.getElementById('dre-regime-view-root')
-        if (!mount) {
-          mount = document.createElement('div')
-          mount.id = 'dre-regime-view-root'
-          original.parentElement?.insertBefore(mount, original)
-        }
-        setTarget((current) => current === mount ? current : mount)
-      })
+      const original = document.querySelector<HTMLElement>('.dre-report-card:not(.dre-regime-card)')
+      if (!original) { setTarget(null); return }
+      original.style.display = 'none'
+      let mount = document.getElementById('dre-regime-view-root')
+      if (!mount) {
+        mount = document.createElement('div')
+        mount.id = 'dre-regime-view-root'
+        original.parentElement?.insertBefore(mount, original)
+      }
+      setTarget(mount)
     }
     sync()
     const observer = new MutationObserver(sync)
@@ -111,22 +111,27 @@ export function DreRegimeViewEnhancer() {
       const status = String(item.status ?? '')
       const validStatus = regime === 'competencia' ? EXPENSE_COMPETENCE_STATUSES.has(status) : EXPENSE_CASH_STATUSES.has(status)
       if (!validStatus) continue
-      const selectedPeriod = regime === 'competencia' ? expenseCompetence(item) : expenseCashPeriod(item)
-      if (!selectedPeriod) continue
-      result.push({ id: item.id, type: 'expense', period: selectedPeriod, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
+      const selectedDate = regime === 'competencia' ? expenseCompetenceDate(item) : normalizeDate(item.paymentDate)
+      if (!selectedDate) continue
+      result.push({ id: item.id, type: 'expense', date: selectedDate, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
     }
 
     for (const item of revenues) {
       const classification = classificationMap.get(`revenue__${item.id}`)
       if (!classification?.confirmed || !classification.accountDre || classification.accountDre === 'Não mostrar no DRE Gerencial') continue
       if (!REVENUE_STATUSES.has(String(item.status ?? ''))) continue
-      const selectedPeriod = regime === 'competencia' ? revenueCompetence(item) : revenueCashPeriod(item)
-      if (!selectedPeriod) continue
-      result.push({ id: item.id, type: 'revenue', period: selectedPeriod, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group: String(classification.accountDre) })
+      const selectedDate = regime === 'competencia' ? revenueCompetenceDate(item) : normalizeDate(item.receiptDate) || normalizeDate(item.data)
+      if (!selectedDate) continue
+      result.push({ id: item.id, type: 'revenue', date: selectedDate, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group: String(classification.accountDre) })
     }
 
-    return result.filter((item) => (!period || item.period === period) && (unit === 'Todas' || item.unit === unit))
-  }, [classificationMap, expenses, period, regime, revenues, unit])
+    return result.filter((item) => {
+      if (startDate && item.date < startDate) return false
+      if (endDate && item.date > endDate) return false
+      if (unit !== 'Todas' && item.unit !== unit) return false
+      return true
+    })
+  }, [classificationMap, endDate, expenses, regime, revenues, startDate, unit])
 
   const groups = useMemo(() => {
     const map = new Map<string, { revenue: number; expense: number; count: number }>()
@@ -147,8 +152,8 @@ export function DreRegimeViewEnhancer() {
   if (!target) return null
 
   return createPortal(
-    <section className="page-card dre-regime-card">
-      <div className="dre-section-heading"><div><span className="eyebrow">Demonstrativo Gerencial</span><h2>Resultado do Período</h2><p>Alterne entre competência econômica e movimentação efetiva de caixa sem duplicar lançamentos.</p></div></div>
+    <section className="page-card dre-report-card dre-regime-card">
+      <div className="dre-section-heading"><div><span className="eyebrow">Demonstrativo Gerencial</span><h2>Resultado do Período</h2><p>Alterne entre competência econômica e movimentação efetiva de caixa e consulte qualquer intervalo de datas.</p></div></div>
 
       <div className="dre-regime-toggle" role="group" aria-label="Regime de visualização">
         <button className={regime === 'competencia' ? 'active' : ''} type="button" onClick={() => setRegime('competencia')}><CalendarDays size={16} /> Visão Competência</button>
@@ -156,14 +161,19 @@ export function DreRegimeViewEnhancer() {
       </div>
 
       <div className="dre-regime-explanation">{regime === 'competencia'
-        ? 'Competência: despesas aparecem no mês a que pertencem; receitas usam a competência ou data econômica do recebimento.'
+        ? 'Competência: despesas são consideradas pela data do lançamento vinculada à competência; receitas usam a data econômica disponível.'
         : 'Caixa: despesas entram somente quando pagas, pela Data do Pagamento; receitas entram pela data efetiva de recebimento.'}</div>
 
-      <div className="dre-report-filters"><label><span>Período</span><input type="month" value={period} onChange={(event) => setPeriod(event.target.value)} /></label><label><span>Unidade</span><select value={unit} onChange={(event) => setUnit(event.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label></div>
+      <div className="dre-report-filters dre-date-range-filters">
+        <label><span>Data inicial</span><input type="date" value={startDate} max={endDate || undefined} onChange={(event) => setStartDate(event.target.value)} /></label>
+        <label><span>Data final</span><input type="date" value={endDate} min={startDate || undefined} onChange={(event) => setEndDate(event.target.value)} /></label>
+        <label><span>Unidade</span><select value={unit} onChange={(event) => setUnit(event.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label>
+        <button className="secondary-button dre-clear-period" type="button" onClick={() => { setStartDate(''); setEndDate('') }}>Mostrar todo o período</button>
+      </div>
 
       <div className="dre-kpis"><div><span>Receitas</span><strong>{money.format(totalRevenue)}</strong></div><div><span>Despesas</span><strong>{money.format(totalExpense)}</strong></div><div className={balance >= 0 ? 'positive' : 'negative'}><span>Resultado {regime === 'caixa' ? 'de Caixa' : 'Gerencial'}</span><strong>{money.format(balance)}</strong></div><div><span>Lançamentos</span><strong>{rows.length}</strong></div></div>
 
-      <div className="dre-statement"><div className="dre-statement-row head"><span>Grupo DRE</span><span>Lançamentos</span><span>Valor</span></div>{groups.length === 0 ? <div className="dre-empty-statement">Nenhum lançamento classificado para esta visão e período.</div> : groups.map(([label, values]) => {
+      <div className="dre-statement"><div className="dre-statement-row head"><span>Grupo DRE</span><span>Lançamentos</span><span>Valor</span></div>{groups.length === 0 ? <div className="dre-empty-statement">Nenhum lançamento classificado para esta visão e intervalo de datas.</div> : groups.map(([label, values]) => {
         const isExpense = values.expense > 0 && values.revenue === 0
         const net = values.revenue - values.expense
         return <div className={`dre-statement-row ${isExpense ? 'expense' : 'revenue'}`} key={label}><span>{label}</span><span>{values.count}</span><strong>{isExpense ? `(${money.format(values.expense)})` : money.format(net)}</strong></div>
