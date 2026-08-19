@@ -132,6 +132,53 @@ html[data-theme='dark'] .dre-suggestion.confidence-low {
   color: #cbd5e1 !important;
 }
 
+/* Usuários: select de status com seta própria e visível no dark mode */
+html[data-theme='dark'] .user-status-pill {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  padding-right: 42px !important;
+  background-color: #111f2b !important;
+  color: #f4f7fa !important;
+  border-color: #4c6c84 !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #cbd5e1 50%),
+    linear-gradient(135deg, #cbd5e1 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50% !important;
+  background-size: 5px 5px, 5px 5px !important;
+  background-repeat: no-repeat !important;
+}
+html[data-theme='dark'] .user-status-pill:hover,
+html[data-theme='dark'] .user-status-pill:focus {
+  border-color: #7dd3fc !important;
+}
+
+/* Arquivo de Documentos: badges usam o mesmo contraste legível do fluxo de Despesas */
+html[data-theme='dark'] .storage-dossier .workflow-status-badge {
+  border: 1px solid rgba(85, 97, 112, .18) !important;
+}
+html[data-theme='dark'] .storage-dossier .workflow-status-badge.workflow-neutral {
+  background: #eef1f4 !important;
+  color: #556170 !important;
+}
+html[data-theme='dark'] .storage-dossier .workflow-status-badge.workflow-info {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+}
+html[data-theme='dark'] .storage-dossier .workflow-status-badge.workflow-success {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+html[data-theme='dark'] .storage-dossier .workflow-status-badge.workflow-warning {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+html[data-theme='dark'] .storage-dossier .workflow-status-badge.workflow-danger {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
 /* Botões destrutivos: melhora de contraste em ambos os temas */
 .tips-button,
 html[data-theme] .danger-button,
