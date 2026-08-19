@@ -13,6 +13,7 @@ import './responsive-shell.css'
 import './alvara-controls.css'
 import './financial-controls-v3.css'
 import './theme-final.css'
+import './theme-contrast-fixes.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
