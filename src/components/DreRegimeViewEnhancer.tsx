@@ -6,20 +6,11 @@ import { db } from '../lib/firebase'
 
 type AnyRecord = { id: string } & DocumentData
 type Regime = 'competencia' | 'caixa'
-
-type DreRow = {
-  id: string
-  type: 'revenue' | 'expense'
-  date: string
-  unit: string
-  amount: number
-  group: string
-}
+type DreRow = { id: string; type: 'revenue' | 'expense'; date: string; unit: string; amount: number; group: string }
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const EXPENSE_COMPETENCE_STATUSES = new Set(['aprovado', 'pago', 'arquivado'])
-const EXPENSE_CASH_STATUSES = new Set(['pago', 'arquivado'])
-const REVENUE_STATUSES = new Set(['recebido_tesouraria', 'encerrado'])
+const FILTER_STORAGE_KEY = 'dre-gerencial-periodo'
 
 function todayMonthRange() {
   const now = new Date()
@@ -31,32 +22,30 @@ function todayMonthRange() {
   return { start, end }
 }
 
+function initialRange() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FILTER_STORAGE_KEY) || '{}') as { start?: string; end?: string }
+    if (saved.start && saved.end) return { start: saved.start, end: saved.end }
+  } catch { /* usa mês atual */ }
+  return todayMonthRange()
+}
+
 function normalizeStatus(value: unknown) {
-  return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, '_')
+  return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/[\s-]+/g, '_')
 }
 
 function normalizeDate(value: unknown): string {
   if (!value) return ''
-
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.toISOString().slice(0, 10)
-  }
-
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10)
   if (typeof value === 'object') {
     const candidate = value as { toDate?: () => Date; seconds?: number; _seconds?: number }
     if (typeof candidate.toDate === 'function') {
       const date = candidate.toDate()
-      if (date instanceof Date && !Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10)
+      if (!Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10)
     }
     const seconds = Number(candidate.seconds ?? candidate._seconds)
     if (Number.isFinite(seconds) && seconds > 0) return new Date(seconds * 1000).toISOString().slice(0, 10)
   }
-
   const raw = String(value).trim()
   if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10)
   if (/^\d{4}-\d{2}$/.test(raw)) return `${raw}-01`
@@ -69,8 +58,8 @@ function normalizeDate(value: unknown): string {
 
 function firstValidDate(...values: unknown[]) {
   for (const value of values) {
-    const normalized = normalizeDate(value)
-    if (normalized) return normalized
+    const date = normalizeDate(value)
+    if (date) return date
   }
   return ''
 }
@@ -81,14 +70,7 @@ function expenseCompetenceDate(record: AnyRecord) {
 }
 
 function expenseCashDate(record: AnyRecord) {
-  return firstValidDate(
-    record.paymentDate,
-    record.paidDate,
-    record.dataPagamento,
-    record.payment?.date,
-    record.financialMovement?.date,
-    record.paidAt,
-  )
+  return firstValidDate(record.paymentDate, record.paidDate, record.dataPagamento, record.payment?.date, record.financialMovement?.date, record.paidAt)
 }
 
 function revenueCompetenceDate(record: AnyRecord) {
@@ -96,15 +78,7 @@ function revenueCompetenceDate(record: AnyRecord) {
 }
 
 function revenueCashDate(record: AnyRecord) {
-  return firstValidDate(
-    record.receiptDate,
-    record.creditDate,
-    record.dataCredito,
-    record.data,
-    record.receivedAt,
-    record.receivedTreasuryAt,
-    record.treasuryReceivedAt,
-  )
+  return firstValidDate(record.receiptDate, record.creditDate, record.dataCredito, record.data, record.receivedAt, record.receivedTreasuryAt, record.treasuryReceivedAt)
 }
 
 function toNumber(value: unknown) {
@@ -120,15 +94,19 @@ function revenueAmount(record: AnyRecord) {
 }
 
 export function DreRegimeViewEnhancer() {
-  const currentRange = useMemo(todayMonthRange, [])
+  const savedRange = useMemo(initialRange, [])
   const [expenses, setExpenses] = useState<AnyRecord[]>([])
   const [revenues, setRevenues] = useState<AnyRecord[]>([])
   const [classifications, setClassifications] = useState<AnyRecord[]>([])
   const [target, setTarget] = useState<HTMLElement | null>(null)
   const [regime, setRegime] = useState<Regime>('competencia')
-  const [startDate, setStartDate] = useState(currentRange.start)
-  const [endDate, setEndDate] = useState(currentRange.end)
+  const [startDate, setStartDate] = useState(savedRange.start)
+  const [endDate, setEndDate] = useState(savedRange.end)
   const [unit, setUnit] = useState('Todas')
+
+  useEffect(() => {
+    localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify({ start: startDate, end: endDate }))
+  }, [startDate, endDate])
 
   useEffect(() => {
     const offExpenses = onSnapshot(collection(db, 'expenses'), (snapshot) => setExpenses(snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))))
@@ -162,51 +140,52 @@ export function DreRegimeViewEnhancer() {
 
   const classificationMap = useMemo(() => new Map(classifications.map((item) => [item.id, item])), [classifications])
 
-  const rows = useMemo<DreRow[]>(() => {
+  const allRows = useMemo<DreRow[]>(() => {
     const result: DreRow[] = []
 
     for (const item of expenses) {
       const classification = classificationMap.get(`expense__${item.id}`)
       if (!classification?.confirmed || !classification.accountDre || classification.accountDre === 'Não mostrar no DRE Gerencial') continue
-
       const status = normalizeStatus(item.status)
-      const cashDate = expenseCashDate(item)
 
       if (regime === 'competencia') {
         if (!EXPENSE_COMPETENCE_STATUSES.has(status)) continue
-        const selectedDate = expenseCompetenceDate(item)
-        if (!selectedDate) continue
-        result.push({ id: item.id, type: 'expense', date: selectedDate, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
-        continue
+        const date = expenseCompetenceDate(item)
+        if (!date) continue
+        result.push({ id: item.id, type: 'expense', date, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
+      } else {
+        const date = expenseCashDate(item)
+        if (!date) continue
+        if (['rascunho', 'rejeitado', 'cancelado', 'excluido'].includes(status)) continue
+        result.push({ id: item.id, type: 'expense', date, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
       }
-
-      // Na visão Caixa, a existência de uma data efetiva de pagamento é a evidência principal
-      // da movimentação. Isso também mantém compatibilidade com registros antigos em que o
-      // status pode ter grafia diferente, mas a baixa financeira foi registrada.
-      if (!cashDate) continue
-      if (!EXPENSE_CASH_STATUSES.has(status) && status !== 'aprovado') continue
-      result.push({ id: item.id, type: 'expense', date: cashDate, unit: String(item.unidade ?? 'RJ'), amount: toNumber(item.valorTotal), group: String(classification.accountDre) })
     }
 
     for (const item of revenues) {
       const classification = classificationMap.get(`revenue__${item.id}`)
       if (!classification?.confirmed || !classification.accountDre || classification.accountDre === 'Não mostrar no DRE Gerencial') continue
-
       const status = normalizeStatus(item.status)
-      if (!REVENUE_STATUSES.has(status)) continue
-
-      const selectedDate = regime === 'competencia' ? revenueCompetenceDate(item) : revenueCashDate(item)
-      if (!selectedDate) continue
-      result.push({ id: item.id, type: 'revenue', date: selectedDate, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group: String(classification.accountDre) })
+      const date = regime === 'competencia' ? revenueCompetenceDate(item) : revenueCashDate(item)
+      if (!date) continue
+      if (regime === 'competencia' && !['recebido_tesouraria', 'encerrado'].includes(status)) continue
+      if (regime === 'caixa' && ['rascunho', 'rejeitado', 'cancelado', 'excluido', 'pendente'].includes(status)) continue
+      result.push({ id: item.id, type: 'revenue', date, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group: String(classification.accountDre) })
     }
 
-    return result.filter((item) => {
-      if (startDate && item.date < startDate) return false
-      if (endDate && item.date > endDate) return false
-      if (unit !== 'Todas' && item.unit !== unit) return false
-      return true
-    })
-  }, [classificationMap, endDate, expenses, regime, revenues, startDate, unit])
+    return result
+  }, [classificationMap, expenses, regime, revenues])
+
+  const availableRange = useMemo(() => {
+    const dates = allRows.map((item) => item.date).filter(Boolean).sort()
+    return dates.length ? { start: dates[0], end: dates[dates.length - 1] } : null
+  }, [allRows])
+
+  const rows = useMemo(() => allRows.filter((item) => {
+    if (startDate && item.date < startDate) return false
+    if (endDate && item.date > endDate) return false
+    if (unit !== 'Todas' && item.unit !== unit) return false
+    return true
+  }), [allRows, endDate, startDate, unit])
 
   const groups = useMemo(() => {
     const map = new Map<string, { revenue: number; expense: number; count: number }>()
@@ -224,6 +203,12 @@ export function DreRegimeViewEnhancer() {
   const totalExpense = rows.filter((item) => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0)
   const balance = totalRevenue - totalExpense
 
+  function showAllPeriod() {
+    if (!availableRange) return
+    setStartDate(availableRange.start)
+    setEndDate(availableRange.end)
+  }
+
   if (!target) return null
 
   return createPortal(
@@ -237,13 +222,13 @@ export function DreRegimeViewEnhancer() {
 
       <div className="dre-regime-explanation">{regime === 'competencia'
         ? 'Competência: despesas são consideradas pela data do lançamento vinculada à competência; receitas usam a data econômica disponível.'
-        : 'Caixa: considera a data efetiva de pagamento das despesas e a data efetiva de crédito/recebimento das receitas.'}</div>
+        : 'Caixa: considera somente lançamentos que possuem data efetiva de pagamento/crédito, independentemente da competência.'}</div>
 
       <div className="dre-report-filters dre-date-range-filters">
         <label><span>Data inicial</span><input type="date" value={startDate} max={endDate || undefined} onChange={(event) => setStartDate(event.target.value)} /></label>
         <label><span>Data final</span><input type="date" value={endDate} min={startDate || undefined} onChange={(event) => setEndDate(event.target.value)} /></label>
         <label><span>Unidade</span><select value={unit} onChange={(event) => setUnit(event.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label>
-        <button className="secondary-button dre-clear-period" type="button" onClick={() => { setStartDate(''); setEndDate('') }}>Mostrar todo o período</button>
+        <button className="secondary-button dre-clear-period" type="button" disabled={!availableRange} onClick={showAllPeriod}>Mostrar todo o período</button>
       </div>
 
       <div className="dre-kpis"><div><span>Receitas</span><strong>{money.format(totalRevenue)}</strong></div><div><span>Despesas</span><strong>{money.format(totalExpense)}</strong></div><div className={balance >= 0 ? 'positive' : 'negative'}><span>Resultado {regime === 'caixa' ? 'de Caixa' : 'Gerencial'}</span><strong>{money.format(balance)}</strong></div><div><span>Lançamentos</span><strong>{rows.length}</strong></div></div>
