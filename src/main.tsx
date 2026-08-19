@@ -14,6 +14,7 @@ import './alvara-controls.css'
 import './financial-controls-v3.css'
 import './theme-final.css'
 import './theme-contrast-fixes.css'
+import './login-compact.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
