@@ -29,7 +29,8 @@ const BACKUP_COLLECTIONS = [
   'bankStatements',
 ] as const
 
-const WIPE_COLLECTIONS = BACKUP_COLLECTIONS.filter((name) => name !== 'users')
+const PROTECTED_COLLECTIONS = new Set<string>(['users', 'settings', 'chartOfAccounts'])
+const WIPE_COLLECTIONS = BACKUP_COLLECTIONS.filter((name) => !PROTECTED_COLLECTIONS.has(name))
 
 type BackupFile = {
   app: 'controle-despesas-receitas-mm'
@@ -151,6 +152,7 @@ export function UtilitiesPage() {
       restoreWindowOpened = true
 
       for (const name of BACKUP_COLLECTIONS) {
+        if (name === 'chartOfAccounts') continue
         const rows = parsed.collections[name] ?? []
         for (const row of rows) {
           if (name === 'users' && row.id === masterProfile.uid) continue
@@ -164,7 +166,7 @@ export function UtilitiesPage() {
         restoredByEmail: masterProfile.email,
         sourceCreatedAt: parsed.createdAt,
       })
-      setMessage('Backup JSON restaurado com sucesso. Os documentos do Firestore foram regravados com os mesmos IDs; o perfil Master do Fernando foi preservado.')
+      setMessage('Backup JSON restaurado com sucesso. O Plano de Contas atual foi preservado para impedir retorno a versões antigas.')
     } catch (error) {
       console.error(error)
       setMessage(error instanceof Error ? error.message : 'Não foi possível restaurar o backup.')
@@ -202,10 +204,10 @@ export function UtilitiesPage() {
 
       setConfirmWipe(false)
       setPhrase('')
-      setMessage('Limpeza concluída. Usuários foram preservados. Antes da exclusão, um backup JSON foi baixado automaticamente.')
+      setMessage('Limpeza concluída. Usuários, Configurações e o Plano de Contas atual foram preservados. Antes da exclusão, um backup JSON foi baixado automaticamente.')
     } catch (error) {
       console.error(error)
-      setMessage('A limpeza não foi concluída integralmente. Nenhum usuário foi excluído; confira as regras e tente novamente.')
+      setMessage('A limpeza não foi concluída integralmente. Usuários, Configurações e Plano de Contas não são removidos por esta operação.')
     } finally {
       setBusy('')
     }
@@ -225,21 +227,21 @@ export function UtilitiesPage() {
 
       <section className="page-card utility-card">
         <Upload size={28} />
-        <div><h2>Restaurar backup JSON</h2><p>Exclusivo de Fernando Azeredo (Administrador Master). Selecione um JSON gerado por este sistema para regravar os documentos com seus IDs originais.</p></div>
+        <div><h2>Restaurar backup JSON</h2><p>Exclusivo de Fernando Azeredo (Administrador Master). Selecione um JSON gerado por este sistema para regravar os documentos com seus IDs originais. O Plano de Contas atual não é substituído por versões antigas contidas no backup.</p></div>
         <button className="secondary-button" type="button" disabled={Boolean(busy)} onClick={() => inputRef.current?.click()}><Upload size={17} /> {busy === 'restore' ? 'Restaurando...' : 'Fazer upload do JSON'}</button>
         <input ref={inputRef} type="file" accept="application/json,.json" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void restoreFile(file) }} />
       </section>
 
       <section className="page-card utility-card utility-danger-card">
         <Trash2 size={28} />
-        <div><h2>Apagar tudo exceto usuários</h2><p>Remove os dados operacionais, inclusive repasses, comissões e Notas Fiscais, auditoria, configurações, Plano de Contas e referências de documentos. Os cadastros de usuários são preservados. Um backup JSON é baixado automaticamente antes da limpeza.</p></div>
+        <div><h2>Apagar dados operacionais</h2><p>Remove despesas, receitas, repasses, comissões, Notas Fiscais, auditoria, documentos operacionais e extratos. Usuários, Configurações e o Plano de Contas atual são sempre preservados. Um backup JSON é baixado automaticamente antes da limpeza.</p></div>
         <button className="expense-button" type="button" disabled={Boolean(busy)} onClick={() => setConfirmWipe(true)}><Trash2 size={17} /> Limpeza total</button>
       </section>
     </div>
 
     {confirmWipe && <div className="modal-backdrop"><section className="decision-modal rejeitado" role="dialog" aria-modal="true">
-      <div className="modal-toolbar"><div><span className="eyebrow">Operação irreversível</span><h2>Apagar tudo exceto usuários</h2></div></div>
-      <div className="decision-warning"><AlertTriangle size={22} /><div><strong>Confirmação obrigatória</strong><span>Digite APAGAR TUDO para habilitar a exclusão.</span></div></div>
+      <div className="modal-toolbar"><div><span className="eyebrow">Operação irreversível</span><h2>Apagar dados operacionais</h2></div></div>
+      <div className="decision-warning"><AlertTriangle size={22} /><div><strong>Confirmação obrigatória</strong><span>Digite APAGAR TUDO para habilitar a exclusão. Usuários, Configurações e Plano de Contas serão preservados.</span></div></div>
       <label className="decision-reason"><span>Confirmação</span><input autoFocus value={phrase} onChange={(event) => setPhrase(event.target.value)} placeholder="APAGAR TUDO" /></label>
       <div className="modal-actions"><button className="secondary-button" type="button" onClick={() => { setConfirmWipe(false); setPhrase('') }}>Cancelar</button><button className="expense-button" type="button" disabled={busy === 'wipe' || phrase.trim().toUpperCase() !== 'APAGAR TUDO'} onClick={() => void wipeAllExceptUsers()}><Trash2 size={16} /> {busy === 'wipe' ? 'Apagando...' : 'Confirmar limpeza'}</button></div>
     </section></div>}
