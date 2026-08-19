@@ -27,7 +27,7 @@ function enhanceExpenseForm() {
     }
 
     if (text === 'Fornecedor / Favorecido') caption.textContent = 'Nome do Fornecedor / Favorecido'
-    if (text === 'CPF / CNPJ') caption.textContent = 'CPF / CNPJ do Fornecedor / Favorecido'
+    if (text === 'CPF / CNPJ' || text === 'CPF / CNPJ do Fornecedor / Favorecido') caption.textContent = 'CPF do Favorecido / CNPJ do Fornecedor'
   }
 
   const table = document.querySelector('.review-expenses-table')
