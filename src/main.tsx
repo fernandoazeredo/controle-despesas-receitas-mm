@@ -22,6 +22,7 @@ import './login-compact.css'
 import './cpf-cnpj-validation.css'
 import './dre-regime-view.css'
 import './dre-account-search.css'
+import './login-footer-kill.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
