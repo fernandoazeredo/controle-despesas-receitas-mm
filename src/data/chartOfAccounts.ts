@@ -8,8 +8,8 @@ export type ChartOfAccount = {
   category: 'Receita' | 'Despesa' | 'Patrimonial / Dívida'
 }
 
-export const OFFICIAL_CHART_OF_ACCOUNTS_VERSION = '2026-08-14' as const
-export const OFFICIAL_CHART_OF_ACCOUNTS_SOURCE = 'Plano de contas MM.txt' as const
+export const OFFICIAL_CHART_OF_ACCOUNTS_VERSION = '2026-08-19' as const
+export const OFFICIAL_CHART_OF_ACCOUNTS_SOURCE = 'Plano_de_Contas_Flavio_Marques_Atualizado(2).txt' as const
 
 export const officialChartOfAccounts: ChartOfAccount[] = [
   { code: "3.01", name: "Receitas de Vendas de Produtos e Serviços", dre: null, parentCode: null, level: 2, kind: "group", category: "Receita" },
@@ -26,14 +26,14 @@ export const officialChartOfAccounts: ChartOfAccount[] = [
   { code: "3.03.01", name: "Adiantamentos para futuros Aumentos de Capital - AFAC", dre: "Não mostrar no DRE Gerencial", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.02", name: "Dedução Compensatória de Impostos", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.03", name: "Empréstimos de Bancos", dre: "Não mostrar no DRE Gerencial", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
-  { code: "3.03.04", name: "Empréstimos  de  Instituições", dre: "Não mostrar no DRE Gerencial", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
+  { code: "3.03.04", name: "Empréstimos de Instituições", dre: "Não mostrar no DRE Gerencial", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.05", name: "Empréstimos de Sócios", dre: "Não mostrar no DRE Gerencial", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.06", name: "Integralização de Capital Social", dre: "Não mostrar no DRE Gerencial", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.07", name: "Recebimento de Honorários - FGTS", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.08", name: "Recebimento de Honorários - INSS", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.09", name: "Receitas a Identificar", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.10", name: "Ressarcimento Desp. Calculo/Perito", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
-  { code: "3.03.11", name: "Ressarcimento Tributos  (Agentes)", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
+  { code: "3.03.11", name: "Ressarcimento Tributos (Agentes)", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.12", name: "Transferência Receita - Filial", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.13", name: "Valor a Descontar - Plano de Saúde", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
   { code: "3.03.14", name: "Venda de Imobilizado", dre: "Outras Receitas Não Operacionais", parentCode: "3.03", level: 3, kind: "account", category: "Receita" },
@@ -53,7 +53,7 @@ export const officialChartOfAccounts: ChartOfAccount[] = [
   { code: "4.02.03.05", name: "Ana Rodrigues (Participação no Processo - Alvará/Acordo)", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
   { code: "4.02.03.06", name: "Debora Moura (Participação no Processo - Alvará/Acordo)", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
   { code: "4.02.03.07", name: "Expedictus (Participação no Processo - Alvará/Acordo)", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
-  { code: "4.02.03.08", name: "Isabela Moraes (Participação no Processo - Alvará/Acordo)", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
+  { code: "4.02.03.08", name: "lsabela Moraes (Participação no Processo - Alvará/Acordo)", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
   { code: "4.02.03.09", name: "Jamily Silva (Participação no Processo - Alvará/Acordo)", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
   { code: "4.02.03.10", name: "Vanessa (Participação no Processo - Alvará/Acordo)", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
   { code: "4.02.03.11", name: "Comissão Leonardo Jun", dre: "Comissões Sobre Vendas", parentCode: "4.02.03", level: 4, kind: "account", category: "Despesa" },
@@ -87,6 +87,7 @@ export const officialChartOfAccounts: ChartOfAccount[] = [
   { code: "4.03.12", name: "Rescisões/Indenizações (RCT)", dre: "Despesas Administrativas", parentCode: "4.03", level: 3, kind: "account", category: "Despesa" },
   { code: "4.03.13", name: "Salários (Folha de Pagamento)", dre: "Despesas Administrativas", parentCode: "4.03", level: 3, kind: "account", category: "Despesa" },
   { code: "4.04", name: "Despesas com Colaboradores", dre: null, parentCode: null, level: 2, kind: "group", category: "Despesa" },
+  { code: "4.04.01", name: "Abono", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
   { code: "4.04.02", name: "Ajuda de Custo", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
   { code: "4.04.03", name: "Confraternizações", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
   { code: "4.04.04", name: "Contribuição Sindical", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
@@ -99,6 +100,7 @@ export const officialChartOfAccounts: ChartOfAccount[] = [
   { code: "4.04.11", name: "Seguro de Vida", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
   { code: "4.04.12", name: "Uniformes", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
   { code: "4.04.13", name: "Vale-Alimentação/Refeição", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
+  { code: "4.04.14", name: "Vale-Transporte", dre: "Despesas Administrativas", parentCode: "4.04", level: 3, kind: "account", category: "Despesa" },
   { code: "4.05", name: "Despesas Administrativas", dre: null, parentCode: null, level: 2, kind: "group", category: "Despesa" },
   { code: "4.05.01", name: "Bens de Pequeno Valor (Diversos)", dre: "Despesas Administrativas", parentCode: "4.05", level: 3, kind: "account", category: "Despesa" },
   { code: "4.05.02", name: "Cartórios", dre: "Despesas Administrativas", parentCode: "4.05", level: 3, kind: "account", category: "Despesa" },
@@ -166,9 +168,12 @@ export const officialChartOfAccounts: ChartOfAccount[] = [
   { code: "4.09.05", name: "Plano de Saúde Sócios", dre: "Despesas Administrativas", parentCode: "4.09", level: 3, kind: "account", category: "Despesa" },
   { code: "4.09.06", name: "Plano Odontológico Sócios", dre: "Despesas Administrativas", parentCode: "4.09", level: 3, kind: "account", category: "Despesa" },
   { code: "4.09.07", name: "Pró-labore", dre: null, parentCode: "4.09", level: 3, kind: "group", category: "Despesa" },
-  { code: "4.09.07.01", name: "Pró-Labore Sócio Flavio Marques", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
+  { code: "4.09.07.01", name: "Adiantamento Sócia Ana Muller", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
   { code: "4.09.07.02", name: "Adiantamento Sócio Flavio Marques", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
-  { code: "4.09.07.03", name: "Empréstimo ao Sócio Flavio Marques", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
+  { code: "4.09.07.03", name: "Empréstimo a Sócia Ana Muller", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
+  { code: "4.09.07.04", name: "Empréstimo ao Sócio Flavio Marques", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
+  { code: "4.09.07.05", name: "Pró-Labore Sócia Ana Muller", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
+  { code: "4.09.07.06", name: "Pró-Labore Sócio Flavio Marques", dre: "Não mostrar no DRE Gerencial", parentCode: "4.09.07", level: 4, kind: "account", category: "Despesa" },
   { code: "4.10", name: "Despesas Financeiras", dre: null, parentCode: null, level: 2, kind: "group", category: "Despesa" },
   { code: "4.10.01", name: "Despesa com Juros e Correção Monetária", dre: "Despesas Financeiras", parentCode: "4.10", level: 3, kind: "account", category: "Despesa" },
   { code: "4.10.02", name: "Impostos sobre Aplicações", dre: "Despesas Financeiras", parentCode: "4.10", level: 3, kind: "account", category: "Despesa" },
