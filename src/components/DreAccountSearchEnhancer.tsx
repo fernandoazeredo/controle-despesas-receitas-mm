@@ -49,6 +49,13 @@ function enhanceAccountChoices() {
       else label.prepend(input)
       label.appendChild(datalist)
 
+      // Quando o campo já vem preenchido por uma sugestão/classificação,
+      // selecionar todo o texto ao receber foco garante que a próxima digitação
+      // substitua o valor existente em vez de ser inserida no meio dele.
+      input.addEventListener('focus', () => {
+        window.requestAnimationFrame(() => input?.select())
+      })
+
       input.addEventListener('change', () => selectAccount(select!, input!))
       input.addEventListener('blur', () => {
         window.setTimeout(() => selectAccount(select!, input!), 0)
