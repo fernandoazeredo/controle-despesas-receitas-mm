@@ -1,0 +1,135 @@
+/* Ajustes finais de contraste — homologação visual 2026-08-19 */
+
+/* Auditoria: caixa Regra do fluxo de Alvarás */
+html[data-theme='dark'] .audit-explainer {
+  background: var(--ui-surface) !important;
+  border-color: var(--ui-border) !important;
+}
+html[data-theme='dark'] .audit-explainer > svg { color: #7dd3fc !important; }
+html[data-theme='dark'] .audit-explainer strong { color: #7dd3fc !important; }
+html[data-theme='dark'] .audit-explainer span { color: #cbd5e1 !important; }
+
+/* Configurações: rótulos de formulário */
+html[data-theme='dark'] .settings-grid label > span,
+html[data-theme='dark'] .auth-form label > span,
+html[data-theme='dark'] .form-grid label > span,
+html[data-theme='dark'] .obligation-form-grid label > span,
+html[data-theme='dark'] .obligation-notes > span,
+html[data-theme='dark'] .commission-account-field > span,
+html[data-theme='dark'] .dre-account-choice label > span,
+html[data-theme='dark'] .dre-report-filters span {
+  color: #94a3b8 !important;
+}
+
+/* Aprovações: banner Master/homologação */
+html[data-theme='dark'] .master-mode-banner,
+html[data-theme='dark'] .approval-banner,
+html[data-theme='dark'] .warning-banner {
+  background: #3b301a !important;
+  border-color: #8a6a2d !important;
+  color: #fcd34d !important;
+}
+html[data-theme='dark'] .master-mode-banner strong,
+html[data-theme='dark'] .approval-banner strong,
+html[data-theme='dark'] .warning-banner strong {
+  color: #fde68a !important;
+}
+html[data-theme='dark'] .master-mode-banner span,
+html[data-theme='dark'] .approval-banner span,
+html[data-theme='dark'] .warning-banner span,
+html[data-theme='dark'] .master-mode-banner p,
+html[data-theme='dark'] .approval-banner p,
+html[data-theme='dark'] .warning-banner p {
+  color: #fcd34d !important;
+}
+
+/* DRE: abas e contadores */
+html[data-theme='dark'] .dre-main-tabs button,
+html[data-theme='dark'] .dre-status-tabs button {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text-2) !important;
+  border-color: var(--ui-border) !important;
+}
+html[data-theme='dark'] .dre-main-tabs button.active,
+html[data-theme='dark'] .dre-status-tabs button.active {
+  background: #153249 !important;
+  color: #bfdbfe !important;
+  border-color: #3b82f6 !important;
+}
+html[data-theme='dark'] .dre-main-tabs b,
+html[data-theme='dark'] .dre-status-tabs b {
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+html[data-theme='dark'] .dre-main-tabs button.active b,
+html[data-theme='dark'] .dre-status-tabs button.active b {
+  background: #1e40af !important;
+  color: #dbeafe !important;
+}
+
+/* DRE: relatório e semântica financeira */
+html[data-theme='dark'] .dre-statement {
+  border-color: var(--ui-border) !important;
+  background: var(--ui-surface) !important;
+}
+html[data-theme='dark'] .dre-statement-row {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+  border-color: var(--ui-border) !important;
+}
+html[data-theme='dark'] .dre-statement-row.head {
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+}
+html[data-theme='dark'] .dre-statement-row.head > * {
+  color: #cbd5e1 !important;
+}
+html[data-theme='dark'] .dre-kpis .positive strong,
+html[data-theme='dark'] .dre-statement-row.revenue strong {
+  color: #4ade80 !important;
+}
+html[data-theme='dark'] .dre-kpis .negative strong,
+html[data-theme='dark'] .dre-statement-row.expense strong {
+  color: #f87171 !important;
+}
+html[data-theme='dark'] .dre-statement-row.total {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* DRE: badges de tipo/sugestão */
+html[data-theme='dark'] .dre-type-badge.expense {
+  background: #3b2329 !important;
+  color: #fda4af !important;
+}
+html[data-theme='dark'] .dre-type-badge.revenue {
+  background: #153249 !important;
+  color: #7dd3fc !important;
+}
+html[data-theme='dark'] .dre-suggestion.confidence-high {
+  background: #16352b !important;
+  color: #86efac !important;
+}
+html[data-theme='dark'] .dre-suggestion.confidence-medium {
+  background: #3b301a !important;
+  color: #fcd34d !important;
+}
+html[data-theme='dark'] .dre-suggestion.confidence-low {
+  background: #273849 !important;
+  color: #cbd5e1 !important;
+}
+
+/* Botões destrutivos: melhora de contraste em ambos os temas */
+.tips-button,
+html[data-theme] .danger-button,
+html[data-theme] .destructive-button,
+html[data-theme] .small-expense-button {
+  background: #e11d48 !important;
+  color: #ffffff !important;
+}
+.tips-button:hover,
+html[data-theme] .danger-button:hover,
+html[data-theme] .destructive-button:hover,
+html[data-theme] .small-expense-button:hover {
+  background: #be123c !important;
+}
