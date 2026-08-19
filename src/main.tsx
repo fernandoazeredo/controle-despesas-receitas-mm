@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
 import { CpfCnpjValidationEnhancer } from './components/CpfCnpjValidationEnhancer'
+import { DreAccountSearchEnhancer } from './components/DreAccountSearchEnhancer'
 import { DreRegimeViewEnhancer } from './components/DreRegimeViewEnhancer'
 import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
@@ -20,6 +21,7 @@ import './theme-contrast-fixes.css'
 import './login-compact.css'
 import './cpf-cnpj-validation.css'
 import './dre-regime-view.css'
+import './dre-account-search.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -28,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
         <ThemeControls />
         <CpfCnpjValidationEnhancer />
         <ExpenseFormSemanticsEnhancer />
+        <DreAccountSearchEnhancer />
         <DreRegimeViewEnhancer />
         <App />
         <ExpenseFiltersPanel />
