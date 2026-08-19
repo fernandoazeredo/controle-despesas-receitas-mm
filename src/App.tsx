@@ -148,21 +148,31 @@ function LoginScreen() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-layout">
+    <div className="auth-page login-light-only">
+      <div className="auth-layout login-shell">
         <section className="auth-brand-panel">
           <img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" />
-          <h1>Controle de Despesas e Receitas</h1>
-          <p>Gestão financeira, documental, aprovações e movimentação contábil em um único ambiente.</p>
+          <div className="auth-brand-copy">
+            <h1>Controle de<br />Despesas e Receitas</h1>
+            <div className="auth-brand-accent" />
+            <p>Gestão financeira, documental, aprovações e movimentação contábil em um único ambiente.</p>
+          </div>
+          <div className="auth-benefits" aria-label="Recursos principais">
+            <div><span><BarChart3 size={20} /></span><p><strong>Controle Financeiro</strong><small>Acompanhe receitas, despesas e fluxo de caixa.</small></p></div>
+            <div><span><FileText size={20} /></span><p><strong>Documentos</strong><small>Organize informações e arquivos com segurança.</small></p></div>
+            <div><span><FileCheck2 size={20} /></span><p><strong>Aprovações</strong><small>Fluxos de aprovação claros e transparentes.</small></p></div>
+            <div><span><ShieldCheck size={20} /></span><p><strong>Segurança</strong><small>Dados protegidos em um ambiente controlado.</small></p></div>
+          </div>
         </section>
         <section className="auth-card">
+          <div className="auth-access-icon"><ShieldCheck size={26} /></div>
           <span className="eyebrow">Acesso ao sistema</span>
-          <h2>{mode === 'login' ? 'Entrar' : 'Solicitar acesso'}</h2>
-          <p className="auth-helper">{mode === 'login' ? 'Utilize seu e-mail corporativo ou sua conta Google.' : 'Todo novo cadastro fica Pendente até a liberação do Administrador Master.'}</p>
+          <h2>{mode === 'login' ? 'Bem-vindo de volta!' : 'Solicitar acesso'}</h2>
+          <p className="auth-helper">{mode === 'login' ? 'Entre com seu e-mail corporativo ou sua conta Google para acessar sua conta.' : 'Todo novo cadastro fica Pendente até a liberação do Administrador Master.'}</p>
           <form onSubmit={submit} className="auth-form">
-            {mode === 'register' && <label><span>Nome</span><input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" /></label>}
-            <label><span>E-mail</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
-            <label><span>Senha</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>
+            {mode === 'register' && <label><span>Nome</span><input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" placeholder="Seu nome" /></label>}
+            <label><span>E-mail</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="seu@email.com" /></label>
+            <label><span>Senha</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} placeholder="••••••••" /></label>
             {error && <div className="form-error" role="alert">{error}</div>}
             <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? <LoaderCircle className="spin" size={18} /> : <Mail size={18} />}{mode === 'login' ? 'Entrar com e-mail' : 'Criar acesso'}</button>
           </form>
@@ -171,6 +181,7 @@ function LoginScreen() {
           <button className="text-button" type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}>{mode === 'login' ? 'Primeiro acesso? Solicitar cadastro' : 'Já possui acesso? Voltar para o login'}</button>
         </section>
       </div>
+      <div className="auth-secure-note"><ShieldCheck size={14} /> Ambiente seguro e sigiloso</div>
     </div>
   )
 }
