@@ -6,6 +6,7 @@ import { db } from '../lib/firebase'
 
 type AnyRecord = { id: string } & DocumentData
 type Regime = 'competencia' | 'caixa'
+type MovementFilter = 'all' | 'revenue' | 'expense'
 type DreRow = { id: string; type: 'revenue' | 'expense'; date: string; unit: string; amount: number; group: string }
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -103,6 +104,7 @@ export function DreRegimeViewEnhancer() {
   const [startDate, setStartDate] = useState(savedRange.start)
   const [endDate, setEndDate] = useState(savedRange.end)
   const [unit, setUnit] = useState('Todas')
+  const [movement, setMovement] = useState<MovementFilter>('all')
 
   useEffect(() => {
     localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify({ start: startDate, end: endDate }))
@@ -184,8 +186,10 @@ export function DreRegimeViewEnhancer() {
     if (startDate && item.date < startDate) return false
     if (endDate && item.date > endDate) return false
     if (unit !== 'Todas' && item.unit !== unit) return false
+    if (movement === 'revenue' && item.type !== 'revenue') return false
+    if (movement === 'expense' && item.type !== 'expense') return false
     return true
-  }), [allRows, endDate, startDate, unit])
+  }), [allRows, endDate, movement, startDate, unit])
 
   const groups = useMemo(() => {
     const map = new Map<string, { revenue: number; expense: number; count: number }>()
@@ -228,6 +232,7 @@ export function DreRegimeViewEnhancer() {
         <label><span>Data inicial</span><input type="date" value={startDate} max={endDate || undefined} onChange={(event) => setStartDate(event.target.value)} /></label>
         <label><span>Data final</span><input type="date" value={endDate} min={startDate || undefined} onChange={(event) => setEndDate(event.target.value)} /></label>
         <label><span>Unidade</span><select value={unit} onChange={(event) => setUnit(event.target.value)}><option>Todas</option><option>RJ</option><option>SP</option></select></label>
+        <label><span>Movimento</span><select value={movement} onChange={(event) => setMovement(event.target.value as MovementFilter)}><option value="all">Todos</option><option value="revenue">Somente Receitas</option><option value="expense">Somente Despesas</option></select></label>
         <button className="secondary-button dre-clear-period" type="button" disabled={!availableRange} onClick={showAllPeriod}>Mostrar todo o período</button>
       </div>
 
