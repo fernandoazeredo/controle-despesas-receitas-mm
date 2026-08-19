@@ -181,7 +181,6 @@ function LoginScreen() {
           <button className="text-button" type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}>{mode === 'login' ? 'Primeiro acesso? Solicitar cadastro' : 'Já possui acesso? Voltar para o login'}</button>
         </section>
       </div>
-      <div className="auth-secure-note"><ShieldCheck size={14} /> Ambiente seguro e sigiloso</div>
     </div>
   )
 }
