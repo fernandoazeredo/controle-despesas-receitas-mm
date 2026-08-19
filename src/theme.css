@@ -1,182 +1,441 @@
+:root,
+html[data-theme='light'] {
+  --bg-page: #f4f7fa;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-2: #f8fafc;
+  --bg-elevated: #ffffff;
+  --bg-input: #ffffff;
+  --bg-table-head: #f2f6f9;
+  --bg-hover: #eef5f9;
+  --text-primary: #182433;
+  --text-secondary: #435368;
+  --text-muted: #6d7d8f;
+  --border-default: #d6e0e8;
+  --border-strong: #b9c8d4;
+  --shadow-soft: 0 10px 28px rgba(15, 35, 52, .08);
+  --brand: #149fd5;
+  --brand-dark: #173149;
+  --muted: #6d7d8f;
+  --border: #d6e0e8;
+  --danger: #c9363d;
+  --expense: #c9363d;
+  --expense-dark: #9f252b;
+  --expense-soft: #fff0f1;
+  --revenue: #1678c8;
+  --revenue-dark: #0b5d9e;
+  --revenue-soft: #edf7ff;
+  --success: #168653;
+  --success-soft: #edf9f3;
+  --warning: #a96d00;
+  --warning-soft: #fff7e5;
+  color-scheme: light;
+}
+
 html[data-theme='dark'] {
-  --brand: #43bff0;
-  --brand-dark: #d9eef8;
-  --border: #334254;
-  --muted: #a8b4c2;
-  --danger: #e65d63;
-  --expense: #ef6a70;
-  --expense-dark: #f28a8f;
-  --expense-soft: #3a2024;
-  --revenue: #57b6ff;
-  --revenue-dark: #8acbff;
-  --revenue-soft: #182d40;
-  --success: #5bd091;
-  --success-soft: #173126;
-  --warning: #f2bf5b;
-  --warning-soft: #3a2e15;
-  color: #e9eef5;
-  background: #0f1720;
+  --bg-page: #0f1822;
+  --bg-sidebar: #111d28;
+  --bg-card: #182633;
+  --bg-card-2: #1d2d3b;
+  --bg-elevated: #203140;
+  --bg-input: #111d28;
+  --bg-table-head: #223442;
+  --bg-hover: #263b4a;
+  --text-primary: #f2f6f9;
+  --text-secondary: #c7d3dd;
+  --text-muted: #98aabd;
+  --border-default: #354a5d;
+  --border-strong: #486176;
+  --shadow-soft: 0 12px 32px rgba(0, 0, 0, .28);
+  --brand: #46c2ef;
+  --brand-dark: #e3f4fb;
+  --muted: #98aabd;
+  --border: #354a5d;
+  --danger: #ff6d74;
+  --expense: #ff686f;
+  --expense-dark: #ff8d92;
+  --expense-soft: #3a2229;
+  --revenue: #58b9ff;
+  --revenue-dark: #91d0ff;
+  --revenue-soft: #173249;
+  --success: #59d292;
+  --success-soft: #183729;
+  --warning: #f2bc53;
+  --warning-soft: #3c3018;
+  color-scheme: dark;
 }
 
-html[data-theme='dark'] body,
-html[data-theme='dark'] #root,
-html[data-theme='dark'] .app-shell,
-html[data-theme='dark'] .main-content,
-html[data-theme='dark'] .auth-page {
-  background: #0f1720 !important;
-  color: #e9eef5 !important;
+/* Base global */
+html[data-theme] body,
+html[data-theme] #root,
+html[data-theme] .app-shell,
+html[data-theme] .main-content,
+html[data-theme] .auth-page {
+  background: var(--bg-page) !important;
+  color: var(--text-primary) !important;
 }
 
-html[data-theme='dark'] .sidebar,
-html[data-theme='dark'] .page-card,
-html[data-theme='dark'] .metric,
-html[data-theme='dark'] .modal-sheet,
-html[data-theme='dark'] .auth-layout,
-html[data-theme='dark'] .auth-card,
-html[data-theme='dark'] .pending-card,
-html[data-theme='dark'] .workflow-cards > article,
-html[data-theme='dark'] .module-card,
-html[data-theme='dark'] .accounting-panel,
-html[data-theme='dark'] .dre-classification-card,
-html[data-theme='dark'] .dre-report-card {
-  background: #17212c !important;
-  color: #e9eef5 !important;
-  border-color: #334254 !important;
+html[data-theme] .sidebar,
+html[data-theme] .mobile-app-header {
+  background: var(--bg-sidebar) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
 }
 
-html[data-theme='dark'] .auth-brand-panel,
-html[data-theme='dark'] .module-toolbar,
-html[data-theme='dark'] .data-head,
-html[data-theme='dark'] .legacy-head,
-html[data-theme='dark'] .document-zone,
-html[data-theme='dark'] .empty-chart,
-html[data-theme='dark'] .total-row,
-html[data-theme='dark'] .search-box,
-html[data-theme='dark'] .bank-statement-box,
-html[data-theme='dark'] .storage-ready-box {
-  background: #1d2936 !important;
-  color: #dce5ee !important;
-  border-color: #3b4b5e !important;
+html[data-theme] .page-card,
+html[data-theme] .metric,
+html[data-theme] .module-card,
+html[data-theme] .modal-sheet,
+html[data-theme] .auth-layout,
+html[data-theme] .auth-card,
+html[data-theme] .pending-card,
+html[data-theme] .workflow-cards > article,
+html[data-theme] .accounting-panel,
+html[data-theme] .dre-classification-card,
+html[data-theme] .dre-report-card,
+html[data-theme] .decision-modal,
+html[data-theme] .expense-settlement-panel,
+html[data-theme] .help-situations-card,
+html[data-theme] .tour-callout,
+html[data-theme] .howto-flowchart-card {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
+  box-shadow: var(--shadow-soft);
 }
 
-html[data-theme='dark'] input,
-html[data-theme='dark'] select,
-html[data-theme='dark'] textarea,
-html[data-theme='dark'] .settings-grid input,
-html[data-theme='dark'] .auth-form input,
-html[data-theme='dark'] .users-table select,
-html[data-theme='dark'] .form-grid input,
-html[data-theme='dark'] .form-grid select,
-html[data-theme='dark'] .form-grid textarea,
-html[data-theme='dark'] .composition-row input {
-  background: #111a24 !important;
-  color: #edf3f8 !important;
-  border-color: #425267 !important;
+html[data-theme] .module-toolbar,
+html[data-theme] .data-head,
+html[data-theme] .legacy-head,
+html[data-theme] .document-zone,
+html[data-theme] .empty-chart,
+html[data-theme] .total-row,
+html[data-theme] .search-box,
+html[data-theme] .bank-statement-box,
+html[data-theme] .storage-ready-box,
+html[data-theme] .obligation-list-head,
+html[data-theme] .commission-v4-row.head,
+html[data-theme] .commission-deduction-row.head,
+html[data-theme] .obligation-installment-head,
+html[data-theme] .accounting-table-head,
+html[data-theme] .dre-table-head,
+html[data-theme] thead,
+html[data-theme] thead tr,
+html[data-theme] th {
+  background: var(--bg-table-head) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-default) !important;
 }
 
-html[data-theme='dark'] input::placeholder,
-html[data-theme='dark'] textarea::placeholder {
-  color: #7f8d9d !important;
+/* Tipografia */
+html[data-theme] .page-heading h1,
+html[data-theme] .page-heading h2,
+html[data-theme] .page-card h1,
+html[data-theme] .page-card h2,
+html[data-theme] .page-card h3,
+html[data-theme] .module-empty strong,
+html[data-theme] .document-zone strong,
+html[data-theme] .loading-box,
+html[data-theme] .legacy-title-block,
+html[data-theme] .card-title-row strong,
+html[data-theme] .commission-section-title strong,
+html[data-theme] .expense-settlement-info strong,
+html[data-theme] .expense-settlement-value strong {
+  color: var(--text-primary) !important;
 }
 
-html[data-theme='dark'] .secondary-button,
-html[data-theme='dark'] .google-button,
-html[data-theme='dark'] .icon-button,
-html[data-theme='dark'] .small-neutral-button,
-html[data-theme='dark'] .sidebar-user button,
-html[data-theme='dark'] .howto-link,
-html[data-theme='dark'] .outline-expense-button,
-html[data-theme='dark'] .outline-revenue-button,
-html[data-theme='dark'] .row-remove {
-  background: #1c2835 !important;
-  color: #e5edf5 !important;
-  border-color: #435368 !important;
+html[data-theme] .page-heading p,
+html[data-theme] .page-card p,
+html[data-theme] .app-name,
+html[data-theme] .sidebar-user span,
+html[data-theme] .data-row small,
+html[data-theme] .module-empty,
+html[data-theme] .auth-helper,
+html[data-theme] .auth-brand-panel p,
+html[data-theme] .pending-card p,
+html[data-theme] .obligation-list-row small,
+html[data-theme] .commission-v4-row small,
+html[data-theme] .commission-section-title span,
+html[data-theme] .expense-settlement-info span,
+html[data-theme] .expense-settlement-info small {
+  color: var(--text-muted) !important;
 }
 
-html[data-theme='dark'] .nav-link { color: #c8d3df !important; }
-html[data-theme='dark'] .nav-link:hover { background: #202f3d !important; }
-html[data-theme='dark'] .nav-link.active { background: #18384a !important; color: #69ccf4 !important; }
-html[data-theme='dark'] .nav-link.expense-nav.active { background: #3a2024 !important; color: #ff858b !important; }
-html[data-theme='dark'] .nav-link.revenue-nav.active { background: #182d40 !important; color: #78c7ff !important; }
-
-html[data-theme='dark'] .page-heading h1,
-html[data-theme='dark'] .page-card h2,
-html[data-theme='dark'] .module-empty strong,
-html[data-theme='dark'] .document-zone strong,
-html[data-theme='dark'] .form-grid label > span,
-html[data-theme='dark'] .settings-grid label > span,
-html[data-theme='dark'] .auth-form label > span,
-html[data-theme='dark'] .loading-box,
-html[data-theme='dark'] strong {
-  color: #edf3f8;
+html[data-theme] .data-row,
+html[data-theme] .obligation-list-row,
+html[data-theme] .commission-v4-row,
+html[data-theme] .status-row,
+html[data-theme] .approval-item,
+html[data-theme] .legacy-row,
+html[data-theme] .composition-row,
+html[data-theme] .obligation-installment-row,
+html[data-theme] td,
+html[data-theme] tr {
+  color: var(--text-primary);
+  border-color: var(--border-default) !important;
 }
 
-html[data-theme='dark'] .page-heading p,
-html[data-theme='dark'] .page-card p,
-html[data-theme='dark'] .app-name,
-html[data-theme='dark'] .sidebar-user span,
-html[data-theme='dark'] .data-row small,
-html[data-theme='dark'] .module-empty,
-html[data-theme='dark'] .auth-helper,
-html[data-theme='dark'] .auth-brand-panel p,
-html[data-theme='dark'] .pending-card p,
-html[data-theme='dark'] small {
-  color: #a8b4c2;
+/* KPIs e cards financeiros */
+html[data-theme] .metrics-grid .metric,
+html[data-theme] .obligation-metrics article,
+html[data-theme] .commission-v4-metrics article,
+html[data-theme] .expense-management-metrics article,
+html[data-theme] .expense-dashboard-metrics article,
+html[data-theme] .dre-summary-grid article,
+html[data-theme] .dre-kpi,
+html[data-theme] .account-summary-card,
+html[data-theme] .user-metric,
+html[data-theme] .users-metrics article {
+  background: var(--bg-card) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow-soft);
 }
 
-html[data-theme='dark'] .data-row,
-html[data-theme='dark'] .status-row,
-html[data-theme='dark'] .approval-item,
-html[data-theme='dark'] .legacy-row + .legacy-row,
-html[data-theme='dark'] .composition-row + .composition-row {
-  border-color: #334254 !important;
+html[data-theme] .metric span,
+html[data-theme] .metric small,
+html[data-theme] .obligation-metrics span,
+html[data-theme] .commission-v4-metrics span,
+html[data-theme] .expense-management-metrics span,
+html[data-theme] .expense-dashboard-metrics span,
+html[data-theme] .dre-summary-grid span,
+html[data-theme] .account-summary-card span,
+html[data-theme] .user-metric span,
+html[data-theme] .users-metrics span {
+  color: var(--text-muted) !important;
 }
 
-html[data-theme='dark'] .status-badge:not(.expense):not(.revenue):not(.success):not(.warning) {
-  background: #263341 !important;
-  color: #c7d2de !important;
+html[data-theme] .metric strong,
+html[data-theme] .obligation-metrics strong,
+html[data-theme] .commission-v4-metrics strong,
+html[data-theme] .expense-management-metrics strong,
+html[data-theme] .expense-dashboard-metrics strong,
+html[data-theme] .dre-summary-grid strong,
+html[data-theme] .account-summary-card strong,
+html[data-theme] .user-metric strong,
+html[data-theme] .users-metrics strong {
+  color: var(--text-primary) !important;
 }
 
-html[data-theme='dark'] .client-row { background: #173126 !important; }
-html[data-theme='dark'] .composition-head { background: #183247 !important; color: #8acbff !important; }
-html[data-theme='dark'] .form-error { background: #3a2024 !important; border-color: #704048 !important; color: #ff9aa0 !important; }
-html[data-theme='dark'] .mobile-app-header { background: #17212c !important; color: #edf3f8 !important; border-color: #334254 !important; }
+/* preserva semântica financeira */
+html[data-theme] .expense-text,
+html[data-theme] .expense-metric strong,
+html[data-theme] .commission-v4-metrics article:nth-child(2) strong,
+html[data-theme] .obligation-metrics article:nth-child(3) strong,
+html[data-theme] .obligation-metrics article:nth-child(5) strong {
+  color: var(--expense) !important;
+}
+html[data-theme] .revenue-text,
+html[data-theme] .revenue-metric strong { color: var(--revenue) !important; }
+html[data-theme] .success-text,
+html[data-theme] .balance-metric strong,
+html[data-theme] .commission-v4-metrics article:nth-child(3) strong { color: var(--success) !important; }
+html[data-theme] .warning-text,
+html[data-theme] .commission-v4-metrics article:nth-child(6) strong,
+html[data-theme] .obligation-metrics article:nth-child(4) strong { color: var(--warning) !important; }
+
+/* Repasse, NF, Comissões e modais específicos */
+html[data-theme] .obligation-source-grid,
+html[data-theme] .fiscal-client-card,
+html[data-theme] .commission-v4-source > div,
+html[data-theme] .commission-deductions-box,
+html[data-theme] .commission-deduction-table,
+html[data-theme] .commission-calculation > div,
+html[data-theme] .obligation-installments,
+html[data-theme] .obligation-approval-note {
+  background: var(--bg-card-2) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
+}
+
+html[data-theme] .obligation-source-grid strong,
+html[data-theme] .fiscal-client-card strong,
+html[data-theme] .commission-v4-source strong,
+html[data-theme] .commission-account-field > span,
+html[data-theme] .obligation-form-grid label > span,
+html[data-theme] .obligation-notes > span {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme] .obligation-source-value,
+html[data-theme] .fiscal-value,
+html[data-theme] .commission-v4-source .gross,
+html[data-theme] .commission-calculation .net {
+  background: var(--success-soft) !important;
+  border-color: color-mix(in srgb, var(--success) 45%, var(--border-default)) !important;
+}
+
+html[data-theme='dark'] .obligation-approval-box {
+  background: var(--warning-soft) !important;
+  border-color: #72582a !important;
+}
+html[data-theme='dark'] .obligation-approval-box > strong { color: #ffd477 !important; }
+html[data-theme='dark'] .obligation-approval-box > span { color: #d7bd87 !important; }
+
+/* Formulários */
+html[data-theme] input,
+html[data-theme] select,
+html[data-theme] textarea,
+html[data-theme] .settings-grid input,
+html[data-theme] .auth-form input,
+html[data-theme] .users-table select,
+html[data-theme] .form-grid input,
+html[data-theme] .form-grid select,
+html[data-theme] .form-grid textarea,
+html[data-theme] .composition-row input,
+html[data-theme] .obligation-form-grid input,
+html[data-theme] .obligation-form-grid select,
+html[data-theme] .obligation-notes textarea,
+html[data-theme] .obligation-approval-box textarea,
+html[data-theme] .obligation-installment-row input,
+html[data-theme] .commission-account-field input,
+html[data-theme] .commission-deduction-row input,
+html[data-theme] .commission-component-label input {
+  background: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder { color: var(--text-muted) !important; opacity: 1; }
+html[data-theme] input:focus,
+html[data-theme] select:focus,
+html[data-theme] textarea:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent) !important;
+  outline: none;
+}
+html[data-theme] option { background: var(--bg-elevated); color: var(--text-primary); }
+
+/* Botões */
+html[data-theme] .secondary-button,
+html[data-theme] .google-button,
+html[data-theme] .icon-button,
+html[data-theme] .small-neutral-button,
+html[data-theme] .sidebar-user button,
+html[data-theme] .howto-link,
+html[data-theme] .outline-expense-button,
+html[data-theme] .outline-revenue-button,
+html[data-theme] .row-remove {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}
+html[data-theme] .secondary-button:hover,
+html[data-theme] .icon-button:hover,
+html[data-theme] .small-neutral-button:hover,
+html[data-theme] .howto-link:hover { background: var(--bg-hover) !important; }
+html[data-theme] button:focus-visible,
+html[data-theme] a:focus-visible,
+html[data-theme] select:focus-visible,
+html[data-theme] input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* Navegação */
+html[data-theme] .nav-link { color: var(--text-secondary) !important; }
+html[data-theme] .nav-link:hover { background: var(--bg-hover) !important; }
+html[data-theme] .nav-link.active { background: var(--revenue-soft) !important; color: var(--revenue) !important; }
+html[data-theme] .nav-link.expense-nav.active { background: var(--expense-soft) !important; color: var(--expense) !important; }
+html[data-theme] .nav-link.revenue-nav.active { background: var(--revenue-soft) !important; color: var(--revenue) !important; }
+html[data-theme='dark'] .brand-fallback { color: var(--text-primary) !important; }
+
+/* Badges */
+html[data-theme] .status-badge:not(.expense):not(.revenue):not(.success):not(.warning) {
+  background: var(--bg-elevated) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-default);
+}
+html[data-theme] .status-badge.expense { background: var(--expense-soft) !important; color: var(--expense) !important; }
+html[data-theme] .status-badge.revenue { background: var(--revenue-soft) !important; color: var(--revenue) !important; }
+html[data-theme] .status-badge.success { background: var(--success-soft) !important; color: var(--success) !important; }
+html[data-theme] .status-badge.warning { background: var(--warning-soft) !important; color: var(--warning) !important; }
+
+/* Gráficos e visualizações */
+html[data-theme] .chart-card,
+html[data-theme] .expense-chart,
+html[data-theme] .expense-chart-card,
+html[data-theme] .dashboard-chart,
+html[data-theme] .dre-chart,
+html[data-theme] .chart-container,
+html[data-theme] .chart-area,
+html[data-theme] .recharts-wrapper,
+html[data-theme] .recharts-surface {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+html[data-theme='dark'] .recharts-cartesian-grid line { stroke: #385065 !important; }
+html[data-theme='dark'] .recharts-cartesian-axis-tick text,
+html[data-theme='dark'] .recharts-legend-item-text,
+html[data-theme='dark'] .recharts-label,
+html[data-theme='dark'] .recharts-text { fill: #c8d5df !important; color: #c8d5df !important; }
+html[data-theme='dark'] .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #172633 !important;
+  border-color: #425b70 !important;
+  color: #f3f7fa !important;
+}
+
+/* Cartões/documentos listados: remove ilhas brancas no escuro */
+html[data-theme='dark'] .document-card,
+html[data-theme='dark'] .document-item,
+html[data-theme='dark'] .attachment-viewer-list a,
+html[data-theme='dark'] .attachment-confirmed,
+html[data-theme='dark'] .expense-attachment-list > *,
+html[data-theme='dark'] .account-row,
+html[data-theme='dark'] .user-card,
+html[data-theme='dark'] .audit-card,
+html[data-theme='dark'] .tip,
+html[data-theme='dark'] .howto-steps article {
+  background: var(--bg-card-2) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
+}
+
+/* Aprovações e alertas */
+html[data-theme='dark'] .master-mode-banner,
+html[data-theme='dark'] .approval-banner,
+html[data-theme='dark'] .warning-banner {
+  background: #3b2d12 !important;
+  border-color: #9a7130 !important;
+  color: #f4d89c !important;
+}
+html[data-theme='dark'] .master-mode-banner strong,
+html[data-theme='dark'] .approval-banner strong { color: #fff1c7 !important; }
+
+/* Evita sobreposição do alternador com ações do cabeçalho */
+@media (min-width: 721px) {
+  html[data-theme] .main-content > .page-heading,
+  html[data-theme] .main-content .page-heading:first-child { padding-right: 150px; }
+}
 
 .theme-toggle {
   position: fixed;
   right: 18px;
-  top: 18px;
+  top: 14px;
   z-index: 130;
-  border: 1px solid #cbd5df;
-  background: rgba(255,255,255,.96);
-  color: #263344;
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  color: var(--text-primary);
   border-radius: 999px;
   min-height: 40px;
-  padding: 8px 12px;
+  padding: 8px 13px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   font-weight: 800;
   font-size: 12px;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(15,23,32,.12);
-  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
 }
-
-html[data-theme='dark'] .theme-toggle {
-  background: rgba(28,40,53,.96);
-  color: #eef4f9;
-  border-color: #435368;
-  box-shadow: 0 8px 24px rgba(0,0,0,.32);
-}
-
-.theme-toggle:hover { transform: translateY(-1px); }
-.theme-toggle:focus-visible { outline: 3px solid rgba(36,175,227,.35); outline-offset: 2px; }
+.theme-toggle:hover { transform: translateY(-1px); background: var(--bg-hover); }
+.theme-toggle:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 35%, transparent); outline-offset: 2px; }
 
 @media (max-width: 720px) {
   .theme-toggle {
-    top: 11px;
-    right: 12px;
+    top: 10px;
+    right: 11px;
     min-width: 40px;
     width: 40px;
     height: 40px;
