@@ -1,47 +1,69 @@
-/* Login compacto — aproximadamente 20% menor e ajustado para notebooks */
+/* Login — desktop mais amplo, com os dois blocos lado a lado */
 
 .auth-page:has(.auth-layout) {
   padding: 18px !important;
 }
 
 .auth-page:has(.auth-layout) .auth-layout {
-  width: min(784px, 100%) !important;
+  width: min(1180px, calc(100vw - 48px)) !important;
   max-height: calc(100dvh - 36px) !important;
-  border-radius: 18px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, .95fr) !important;
+  gap: 26px !important;
+  align-items: stretch !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+
+.auth-page:has(.auth-layout) .auth-brand-panel,
+.auth-page:has(.auth-layout) .auth-card {
+  min-width: 0 !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 22px !important;
+  background: #fff !important;
+  box-shadow: 0 18px 44px rgba(19, 38, 58, .10) !important;
 }
 
 .auth-page:has(.auth-layout) .auth-brand-panel {
-  padding: 30px !important;
+  padding: 38px 42px !important;
+  border-right: 1px solid var(--border) !important;
 }
 
 .auth-page:has(.auth-layout) .auth-brand-panel img {
-  max-width: 416px !important;
-  max-height: 96px !important;
-  margin-bottom: 16px !important;
+  max-width: 440px !important;
+  max-height: 104px !important;
+  margin-bottom: 18px !important;
 }
 
 .auth-page:has(.auth-layout) .auth-brand-panel h1 {
-  margin: 0 0 10px !important;
-  font-size: clamp(25px, 3vw, 34px) !important;
+  margin: 0 0 12px !important;
+  font-size: clamp(28px, 3vw, 38px) !important;
   line-height: 1.08 !important;
 }
 
 .auth-page:has(.auth-layout) .auth-brand-panel p {
-  font-size: 13px !important;
-  line-height: 1.45 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
 }
 
 .auth-page:has(.auth-layout) .auth-card {
-  padding: 28px !important;
+  padding: 34px 38px !important;
+  align-self: stretch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
 }
 
 .auth-page:has(.auth-layout) .auth-card h2 {
   margin: 5px 0 7px !important;
-  font-size: 26px !important;
+  font-size: 29px !important;
 }
 
 .auth-page:has(.auth-layout) .auth-helper {
-  margin-bottom: 14px !important;
+  margin-bottom: 15px !important;
   font-size: 13px !important;
   line-height: 1.4 !important;
 }
@@ -59,13 +81,13 @@
 }
 
 .auth-page:has(.auth-layout) .auth-form input {
-  min-height: 38px !important;
-  padding: 8px 10px !important;
+  min-height: 42px !important;
+  padding: 9px 11px !important;
 }
 
 .auth-page:has(.auth-layout) .auth-submit,
 .auth-page:has(.auth-layout) .google-button {
-  min-height: 38px !important;
+  min-height: 42px !important;
 }
 
 .auth-page:has(.auth-layout) .auth-divider {
@@ -78,31 +100,33 @@
   font-size: 12px !important;
 }
 
-/* Em notebooks com pouca altura, reduz mais o espaçamento sem encolher demais os campos. */
-@media (max-height: 760px) and (min-width: 721px) {
+/* Notebooks com pouca altura: mantém os cards lado a lado, reduzindo apenas os espaçamentos. */
+@media (max-height: 760px) and (min-width: 981px) {
   .auth-page:has(.auth-layout) {
     padding: 10px 16px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-layout {
+    width: min(1120px, calc(100vw - 32px)) !important;
     max-height: calc(100dvh - 20px) !important;
+    gap: 20px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-brand-panel {
-    padding: 22px 26px !important;
+    padding: 26px 32px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-brand-panel img {
-    max-height: 78px !important;
-    margin-bottom: 10px !important;
+    max-height: 82px !important;
+    margin-bottom: 12px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-brand-panel h1 {
-    font-size: 28px !important;
+    font-size: 30px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-card {
-    padding: 22px 26px !important;
+    padding: 24px 30px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-helper {
@@ -122,23 +146,30 @@
   }
 }
 
+/* Tablet e celular: os cards voltam a empilhar para preservar a responsividade. */
 @media (max-width: 980px) {
   .auth-page:has(.auth-layout) .auth-layout {
-    width: min(520px, 100%) !important;
+    width: min(620px, 100%) !important;
     max-height: none !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-brand-panel,
   .auth-page:has(.auth-layout) .auth-card {
-    padding: 22px !important;
+    padding: 24px !important;
+  }
+
+  .auth-page:has(.auth-layout) .auth-brand-panel {
+    border-bottom: 1px solid var(--border) !important;
   }
 
   .auth-page:has(.auth-layout) .auth-brand-panel img {
-    max-height: 72px !important;
+    max-height: 76px !important;
     margin-bottom: 10px !important;
   }
 
   .auth-page:has(.auth-layout) .auth-brand-panel h1 {
-    font-size: 25px !important;
+    font-size: 26px !important;
   }
 }
