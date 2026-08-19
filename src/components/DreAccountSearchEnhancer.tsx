@@ -4,67 +4,93 @@ function normalize(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
 
+function selectAccount(select: HTMLSelectElement, input: HTMLInputElement) {
+  const typed = normalize(input.value)
+  if (!typed) return
+
+  const options = Array.from(select.options).slice(1)
+  const exact = options.find((option) => {
+    const text = normalize(option.textContent ?? '')
+    return normalize(option.value) === typed || text === typed
+  })
+  if (!exact) return
+
+  if (select.value !== exact.value) {
+    select.value = exact.value
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  }
+  input.value = exact.textContent ?? exact.value
+}
+
 function enhanceAccountChoices() {
-  document.querySelectorAll<HTMLElement>('.dre-account-choice').forEach((choice) => {
+  document.querySelectorAll<HTMLElement>('.dre-account-choice').forEach((choice, index) => {
     const select = choice.querySelector<HTMLSelectElement>('select')
     const label = select?.closest('label')
-    if (!select || !label || choice.querySelector('.dre-account-search')) return
+    if (!select || !label) return
 
-    const wrapper = document.createElement('label')
-    wrapper.className = 'dre-account-search'
+    let input = label.querySelector<HTMLInputElement>('.dre-account-combobox')
+    let datalist = label.querySelector<HTMLDataListElement>('datalist.dre-account-datalist')
 
-    const caption = document.createElement('span')
-    caption.textContent = 'Buscar conta por número ou nome'
+    if (!input) {
+      const listId = `dre-account-options-${index}-${Math.random().toString(36).slice(2, 8)}`
+      input = document.createElement('input')
+      input.className = 'dre-account-combobox'
+      input.type = 'text'
+      input.setAttribute('list', listId)
+      input.setAttribute('autocomplete', 'off')
+      input.placeholder = 'Digite o número ou nome da conta'
 
-    const input = document.createElement('input')
-    input.type = 'search'
-    input.placeholder = 'Ex.: 4.05.27 ou Telefonia'
-    input.autocomplete = 'off'
+      datalist = document.createElement('datalist')
+      datalist.className = 'dre-account-datalist'
+      datalist.id = listId
 
-    const hint = document.createElement('small')
-    hint.textContent = 'Digite parte do código ou do nome para reduzir a lista abaixo.'
+      const caption = label.querySelector('span')
+      if (caption) caption.insertAdjacentElement('afterend', input)
+      else label.prepend(input)
+      label.appendChild(datalist)
 
-    input.addEventListener('input', () => {
-      const needle = normalize(input.value)
-      let visible = 0
-
-      Array.from(select.options).forEach((option, index) => {
-        if (index === 0) {
-          option.hidden = false
-          return
-        }
-        const matches = !needle || normalize(option.textContent ?? '').includes(needle) || normalize(option.value).includes(needle)
-        option.hidden = !matches
-        if (matches) visible += 1
+      input.addEventListener('change', () => selectAccount(select!, input!))
+      input.addEventListener('blur', () => {
+        window.setTimeout(() => selectAccount(select!, input!), 0)
       })
+    }
 
-      hint.textContent = needle
-        ? `${visible} conta(s) encontrada(s). Abra a lista para selecionar.`
-        : 'Digite parte do código ou do nome para reduzir a lista abaixo.'
-    })
+    select.style.display = 'none'
+    select.setAttribute('aria-hidden', 'true')
 
-    wrapper.append(caption, input, hint)
-    choice.insertBefore(wrapper, label)
+    if (datalist) {
+      datalist.replaceChildren(...Array.from(select.options).slice(1).map((option) => {
+        const item = document.createElement('option')
+        item.value = option.textContent ?? option.value
+        return item
+      }))
+    }
+
+    if (document.activeElement !== input) {
+      const selected = select.selectedOptions[0]
+      input.value = select.value && selected ? (selected.textContent ?? select.value) : ''
+    }
   })
 }
 
 export function DreAccountSearchEnhancer() {
   useEffect(() => {
-    let scheduled = false
-    const run = () => {
-      scheduled = false
-      enhanceAccountChoices()
-    }
+    let frame = 0
     const schedule = () => {
-      if (scheduled) return
-      scheduled = true
-      requestAnimationFrame(run)
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        enhanceAccountChoices()
+      })
     }
 
     enhanceAccountChoices()
     const observer = new MutationObserver(schedule)
     observer.observe(document.body, { childList: true, subtree: true })
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      if (frame) cancelAnimationFrame(frame)
+    }
   }, [])
 
   return null
