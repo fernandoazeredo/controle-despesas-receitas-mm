@@ -1,0 +1,42 @@
+/* Identidade visual Marques & Müller — login, menu lateral e cabeçalho móvel */
+.auth-page.login-light-only .auth-brand-panel img,
+.sidebar .brand-logo-only img,
+.mobile-header-brand img {
+  content: url('/logo-mm.png') !important;
+  object-fit: contain !important;
+}
+
+.auth-page.login-light-only .auth-brand-panel img {
+  width: min(470px, 88%) !important;
+  max-width: 470px !important;
+  max-height: 120px !important;
+}
+
+.sidebar .brand-logo-only img {
+  width: 100% !important;
+  max-width: 220px !important;
+  height: auto !important;
+}
+
+.mobile-header-brand img {
+  width: 180px !important;
+  max-width: 50vw !important;
+  height: 42px !important;
+}
+
+.labor-dynamic-note {
+  margin: 4px 0 10px;
+  padding: 10px 12px;
+  border: 1px solid #b9d9ee;
+  border-radius: 10px;
+  background: #f3f9fd;
+  color: #315a72;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+html[data-theme='dark'] .labor-dynamic-note {
+  background: #153249;
+  border-color: #3d7298;
+  color: #bfe8ff;
+}
