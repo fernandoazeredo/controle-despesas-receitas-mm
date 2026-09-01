@@ -14,7 +14,7 @@ import { auth, db } from '../lib/firebase'
 /**
  * Perfis oficiais do sistema:
  * - master: Fernando — administração do sistema, usuários e configurações.
- * - diretor: Flávio Marques — único autorizador de pagamentos/despesas.
+ * - diretor: Flávio Marques e Ana Paula Müller — autorizadores oficiais de pagamentos/despesas.
  * - gerente: Reinaldo — gestão e acompanhamento operacional.
  * - tesouraria: Socorro — operação financeira/Tesouraria.
  * - operador: demais colaboradores.
@@ -49,13 +49,20 @@ export const PRIMARY_ADMIN_EMAIL = 'fernandoazeredo64@gmail.com'
 export const TREASURY_EMAIL = 'socorro@marquesemuller.adv.br'
 export const MANAGER_EMAIL = 'reinaldo@marquesemuller.adv.br'
 export const DIRECTOR_EMAIL = 'flavio.marques@marquesemuller.adv.br'
+export const DIRECTOR_ANA_EMAIL = 'anamuller@marquesemuller.adv.br'
+export const DIRECTOR_EMAILS = [DIRECTOR_EMAIL, DIRECTOR_ANA_EMAIL] as const
+
+export function isOfficialDirectorEmail(rawEmail: string) {
+  const email = rawEmail.trim().toLowerCase()
+  return DIRECTOR_EMAILS.includes(email as (typeof DIRECTOR_EMAILS)[number])
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function officialRoleForEmail(rawEmail: string): 'master' | 'diretor' | 'gerente' | 'tesouraria' | 'operador' {
   const email = rawEmail.trim().toLowerCase()
   if (email === PRIMARY_ADMIN_EMAIL) return 'master'
-  if (email === DIRECTOR_EMAIL) return 'diretor'
+  if (isOfficialDirectorEmail(email)) return 'diretor'
   if (email === MANAGER_EMAIL) return 'gerente'
   if (email === TREASURY_EMAIL) return 'tesouraria'
   return 'operador'
