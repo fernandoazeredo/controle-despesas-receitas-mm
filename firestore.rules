@@ -16,7 +16,8 @@ service cloud.firestore {
     }
 
     function isDirectorEmail() {
-      return authEmail() == 'flavio.marques@marquesemuller.adv.br';
+      return authEmail() == 'flavio.marques@marquesemuller.adv.br'
+        || authEmail() == 'anamuller@marquesemuller.adv.br';
     }
 
     function isManagerEmail() {
