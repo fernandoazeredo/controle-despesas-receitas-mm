@@ -6,6 +6,7 @@ import { AuthProvider } from './auth/AuthContext'
 import { CpfCnpjValidationEnhancer } from './components/CpfCnpjValidationEnhancer'
 import { DreAccountSearchEnhancer } from './components/DreAccountSearchEnhancer'
 import { DreRegimeViewEnhancer } from './components/DreRegimeViewEnhancer'
+import { DynamicAgreementInstallmentsEnhancer } from './components/DynamicAgreementInstallmentsEnhancer'
 import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
@@ -25,6 +26,7 @@ import './cpf-cnpj-validation.css'
 import './dre-regime-view.css'
 import './dre-account-search.css'
 import './labor-agreement.css'
+import './brand-mm.css'
 import './login-footer-kill.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -36,6 +38,7 @@ createRoot(document.getElementById('root')!).render(
         <ExpenseFormSemanticsEnhancer />
         <DreAccountSearchEnhancer />
         <DreRegimeViewEnhancer />
+        <DynamicAgreementInstallmentsEnhancer />
         <LaborAgreementReceivableLauncher />
         <RevenueTypeChooser />
         <App />
