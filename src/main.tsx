@@ -9,6 +9,8 @@ import { DreRegimeViewEnhancer } from './components/DreRegimeViewEnhancer'
 import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
+import { LaborAgreementReceivableLauncher } from './components/LaborAgreementReceivable'
+import { RevenueTypeChooser } from './components/RevenueTypeChooser'
 import { ThemeControls } from './components/ThemeControls'
 import './styles.css'
 import './button-label-fix.css'
@@ -22,6 +24,7 @@ import './login-compact.css'
 import './cpf-cnpj-validation.css'
 import './dre-regime-view.css'
 import './dre-account-search.css'
+import './labor-agreement.css'
 import './login-footer-kill.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -33,6 +36,8 @@ createRoot(document.getElementById('root')!).render(
         <ExpenseFormSemanticsEnhancer />
         <DreAccountSearchEnhancer />
         <DreRegimeViewEnhancer />
+        <LaborAgreementReceivableLauncher />
+        <RevenueTypeChooser />
         <App />
         <ExpenseFiltersPanel />
         <ExpenseSettlementPanel />
