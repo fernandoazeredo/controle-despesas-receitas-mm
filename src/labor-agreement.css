@@ -1,0 +1,209 @@
+.revenue-type-modal {
+  width: min(720px, calc(100vw - 32px));
+}
+
+.revenue-type-helper {
+  margin: 6px 0 18px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.revenue-type-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.revenue-type-option {
+  min-height: 150px;
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  align-items: start;
+  gap: 14px;
+  padding: 20px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-card, #fff);
+  color: var(--text-primary, #182433);
+  cursor: pointer;
+  transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.revenue-type-option:hover {
+  transform: translateY(-2px);
+  border-color: #63a9df;
+  box-shadow: 0 12px 28px rgba(18, 50, 82, .10);
+}
+
+.revenue-type-option.agreement {
+  border-color: #a8cfea;
+}
+
+.revenue-type-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--revenue-soft, #edf7ff);
+  color: var(--revenue, #1678c8);
+}
+
+.revenue-type-option > span:last-child {
+  display: grid;
+  gap: 7px;
+}
+
+.revenue-type-option strong {
+  font-size: 16px;
+}
+
+.revenue-type-option small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.revenue-type-note {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.labor-agreement-sheet {
+  width: min(1500px, calc(100vw - 34px));
+  max-height: calc(100dvh - 34px);
+  overflow: auto;
+}
+
+.labor-agreement-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.labor-installments-table {
+  margin-top: 10px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.labor-installment-row {
+  min-width: 1160px;
+  display: grid;
+  grid-template-columns: 58px 145px 145px 150px 150px 150px 160px 160px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-top: 1px solid var(--border);
+}
+
+.labor-installment-row:first-child {
+  border-top: 0;
+}
+
+.labor-installment-row.head {
+  background: #f2f6f9;
+  color: #435368;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.labor-installment-row input {
+  width: 100%;
+  min-width: 0;
+}
+
+.labor-agreement-summary {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.labor-agreement-summary span {
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.labor-agreement-summary strong {
+  color: var(--text-primary, #182433);
+  font-size: 17px;
+}
+
+.labor-agreement-upload {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border: 1px dashed #7eb7de;
+  border-radius: 12px;
+  background: #f2f9fe;
+  color: #126ca8;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.labor-agreement-upload input {
+  display: none;
+}
+
+html[data-theme='dark'] .revenue-type-option,
+html[data-theme='dark'] .labor-installment-row,
+html[data-theme='dark'] .labor-agreement-summary span {
+  background: var(--ui-surface, #192a38);
+  color: var(--ui-text, #f4f7fa);
+  border-color: var(--ui-border, #385267);
+}
+
+html[data-theme='dark'] .labor-installment-row.head {
+  background: var(--ui-surface-3, #223746);
+  color: var(--ui-text-2, #c5d5e2);
+}
+
+html[data-theme='dark'] .labor-agreement-upload {
+  background: #153249;
+  border-color: #3d7298;
+  color: #7dd3fc;
+}
+
+@media (max-width: 980px) {
+  .revenue-type-options,
+  .labor-agreement-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .labor-agreement-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .labor-agreement-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .labor-agreement-grid .span-2 {
+    grid-column: auto;
+  }
+
+  .revenue-type-option {
+    grid-template-columns: 46px 1fr;
+    padding: 16px;
+  }
+
+  .revenue-type-icon {
+    width: 46px;
+    height: 46px;
+  }
+}
