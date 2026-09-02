@@ -1,19 +1,26 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FileText, Handshake, Plus, ReceiptText, X } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export function RevenueTypeChooser() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [actionsTarget, setActionsTarget] = useState<HTMLElement | null>(null)
   const [standardButton, setStandardButton] = useState<HTMLButtonElement | null>(null)
   const [agreementButton, setAgreementButton] = useState<HTMLButtonElement | null>(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
+    if (location.pathname !== '/alvaras') {
+      setActionsTarget(null)
+      setStandardButton(null)
+      setAgreementButton(null)
+      setOpen(false)
+      return
+    }
+
     function locate() {
-      if (window.location.pathname !== '/alvaras') {
-        setActionsTarget(null)
-        return
-      }
       const actions = document.querySelector('.page-heading .quick-actions') as HTMLElement | null
       if (!actions) return
 
@@ -32,12 +39,17 @@ export function RevenueTypeChooser() {
     locate()
     const observer = new MutationObserver(locate)
     observer.observe(document.body, { childList: true, subtree: true })
-    window.addEventListener('popstate', locate)
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('popstate', locate)
-    }
-  }, [])
+    return () => observer.disconnect()
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (location.pathname !== '/alvaras' || !standardButton || !agreementButton) return
+    const params = new URLSearchParams(location.search)
+    if (params.get('escolherReceita') !== '1') return
+
+    setOpen(true)
+    navigate('/alvaras', { replace: true })
+  }, [agreementButton, location.pathname, location.search, navigate, standardButton])
 
   function openStandard() {
     setOpen(false)
