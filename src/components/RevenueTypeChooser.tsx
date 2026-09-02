@@ -80,7 +80,7 @@ export function RevenueTypeChooser() {
           <div className="revenue-type-options">
             <button type="button" className="revenue-type-option" onClick={openStandard} disabled={!standardButton}>
               <span className="revenue-type-icon"><ReceiptText size={25} /></span>
-              <span><strong>Alvará / Receita normal</strong><small>Recebimento de alvará ou valor único, com o demonstrativo já utilizado no sistema.</small></span>
+              <span><strong>Alvará</strong><small>Recebimento de alvará, com o demonstrativo já utilizado no sistema.</small></span>
             </button>
             <button type="button" className="revenue-type-option agreement" onClick={openAgreement} disabled={!agreementButton}>
               <span className="revenue-type-icon"><Handshake size={25} /></span>
