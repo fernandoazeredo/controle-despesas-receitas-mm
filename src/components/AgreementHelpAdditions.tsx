@@ -8,17 +8,30 @@ export function AgreementHelpAdditions() {
   const [host, setHost] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
-    if (location.pathname !== '/dicas' && location.pathname !== '/como-usar') {
+    const onHelpPage = location.pathname === '/dicas' || location.pathname === '/como-usar'
+    if (!onHelpPage) {
       setHost(null)
       return
     }
-    const locate = () => setHost(document.querySelector<HTMLElement>('.main-content'))
-    locate()
-    const timer = window.setTimeout(locate, 0)
-    return () => window.clearTimeout(timer)
+
+    const locate = () => {
+      const main = document.querySelector<HTMLElement>('.main-content')
+      if (!main) return false
+      setHost(main)
+      return true
+    }
+
+    if (locate()) return
+
+    const observer = new MutationObserver(() => {
+      if (locate()) observer.disconnect()
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+
+    return () => observer.disconnect()
   }, [location.pathname])
 
-  if (!host) return null
+  if (!host || (location.pathname !== '/dicas' && location.pathname !== '/como-usar')) return null
 
   return createPortal(
     <section className="page-card agreement-help-card" style={{ marginBottom: 16 }}>
