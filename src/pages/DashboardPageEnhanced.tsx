@@ -32,7 +32,7 @@ export function DashboardPageEnhanced() {
   const pending = expenses.filter((item) => item.status === 'enviado_aprovacao' || item.status === 'em_analise').length
 
   return <>
-    <div className="page-heading"><div><span className="eyebrow">Visão gerencial</span><h1>Dashboard Financeira</h1><p>Retrato consolidado das receitas e das despesas efetivamente aprovadas.</p></div><div className="quick-actions"><Link className="expense-button button-link" to="/despesas?novo=1"><ReceiptText size={18} /> + Despesa</Link><Link className="revenue-button button-link" to="/alvaras?novo=1"><BadgeDollarSign size={18} /> + Receita</Link></div></div>
+    <div className="page-heading"><div><span className="eyebrow">Visão gerencial</span><h1>Dashboard Financeira</h1><p>Retrato consolidado das receitas e das despesas efetivamente aprovadas.</p></div><div className="quick-actions"><Link className="expense-button button-link" to="/despesas?novo=1"><ReceiptText size={18} /> + Despesa</Link><Link className="revenue-button button-link" to="/alvaras?escolherReceita=1"><BadgeDollarSign size={18} /> + Receita</Link></div></div>
     <div className="metrics-grid">
       <Link to="/alvaras" className="metric metric-link revenue-metric" title="Abrir Recebimento de Alvarás"><span>Receitas</span><strong>{money.format(revenueTotal)}</strong><small>Total registrado · abrir Receitas</small></Link>
       <Link to="/despesas" className="metric metric-link expense-metric" title="Abrir Despesas"><span>Despesas</span><strong>{money.format(expenseTotal)}</strong><small>Somente despesas aprovadas · abrir Despesas</small></Link>
