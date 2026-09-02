@@ -10,6 +10,7 @@ import { DynamicAgreementInstallmentsEnhancer } from './components/DynamicAgreem
 import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
+import { InstitutionalSettingsEditor } from './components/InstitutionalSettingsEditor'
 import { LaborAgreementReceivableLauncher } from './components/LaborAgreementReceivable'
 import { RevenueTypeChooser } from './components/RevenueTypeChooser'
 import { ThemeControls } from './components/ThemeControls'
@@ -40,6 +41,7 @@ createRoot(document.getElementById('root')!).render(
         <DreAccountSearchEnhancer />
         <DreRegimeViewEnhancer />
         <DynamicAgreementInstallmentsEnhancer />
+        <InstitutionalSettingsEditor />
         <LaborAgreementReceivableLauncher />
         <RevenueTypeChooser />
         <App />
