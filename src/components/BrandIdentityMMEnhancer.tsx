@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const NEW_LOGO = '/logo-mm.png'
+const NEW_LOGO = '/logo-mm.svg'
 
 export function BrandIdentityMMEnhancer() {
   useEffect(() => {
@@ -8,7 +8,7 @@ export function BrandIdentityMMEnhancer() {
       const images = Array.from(document.querySelectorAll('img')) as HTMLImageElement[]
       for (const image of images) {
         const src = image.getAttribute('src') ?? ''
-        const isBrandImage = src.includes('logo-fm.svg') || image.closest('.auth-brand-panel, .brand-logo-only, .mobile-header-brand')
+        const isBrandImage = src.includes('logo-fm.svg') || src.includes('logo-mm.png') || image.closest('.auth-brand-panel, .brand-logo-only, .mobile-header-brand')
         if (!isBrandImage) continue
         if (src !== NEW_LOGO) image.setAttribute('src', NEW_LOGO)
         image.setAttribute('alt', 'Marques & Müller Advogados Associados')
