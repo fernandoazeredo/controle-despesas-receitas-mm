@@ -115,7 +115,7 @@ function sourceCardDescription(type: SourceType, item: AnyRecord) {
   if (item.tipoRecebimento === 'outras_receitas') {
     return String(item.descricaoOrigem ?? item.descricao ?? 'Outras Receitas')
   }
-  return String(item.descricaoOrigem ?? item.descricao ?? (item.processo ? `Processo ${item.processo}` : '') ?? item.origem ?? 'Sem histórico/descrição')
+  return String(item.descricaoOrigem ?? item.descricao ?? (item.processo ? `Processo ${item.processo}` : item.origem ?? 'Sem histórico/descrição'))
 }
 
 function sourceExistingAccount(type: SourceType, item: AnyRecord) {
