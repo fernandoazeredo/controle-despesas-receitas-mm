@@ -1,5 +1,6 @@
 import { Landmark } from 'lucide-react'
 import { BANK_ACCOUNTS, getBankAccount, type BankAccount } from '../data/bankAccounts'
+import { useInstitutionalSettings } from '../hooks/useInstitutionalSettings'
 import '../financial-movement.css'
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -25,7 +26,9 @@ export function FinancialMovementCard({
   paymentMethod = '',
   onPaymentMethodChange,
 }: FinancialMovementCardProps) {
+  const institutional = useInstitutionalSettings()
   const selected = getBankAccount(bankAccountId)
+  const holder = selected.holderType === 'PJ' ? institutional.razaoSocial : selected.holder
   const isReceipt = mode === 'receipt'
 
   return <section className={`financial-movement-card ${isReceipt ? 'is-receipt' : 'is-payment'}`}>
@@ -47,7 +50,7 @@ export function FinancialMovementCard({
 
       <div className="financial-bank-details">
         <span>Titular</span>
-        <strong>{selected.holder}</strong>
+        <strong>{holder}</strong>
         <small>{selected.holderType} · {selected.bank} · Ag. {selected.agency} · C/C {selected.account}</small>
       </div>
 
