@@ -10,7 +10,9 @@ const OLD_NAMES = [
 const NEW_NAME = 'MARQUES & MÜLLER ADVOGADOS ASSOCIADOS'
 
 function replaceBrandText(value: string) {
-  return OLD_NAMES.reduce((current, oldName) => current.split(oldName).join(NEW_NAME), value)
+  let next = OLD_NAMES.reduce((current, oldName) => current.split(oldName).join(NEW_NAME), value)
+  next = next.split('Depósito na conta da MM').join('Depósito na conta da Marques & Müller')
+  return next
 }
 
 export function BrandIdentityMMEnhancer() {
@@ -42,9 +44,18 @@ export function BrandIdentityMMEnhancer() {
       const inputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[]
       for (const input of inputs) {
         const label = input.closest('label')?.querySelector('span')?.textContent?.trim()
-        if (label === 'Razão Social' && OLD_NAMES.includes(input.value)) {
+        let replacement: string | null = null
+        if (label === 'Razão Social' && OLD_NAMES.includes(input.value)) replacement = NEW_NAME
+        else if (input.value === 'Depósito na conta da MM') replacement = 'Depósito na conta da Marques & Müller'
+        else {
+          const branded = replaceBrandText(input.value)
+          if (branded !== input.value) replacement = branded
+        }
+        if (replacement !== null) {
           const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')
-          descriptor?.set?.call(input, NEW_NAME)
+          descriptor?.set?.call(input, replacement)
+          input.dispatchEvent(new Event('input', { bubbles: true }))
+          input.dispatchEvent(new Event('change', { bubbles: true }))
         }
       }
 
