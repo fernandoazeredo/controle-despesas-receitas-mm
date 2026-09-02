@@ -1,0 +1,75 @@
+.labor-installments-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 12px;
+}
+
+.labor-installments-toolbar .labor-installments-helper {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.labor-add-installment-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+}
+
+.labor-installment-row {
+  grid-template-columns: 58px 145px 145px 150px 150px 150px 160px 160px 132px !important;
+}
+
+.labor-installment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.labor-installment-actions button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.labor-installment-actions .edit-installment-button {
+  border: 1px solid #9fb9cc;
+  background: #fff;
+  color: #27455c;
+}
+
+.labor-installment-actions .delete-installment-button {
+  border: 1px solid #e3a6a6;
+  background: #fff5f5;
+  color: #a62020;
+}
+
+html[data-theme='dark'] .labor-installment-actions .edit-installment-button {
+  background: #1c3445;
+  border-color: #46677f;
+  color: #d9edf9;
+}
+
+html[data-theme='dark'] .labor-installment-actions .delete-installment-button {
+  background: #3a2024;
+  border-color: #704048;
+  color: #ffd6d6;
+}
+
+@media (max-width: 980px) {
+  .labor-installments-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .labor-add-installment-button {
+    width: 100%;
+  }
+}
