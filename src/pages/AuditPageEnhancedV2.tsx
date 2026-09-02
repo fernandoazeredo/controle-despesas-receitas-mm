@@ -51,10 +51,10 @@ export function AuditPageEnhancedV2() {
 
     <section className="page-card module-card audit-card">
       <div className="module-toolbar audit-toolbar">
-        <div className="search-box"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar ação, processo, usuário ou detalhe" /></div>
+        <div className="search-box"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar ação, processo, usuário, e-mail ou detalhe" /></div>
         <select value={moduleFilter} onChange={(event) => setModuleFilter(event.target.value)}>{modules.map((module) => <option key={module}>{module}</option>)}</select>
       </div>
-      {loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando auditoria</strong></div> : filtered.length === 0 ? <div className="module-empty"><ShieldCheck size={34} /><strong>Nenhum evento encontrado</strong><span>Ajuste os filtros ou execute uma nova operação.</span></div> : <div className="audit-list enhanced-audit-list">{filtered.map((item) => <article key={item.id}><div className="audit-dot" /><div className="audit-main"><div className="audit-heading"><strong>{item.action || 'Evento do sistema'}</strong><span className={`status-badge ${moduleTone(String(item.module || 'Sistema'))}`}>{item.module || 'Sistema'}</span></div><span>{item.detail || 'Sem detalhe adicional'}</span><small>{item.userName || item.userEmail || 'Sistema'} · {timestampToDateTime(item.createdAt)}</small></div></article>)}</div>}
+      {loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando auditoria</strong></div> : filtered.length === 0 ? <div className="module-empty"><ShieldCheck size={34} /><strong>Nenhum evento encontrado</strong><span>Ajuste os filtros ou execute uma nova operação.</span></div> : <div className="audit-list enhanced-audit-list">{filtered.map((item) => <article key={item.id}><div className="audit-dot" /><div className="audit-main"><div className="audit-heading"><strong>{item.action || 'Evento do sistema'}</strong><span className={`status-badge ${moduleTone(String(item.module || 'Sistema'))}`}>{item.module || 'Sistema'}</span></div><span>{item.detail || 'Sem detalhe adicional'}</span><small>{item.userName || 'Sistema'}{item.userEmail ? ` · ${item.userEmail}` : ''} · {timestampToDateTime(item.createdAt)}</small></div></article>)}</div>}
     </section>
   </>
 }
