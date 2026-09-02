@@ -1,0 +1,39 @@
+.revenue-type-options-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.other-revenue-sheet {
+  width: min(920px, calc(100vw - 32px));
+}
+
+.other-revenue-grid {
+  margin-top: 18px;
+}
+
+.other-revenue-account-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  background: var(--surface-soft, rgba(255,255,255,.04));
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.other-revenue-upload {
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .revenue-type-options-three {
+    grid-template-columns: 1fr;
+  }
+
+  .other-revenue-sheet {
+    width: min(100%, calc(100vw - 20px));
+  }
+}
