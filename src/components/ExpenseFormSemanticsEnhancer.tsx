@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { companyData } from '../data/companyData'
+import { useInstitutionalSettings } from '../hooks/useInstitutionalSettings'
 
 function setReactInputValue(input: HTMLInputElement, value: string) {
   const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')
@@ -11,10 +11,12 @@ function setTextIfChanged(element: Element | null | undefined, value: string) {
   if (element && element.textContent !== value) element.textContent = value
 }
 
-function enhanceExpenseForm() {
+function enhanceExpenseForm(companyName: string) {
   const modal = document.querySelector('.expense-sheet')
 
   if (modal) {
+    setTextIfChanged(modal.querySelector('.legacy-title-block strong'), companyName)
+
     const labels = Array.from(modal.querySelectorAll<HTMLLabelElement>('label'))
     for (const label of labels) {
       const caption = label.querySelector<HTMLElement>('span')
@@ -22,12 +24,12 @@ function enhanceExpenseForm() {
       if (!caption || !input) continue
       const text = caption.textContent?.trim() ?? ''
 
-      if (text === 'Nome / Responsável') {
+      if (text === 'Nome / Responsável' || text === 'Nome da Empresa') {
         setTextIfChanged(caption, 'Nome da Empresa')
         input.readOnly = true
         input.setAttribute('aria-readonly', 'true')
         input.classList.add('institutional-readonly-field')
-        if (input.value !== companyData.razaoSocial) setReactInputValue(input, companyData.razaoSocial)
+        if (input.value !== companyName) setReactInputValue(input, companyName)
       }
 
       if (text === 'Fornecedor / Favorecido') setTextIfChanged(caption, 'Nome do Fornecedor / Favorecido')
@@ -50,14 +52,16 @@ function enhanceExpenseForm() {
     if (!strong || !small) return
     const company = strong.textContent?.trim() ?? ''
     const supplier = small.textContent?.trim() ?? ''
-    if (supplier && company === companyData.razaoSocial) {
+    if (supplier && company === companyName) {
       setTextIfChanged(strong, supplier)
-      setTextIfChanged(small, companyData.razaoSocial)
+      setTextIfChanged(small, companyName)
     }
   })
 }
 
 export function ExpenseFormSemanticsEnhancer() {
+  const institutional = useInstitutionalSettings()
+
   useEffect(() => {
     let scheduled = false
     const run = () => {
@@ -65,7 +69,7 @@ export function ExpenseFormSemanticsEnhancer() {
       scheduled = true
       requestAnimationFrame(() => {
         scheduled = false
-        enhanceExpenseForm()
+        enhanceExpenseForm(institutional.razaoSocial)
       })
     }
 
@@ -73,6 +77,7 @@ export function ExpenseFormSemanticsEnhancer() {
     const observer = new MutationObserver(run)
     observer.observe(document.body, { childList: true, subtree: true })
     return () => observer.disconnect()
-  }, [])
+  }, [institutional.razaoSocial])
+
   return null
 }
