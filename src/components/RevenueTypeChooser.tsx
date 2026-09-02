@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { FileText, Handshake, Plus, ReceiptText, X } from 'lucide-react'
+import { Handshake, Plus, ReceiptText, X } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 export function RevenueTypeChooser() {
@@ -87,7 +87,6 @@ export function RevenueTypeChooser() {
               <span><strong>Acordo Trabalhista</strong><small>Controle próprio do acordo, com parcelas, datas previstas e realizadas, honorários, deduções e líquido do cliente.</small></span>
             </button>
           </div>
-          <div className="revenue-type-note"><FileText size={16} /> O acordo trabalhista segue o formulário específico informado pelo Jurídico.</div>
         </section>
       </div>,
       document.body,
