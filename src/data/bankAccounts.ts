@@ -13,7 +13,7 @@ export const BANK_ACCOUNTS: BankAccount[] = [
     bank: 'Itaú',
     agency: '8548',
     account: '26486-3',
-    holder: 'FLAVIO MARQUES ADVOGADOS ASSOCIADOS',
+    holder: 'MARQUES & MÜLLER ADVOGADOS ASSOCIADOS',
     holderType: 'PJ',
   },
   {
