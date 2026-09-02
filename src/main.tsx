@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
+import { AgreementHelpAdditions } from './components/AgreementHelpAdditions'
 import { CpfCnpjValidationEnhancer } from './components/CpfCnpjValidationEnhancer'
 import { DreAccountSearchEnhancer } from './components/DreAccountSearchEnhancer'
 import { DreRegimeViewEnhancer } from './components/DreRegimeViewEnhancer'
@@ -10,6 +11,7 @@ import { DynamicAgreementInstallmentsEnhancer } from './components/DynamicAgreem
 import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
+import { InstitutionalDisplaySync } from './components/InstitutionalDisplaySync'
 import { InstitutionalSettingsEditor } from './components/InstitutionalSettingsEditor'
 import { LaborAgreementReceivableLauncher } from './components/LaborAgreementReceivable'
 import { RevenueTypeChooser } from './components/RevenueTypeChooser'
@@ -41,9 +43,11 @@ createRoot(document.getElementById('root')!).render(
         <DreAccountSearchEnhancer />
         <DreRegimeViewEnhancer />
         <DynamicAgreementInstallmentsEnhancer />
+        <InstitutionalDisplaySync />
         <InstitutionalSettingsEditor />
         <LaborAgreementReceivableLauncher />
         <RevenueTypeChooser />
+        <AgreementHelpAdditions />
         <App />
         <ExpenseFiltersPanel />
         <ExpenseSettlementPanel />
