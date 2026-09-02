@@ -65,23 +65,57 @@ function readableDate(value: string) {
   return dateBR.format(new Date(year, month - 1, day))
 }
 
+function truncateText(value: string, limit = 60) {
+  const text = value.trim()
+  return text.length > limit ? `${text.slice(0, limit).trimEnd()}...` : text
+}
+
 function receivableManagementAmount(record: AnyRecord) {
+  if (record.tipoRecebimento === 'outras_receitas') return toNumber(record.valorAlvara)
   const direct = toNumber(record.invoiceValue)
   if (direct > 0) return direct
   const components = Array.isArray(record.components) ? record.components as DocumentData[] : []
   return toNumber(components.find((item) => item.nome === 'Honorários do Escritório')?.valor)
 }
 
+function expenseHistory(item: AnyRecord) {
+  return Array.isArray(item.items)
+    ? (item.items as DocumentData[]).map((row) => String(row.historico ?? '').trim()).filter(Boolean).join(' · ')
+    : ''
+}
+
 function sourceDescription(type: SourceType, item: AnyRecord) {
   if (type === 'expense') {
-    const itemText = Array.isArray(item.items) ? (item.items as DocumentData[]).map((row) => row.historico).filter(Boolean).join(' · ') : ''
+    const itemText = expenseHistory(item)
     return [item.nome, item.fornecedor, item.subcategoria, itemText].filter(Boolean).join(' · ')
+  }
+  if (item.tipoRecebimento === 'outras_receitas') {
+    return String(item.descricaoOrigem ?? item.descricao ?? item.origem ?? 'Outras Receitas')
   }
   return [item.origem, item.natureza, item.processo, item.reclamante, item.reclamada].filter(Boolean).join(' · ')
 }
 
 function sourceCounterparty(type: SourceType, item: AnyRecord) {
-  return String(type === 'expense' ? item.fornecedor ?? item.nome ?? '' : item.reclamante ?? item.reclamada ?? '')
+  if (type === 'expense') return String(item.fornecedor ?? item.nome ?? '')
+  if (item.tipoRecebimento === 'outras_receitas') return String(item.descricaoOrigem ?? item.descricao ?? item.origem ?? '')
+  return [item.reclamante, item.reclamada].filter(Boolean).map(String).join(' × ')
+}
+
+function sourceCardTitle(type: SourceType, item: AnyRecord) {
+  if (type === 'expense') return String(item.fornecedor ?? item.nome ?? 'Despesa')
+  if (item.tipoRecebimento === 'outras_receitas') return String(item.descricaoOrigem ?? item.descricao ?? 'Outras Receitas')
+  const parties = [item.reclamante, item.reclamada].filter(Boolean).map(String).join(' × ')
+  return parties || String(item.titular ?? item.processo ?? 'Receita')
+}
+
+function sourceCardDescription(type: SourceType, item: AnyRecord) {
+  if (type === 'expense') {
+    return expenseHistory(item) || String(item.subcategoria ?? item.observacoes ?? item.nome ?? 'Sem histórico/descrição')
+  }
+  if (item.tipoRecebimento === 'outras_receitas') {
+    return String(item.descricaoOrigem ?? item.descricao ?? 'Outras Receitas')
+  }
+  return String(item.descricaoOrigem ?? item.descricao ?? (item.processo ? `Processo ${item.processo}` : '') ?? item.origem ?? 'Sem histórico/descrição')
 }
 
 function sourceExistingAccount(type: SourceType, item: AnyRecord) {
@@ -210,7 +244,7 @@ export function DreGerencialPageV2() {
       return {
         key: classificationKey('expense', item.id), sourceType: 'expense' as const, sourceId: item.id, source: item,
         date, competence: String(item.competencia ?? date.slice(0, 7)), unit: String(item.unidade ?? 'RJ'),
-        title: String(item.nome ?? 'Despesa'), description: sourceDescription('expense', item), counterparty: sourceCounterparty('expense', item),
+        title: sourceCardTitle('expense', item), description: sourceCardDescription('expense', item), counterparty: sourceCounterparty('expense', item),
         amount: toNumber(item.valorTotal), status: String(item.status ?? ''), classification: classificationMap.get(classificationKey('expense', item.id)),
       }
     })
@@ -219,7 +253,7 @@ export function DreGerencialPageV2() {
       return {
         key: classificationKey('revenue', item.id), sourceType: 'revenue' as const, sourceId: item.id, source: item,
         date, competence: date.slice(0, 7), unit: String(item.unidade ?? 'RJ'),
-        title: String(item.processo ?? item.reclamante ?? 'Recebimento'), description: sourceDescription('revenue', item), counterparty: sourceCounterparty('revenue', item),
+        title: sourceCardTitle('revenue', item), description: sourceCardDescription('revenue', item), counterparty: sourceCounterparty('revenue', item),
         amount: receivableManagementAmount(item), status: String(item.status ?? ''), classification: classificationMap.get(classificationKey('revenue', item.id)),
       }
     })
@@ -341,8 +375,8 @@ export function DreGerencialPageV2() {
         const accounts = officialChartOfAccounts.filter((row) => row.kind === 'account' && row.category === category)
         const accountCode = selectedAccountCode(item, suggestion)
         return <article className="dre-launch-row" key={item.key}>
-          <div className="dre-launch-summary"><div className={`dre-type-badge ${item.sourceType}`}>{item.sourceType === 'expense' ? 'Despesa' : 'Receita'}</div><strong>{item.title}</strong><span>{item.description || 'Sem descrição complementar'}</span><small>{readableDate(item.date)} · {item.unit} · {item.status || 'sem status'}</small></div>
-          <div className="dre-launch-amount"><span>Valor gerencial</span><strong>{money.format(item.amount)}</strong>{item.sourceType === 'revenue' && <small>Honorários do escritório</small>}</div>
+          <div className="dre-launch-summary"><div className={`dre-type-badge ${item.sourceType}`}>{item.sourceType === 'expense' ? 'Despesa' : 'Receita'}</div><strong title={item.title}>{item.title}</strong><span title={item.description}>{truncateText(item.description || 'Sem descrição complementar')}</span><small>{readableDate(item.date)} · {item.unit} · {item.status || 'sem status'}</small></div>
+          <div className="dre-launch-amount"><span>Valor gerencial</span><strong>{money.format(item.amount)}</strong>{item.sourceType === 'revenue' && <small>{item.source.tipoRecebimento === 'outras_receitas' ? 'Valor da receita' : 'Honorários do escritório'}</small>}</div>
           <div className="dre-account-choice">
             {suggestion.account && !item.classification?.confirmed && <div className={`dre-suggestion confidence-${suggestion.confidence >= 90 ? 'high' : suggestion.confidence >= 60 ? 'medium' : 'low'}`}><Sparkles size={14} /><span>Sugestão {suggestion.confidence}% · {suggestion.reason}</span></div>}
             <label><span>Conta gerencial</span><select value={accountCode} onChange={(event) => setDraftAccounts((current) => ({ ...current, [item.key]: event.target.value }))}><option value="">Selecione a conta...</option>{accounts.map((account) => <option key={account.code} value={account.code}>{account.code} — {account.name}</option>)}</select></label>
