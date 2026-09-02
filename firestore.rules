@@ -283,5 +283,10 @@ service cloud.firestore {
       allow read: if activeUser();
       allow write: if masterRestoreMode() || hasRole(['master']);
     }
+
+    match /appConfig/{document=**} {
+      allow read: if activeUser();
+      allow write: if masterRestoreMode() || (isPrimaryAdminEmail() && hasRole(['master']));
+    }
   }
 }
