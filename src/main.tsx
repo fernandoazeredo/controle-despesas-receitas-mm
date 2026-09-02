@@ -26,6 +26,7 @@ import './cpf-cnpj-validation.css'
 import './dre-regime-view.css'
 import './dre-account-search.css'
 import './labor-agreement.css'
+import './agreement-installment-actions.css'
 import './brand-mm.css'
 import './login-footer-kill.css'
 
