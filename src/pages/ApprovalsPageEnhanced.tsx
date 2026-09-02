@@ -17,11 +17,15 @@ const expenseStatusLabels: Record<string, string> = {
   rejeitado: 'Rejeitado',
 }
 
+function expenseBeneficiary(item: AnyRecord) {
+  return String(item.fornecedor || item.favorecido || item.nomeFornecedor || item.nomeFavorecido || item.nome || 'Demonstrativo de despesa')
+}
+
 function useExpenses() {
   const [records, setRecords] = useState<AnyRecord[]>([])
   useEffect(() => onSnapshot(collection(db, 'expenses'), (snapshot) => {
     setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
-  }), [])
+  }, () => setRecords([])), [])
   return records
 }
 
@@ -66,7 +70,7 @@ export function ApprovalsPageEnhanced() {
         updatedAt: serverTimestamp(),
       })
       const actor = profile?.displayName || profile?.email || 'Usuário autorizado'
-      await writeAudit(profile, 'Despesa: Aprovado', `${item.nome ?? 'Despesa'} — ${money.format(Number(item.valorTotal ?? 0))} — Autorizado por ${actor}`, item.id)
+      await writeAudit(profile, 'Despesa: Aprovado', `${expenseBeneficiary(item)} — ${money.format(Number(item.valorTotal ?? 0))} — Autorizado por ${actor}`, item.id)
     } finally {
       setBusy(false)
     }
@@ -77,7 +81,7 @@ export function ApprovalsPageEnhanced() {
     setBusy(true)
     try {
       const label = expenseStatusLabels[decision.status]
-      const detail = `${decision.item.nome ?? 'Despesa'} — ${money.format(Number(decision.item.valorTotal ?? 0))} — Motivo/justificativa: ${reason.trim()}`
+      const detail = `${expenseBeneficiary(decision.item)} — ${money.format(Number(decision.item.valorTotal ?? 0))} — Motivo/justificativa: ${reason.trim()}`
       await updateDoc(doc(db, 'expenses', decision.item.id), {
         status: decision.status,
         approvalNote: reason.trim(),
@@ -106,9 +110,9 @@ export function ApprovalsPageEnhanced() {
     {!canDecide && <div className="warning-box"><Eye size={18} /><span><strong>Modo consulta:</strong> você pode acompanhar todos os itens da fila de aprovação, mas não pode Aprovar, Devolver ou Rejeitar.</span></div>}
     {isMasterTester && <div className="warning-box"><BadgeCheck size={18} /><span><strong>Modo Master de homologação:</strong> você pode Aprovar, Devolver e Rejeitar para testar integralmente o fluxo. Todas as decisões ficam registradas na Auditoria com seu usuário.</span></div>}
     <section className="page-card module-card approval-card">
-      {queue.length === 0 ? <div className="module-empty"><FileCheck2 size={34} /><strong>Nenhuma aprovação pendente</strong><span>As despesas enviadas ou reenviadas pela operação aparecerão nesta fila.</span></div> : <div className="approval-list">{queue.map((item) => <article className="approval-item" key={item.id}><div><WorkflowStatusBadge status={item.status} label={expenseStatusLabels[item.status] || item.status} /><h3>{item.nome || 'Demonstrativo de despesa'}</h3><p>{item.fornecedor || 'Sem fornecedor informado'} · {item.competencia || 'Sem competência'} · {item.categoria || 'Sem categoria'}</p></div><strong className="expense-text">{money.format(Number(item.valorTotal ?? 0))}</strong>{canDecide ? <div className="row-actions"><button className="small-success-button" disabled={busy} onClick={() => approve(item)}><BadgeCheck size={15} /> Aprovar</button><button className="small-neutral-button" disabled={busy} onClick={() => openDecision(item, 'devolvido')}>Devolver</button><button className="small-expense-button" disabled={busy} onClick={() => openDecision(item, 'rejeitado')}>Rejeitar</button></div> : <div className="row-actions"><span className="status-badge neutral">Somente consulta</span></div>}</article>)}</div>}
+      {queue.length === 0 ? <div className="module-empty"><FileCheck2 size={34} /><strong>Nenhuma aprovação pendente</strong><span>As despesas enviadas ou reenviadas pela operação aparecerão nesta fila.</span></div> : <div className="approval-list">{queue.map((item) => <article className="approval-item" key={item.id}><div><WorkflowStatusBadge status={item.status} label={expenseStatusLabels[item.status] || item.status} /><h3>{expenseBeneficiary(item)}</h3><p>{item.cpfCnpj || item.cnpjCpf || 'Documento não informado'} · {item.competencia || 'Sem competência'} · {item.categoria || 'Sem categoria'}</p></div><strong className="expense-text">{money.format(Number(item.valorTotal ?? 0))}</strong>{canDecide ? <div className="row-actions"><button className="small-success-button" disabled={busy} onClick={() => approve(item)}><BadgeCheck size={15} /> Aprovar</button><button className="small-neutral-button" disabled={busy} onClick={() => openDecision(item, 'devolvido')}>Devolver</button><button className="small-expense-button" disabled={busy} onClick={() => openDecision(item, 'rejeitado')}>Rejeitar</button></div> : <div className="row-actions"><span className="status-badge neutral">Somente consulta</span></div>}</article>)}</div>}
     </section>
 
-    {decision && canDecide && <div className="modal-backdrop"><section className={`decision-modal ${decision.status}`} role="dialog" aria-modal="true"><div className="modal-toolbar"><div><span className="eyebrow">{isMasterTester ? 'Administrador Master · Homologação' : 'Diretoria autorizadora'}</span><h2>{decision.status === 'devolvido' ? 'Devolver para correção' : 'Rejeitar despesa'}</h2></div><button className="icon-button" type="button" onClick={() => setDecision(null)}><X size={20} /></button></div><div className="decision-warning"><AlertTriangle size={20} /><div><strong>{decision.item.nome || 'Despesa'}</strong><span>{money.format(Number(decision.item.valorTotal ?? 0))}</span></div></div><label className="decision-reason"><span>{decision.status === 'devolvido' ? 'O que precisa ser corrigido?' : 'Justificativa da rejeição'}</span><textarea rows={5} autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Digite o motivo completo. Ele ficará registrado na Auditoria." /></label><div className="modal-actions"><button className="secondary-button" type="button" onClick={() => setDecision(null)}>Cancelar</button><button className={decision.status === 'rejeitado' ? 'expense-button' : 'warning-action-button'} type="button" disabled={busy || !reason.trim()} onClick={confirmDecision}>{busy ? 'Registrando...' : decision.status === 'devolvido' ? 'Confirmar devolução' : 'Confirmar rejeição'}</button></div></section></div>}
+    {decision && canDecide && <div className="modal-backdrop"><section className={`decision-modal ${decision.status}`} role="dialog" aria-modal="true"><div className="modal-toolbar"><div><span className="eyebrow">{isMasterTester ? 'Administrador Master · Homologação' : 'Diretoria autorizadora'}</span><h2>{decision.status === 'devolvido' ? 'Devolver para correção' : 'Rejeitar despesa'}</h2></div><button className="icon-button" type="button" onClick={() => setDecision(null)}><X size={20} /></button></div><div className="decision-warning"><AlertTriangle size={20} /><div><strong>{expenseBeneficiary(decision.item)}</strong><span>{money.format(Number(decision.item.valorTotal ?? 0))}</span></div></div><label className="decision-reason"><span>{decision.status === 'devolvido' ? 'O que precisa ser corrigido?' : 'Justificativa da rejeição'}</span><textarea rows={5} autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Digite o motivo completo. Ele ficará registrado na Auditoria." /></label><div className="modal-actions"><button className="secondary-button" type="button" onClick={() => setDecision(null)}>Cancelar</button><button className={decision.status === 'rejeitado' ? 'expense-button' : 'warning-action-button'} type="button" disabled={busy || !reason.trim()} onClick={confirmDecision}>{busy ? 'Registrando...' : decision.status === 'devolvido' ? 'Confirmar devolução' : 'Confirmar rejeição'}</button></div></section></div>}
   </>
 }
