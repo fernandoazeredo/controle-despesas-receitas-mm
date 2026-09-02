@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Handshake, Plus, ReceiptText, X } from 'lucide-react'
+import { Handshake, Plus, ReceiptText, WalletCards, X } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 export function RevenueTypeChooser() {
@@ -61,6 +61,11 @@ export function RevenueTypeChooser() {
     agreementButton?.click()
   }
 
+  function openOtherRevenue() {
+    setOpen(false)
+    window.dispatchEvent(new Event('open-other-revenue'))
+  }
+
   return <>
     {actionsTarget && createPortal(
       <button className="revenue-button revenue-type-chooser-button" type="button" onClick={() => setOpen(true)}>
@@ -77,7 +82,7 @@ export function RevenueTypeChooser() {
             <button className="icon-button" type="button" onClick={() => setOpen(false)} aria-label="Fechar"><X size={20} /></button>
           </div>
           <p className="revenue-type-helper">Escolha o fluxo correto. Cada opção abre o formulário próprio e mantém os lançamentos dentro do mesmo módulo de Receitas.</p>
-          <div className="revenue-type-options">
+          <div className="revenue-type-options revenue-type-options-three">
             <button type="button" className="revenue-type-option" onClick={openStandard} disabled={!standardButton}>
               <span className="revenue-type-icon"><ReceiptText size={25} /></span>
               <span><strong>Alvará</strong><small>Recebimento de alvará, com o demonstrativo já utilizado no sistema.</small></span>
@@ -85,6 +90,10 @@ export function RevenueTypeChooser() {
             <button type="button" className="revenue-type-option agreement" onClick={openAgreement} disabled={!agreementButton}>
               <span className="revenue-type-icon"><Handshake size={25} /></span>
               <span><strong>Acordo Trabalhista</strong><small>Controle próprio do acordo, com parcelas, datas previstas e realizadas, honorários, deduções e líquido do cliente.</small></span>
+            </button>
+            <button type="button" className="revenue-type-option other-revenue-option" onClick={openOtherRevenue}>
+              <span className="revenue-type-icon"><WalletCards size={25} /></span>
+              <span><strong>Outras Receitas</strong><small>Entradas sem processo judicial, como aporte, reembolso, rendimento de aplicação ou outros créditos.</small></span>
             </button>
           </div>
         </section>
