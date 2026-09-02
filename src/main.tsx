@@ -15,6 +15,7 @@ import { InstitutionalDisplaySync } from './components/InstitutionalDisplaySync'
 import { InstitutionalSettingsEditor } from './components/InstitutionalSettingsEditor'
 import { LaborAgreementReceivableLauncher } from './components/LaborAgreementReceivable'
 import { NavigationCopyEnhancer } from './components/NavigationCopyEnhancer'
+import { OtherRevenueReceivable } from './components/OtherRevenueReceivable'
 import { RevenueTypeChooser } from './components/RevenueTypeChooser'
 import { ThemeControls } from './components/ThemeControls'
 import './styles.css'
@@ -30,6 +31,7 @@ import './cpf-cnpj-validation.css'
 import './dre-regime-view.css'
 import './dre-account-search.css'
 import './labor-agreement.css'
+import './other-revenue.css'
 import './brand-mm.css'
 import './agreement-installments-actions.css'
 import './login-footer-kill.css'
@@ -47,6 +49,7 @@ createRoot(document.getElementById('root')!).render(
         <InstitutionalDisplaySync />
         <InstitutionalSettingsEditor />
         <LaborAgreementReceivableLauncher />
+        <OtherRevenueReceivable />
         <RevenueTypeChooser />
         <AgreementHelpAdditions />
         <App />
