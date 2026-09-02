@@ -15,6 +15,10 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10)
 }
 
+function beneficiary(item: AnyRecord) {
+  return String(item.fornecedor || item.favorecido || item.nomeFornecedor || item.nomeFavorecido || item.nome || 'Despesa')
+}
+
 export function ExpenseSettlementPanel() {
   const location = useLocation()
   const { profile } = useAuth()
@@ -37,19 +41,19 @@ export function ExpenseSettlementPanel() {
   }, [location.pathname])
 
   useEffect(() => {
-    if (location.pathname !== '/despesas' || !canOperate) {
+    if (location.pathname !== '/despesas' || !canOperate || !profile?.uid) {
       setRecords([])
       return
     }
     return onSnapshot(collection(db, 'expenses'), (snapshot) => {
       setRecords(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
-    })
-  }, [location.pathname, canOperate])
+    }, () => setRecords([]))
+  }, [location.pathname, canOperate, profile?.uid])
 
   const operational = useMemo(
     () => records
       .filter((item) => item.status === 'aprovado' || item.status === 'pago')
-      .sort((a, b) => String(b.competencia ?? '').localeCompare(String(a.competencia ?? '')) || String(a.nome ?? '').localeCompare(String(b.nome ?? ''))),
+      .sort((a, b) => String(b.competencia ?? '').localeCompare(String(a.competencia ?? '')) || beneficiary(a).localeCompare(beneficiary(b))),
     [records],
   )
 
@@ -58,7 +62,7 @@ export function ExpenseSettlementPanel() {
     await addDoc(collection(db, 'auditLogs'), {
       action,
       module: 'Despesas',
-      detail: `${item.nome || item.fornecedor || 'Despesa'} — ${money.format(Number(item.valorTotal) || 0)}`,
+      detail: `${beneficiary(item)} — ${money.format(Number(item.valorTotal) || 0)}`,
       entityId: item.id,
       userId: profile.uid,
       userName: profile.displayName,
@@ -131,8 +135,8 @@ export function ExpenseSettlementPanel() {
             const date = dates[item.id] || String(item.paymentDate || '') || todayIso()
             return <article key={item.id}>
               <div className="expense-settlement-info">
-                <strong>{item.nome || item.fornecedor || 'Despesa'}</strong>
-                <span>{item.fornecedor || 'Sem favorecido'} · {item.competencia || 'Sem competência'}</span>
+                <strong>{beneficiary(item)}</strong>
+                <span>{item.competencia || 'Sem competência'} · {item.categoria || 'Sem categoria'}</span>
                 <small>{item.expenseAccountCode || item.classificacaoContabil || '—'} · {item.expenseAccountName || item.categoria || 'Não classificada'}</small>
               </div>
               <div className="expense-settlement-value">
