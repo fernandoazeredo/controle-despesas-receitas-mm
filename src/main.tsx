@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
+import { BrandIdentityMMEnhancer } from './components/BrandIdentityMMEnhancer'
 import { CpfCnpjValidationEnhancer } from './components/CpfCnpjValidationEnhancer'
 import { DreAccountSearchEnhancer } from './components/DreAccountSearchEnhancer'
 import { DreRegimeViewEnhancer } from './components/DreRegimeViewEnhancer'
-import { DynamicAgreementInstallmentsEnhancer } from './components/DynamicAgreementInstallmentsEnhancer'
 import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
@@ -26,8 +26,8 @@ import './cpf-cnpj-validation.css'
 import './dre-regime-view.css'
 import './dre-account-search.css'
 import './labor-agreement.css'
-import './agreement-installment-actions.css'
 import './brand-mm.css'
+import './agreement-installments-actions.css'
 import './login-footer-kill.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -35,11 +35,11 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <AuthProvider>
         <ThemeControls />
+        <BrandIdentityMMEnhancer />
         <CpfCnpjValidationEnhancer />
         <ExpenseFormSemanticsEnhancer />
         <DreAccountSearchEnhancer />
         <DreRegimeViewEnhancer />
-        <DynamicAgreementInstallmentsEnhancer />
         <LaborAgreementReceivableLauncher />
         <RevenueTypeChooser />
         <App />
