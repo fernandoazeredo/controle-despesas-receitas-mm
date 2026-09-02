@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 140" role="img" aria-labelledby="title desc">
+  <title id="title">Marques &amp; Müller Advogados Associados</title>
+  <desc id="desc">Logomarca Marques e Müller Advogados Associados</desc>
+  <defs>
+    <linearGradient id="mmBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#32c5e8"/>
+      <stop offset="0.82" stop-color="#24b8dc"/>
+      <stop offset="1" stop-color="#d8f4fb"/>
+    </linearGradient>
+  </defs>
+  <rect width="700" height="140" fill="#fff" fill-opacity="0"/>
+  <rect x="8" y="34" width="90" height="68" rx="1" fill="url(#mmBlue)"/>
+  <path d="M8 102h90" stroke="#89d8ea" stroke-width="2"/>
+  <text x="118" y="69" fill="#050505" font-family="Georgia, 'Times New Roman', serif" font-size="43" letter-spacing="5.2">MARQUES &amp; MÜLLER</text>
+  <text x="120" y="100" fill="#050505" font-family="Arial, Helvetica, sans-serif" font-size="16" letter-spacing="11.5">ADVOGADOS ASSOCIADOS</text>
+</svg>
