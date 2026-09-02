@@ -7,6 +7,7 @@ import { BrandIdentityMMEnhancer } from './components/BrandIdentityMMEnhancer'
 import { CpfCnpjValidationEnhancer } from './components/CpfCnpjValidationEnhancer'
 import { DreAccountSearchEnhancer } from './components/DreAccountSearchEnhancer'
 import { DreRegimeViewEnhancer } from './components/DreRegimeViewEnhancer'
+import { DynamicAgreementInstallmentsEnhancer } from './components/DynamicAgreementInstallmentsEnhancer'
 import { ExpenseFormSemanticsEnhancer } from './components/ExpenseFormSemanticsEnhancer'
 import { ExpenseFiltersPanel } from './components/ExpenseFiltersPanel'
 import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
@@ -40,6 +41,7 @@ createRoot(document.getElementById('root')!).render(
         <ExpenseFormSemanticsEnhancer />
         <DreAccountSearchEnhancer />
         <DreRegimeViewEnhancer />
+        <DynamicAgreementInstallmentsEnhancer />
         <LaborAgreementReceivableLauncher />
         <RevenueTypeChooser />
         <App />
