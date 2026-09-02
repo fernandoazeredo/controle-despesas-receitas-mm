@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
-import { BrandIdentityMMEnhancer } from './components/BrandIdentityMMEnhancer'
 import { CpfCnpjValidationEnhancer } from './components/CpfCnpjValidationEnhancer'
 import { DreAccountSearchEnhancer } from './components/DreAccountSearchEnhancer'
 import { DreRegimeViewEnhancer } from './components/DreRegimeViewEnhancer'
@@ -36,7 +35,6 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <AuthProvider>
         <ThemeControls />
-        <BrandIdentityMMEnhancer />
         <CpfCnpjValidationEnhancer />
         <ExpenseFormSemanticsEnhancer />
         <DreAccountSearchEnhancer />
