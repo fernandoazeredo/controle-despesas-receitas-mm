@@ -14,6 +14,7 @@ import { ExpenseSettlementPanel } from './components/ExpenseSettlementPanel'
 import { InstitutionalDisplaySync } from './components/InstitutionalDisplaySync'
 import { InstitutionalSettingsEditor } from './components/InstitutionalSettingsEditor'
 import { LaborAgreementReceivableLauncher } from './components/LaborAgreementReceivable'
+import { NavigationCopyEnhancer } from './components/NavigationCopyEnhancer'
 import { RevenueTypeChooser } from './components/RevenueTypeChooser'
 import { ThemeControls } from './components/ThemeControls'
 import './styles.css'
@@ -49,6 +50,7 @@ createRoot(document.getElementById('root')!).render(
         <RevenueTypeChooser />
         <AgreementHelpAdditions />
         <App />
+        <NavigationCopyEnhancer />
         <ExpenseFiltersPanel />
         <ExpenseSettlementPanel />
       </AuthProvider>
