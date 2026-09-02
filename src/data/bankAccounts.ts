@@ -1,5 +1,5 @@
 export type BankAccount = {
-  id: 'itau' | 'bb' | 'cef'
+  id: 'itau' | 'bb' | 'cef' | 'itau-pj' | 'bb-pf' | 'cef-pf'
   bank: string
   agency: string
   account: string
@@ -36,6 +36,13 @@ export const BANK_ACCOUNTS: BankAccount[] = [
 
 export const DEFAULT_BANK_ACCOUNT_ID: BankAccount['id'] = 'itau'
 
+function normalizeBankAccountId(id: string | null | undefined): 'itau' | 'bb' | 'cef' {
+  if (id === 'bb' || id === 'bb-pf') return 'bb'
+  if (id === 'cef' || id === 'cef-pf') return 'cef'
+  return 'itau'
+}
+
 export function getBankAccount(id: string | null | undefined) {
-  return BANK_ACCOUNTS.find((item) => item.id === id) ?? BANK_ACCOUNTS[0]
+  const normalizedId = normalizeBankAccountId(id)
+  return BANK_ACCOUNTS.find((item) => item.id === normalizedId) ?? BANK_ACCOUNTS[0]
 }
