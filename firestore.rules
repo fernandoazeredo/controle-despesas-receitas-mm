@@ -160,6 +160,43 @@ service cloud.firestore {
         );
     }
 
+    function societaryDecisionUser() {
+      return (isDirectorEmail() && hasRole(['diretor']))
+        || (isPrimaryAdminEmail() && hasRole(['master']));
+    }
+
+    function societaryCreate(documentId) {
+      return hasRole(['master', 'diretor', 'tesouraria'])
+        && request.resource.data.sourceReceivableId == documentId
+        && request.resource.data.status == 'apurado';
+    }
+
+    function societaryDirectorUpdate() {
+      return societaryDecisionUser()
+        && (
+          (resource.data.status == 'apurado'
+            && request.resource.data.status in ['apurado', 'aguardando_aprovacao', 'cancelado'])
+          ||
+          (resource.data.status == 'aguardando_aprovacao'
+            && request.resource.data.status in ['aprovado', 'rejeitado', 'cancelado'])
+          ||
+          (resource.data.status == 'rejeitado'
+            && request.resource.data.status in ['apurado', 'aguardando_aprovacao', 'cancelado'])
+          ||
+          (resource.data.status == 'aprovado'
+            && request.resource.data.status in ['enviado_tesouraria', 'apurado', 'cancelado'])
+          ||
+          (resource.data.status == 'enviado_tesouraria'
+            && request.resource.data.status in ['apurado', 'cancelado'])
+        );
+    }
+
+    function societaryTreasuryUpdate() {
+      return hasRole(['master', 'tesouraria'])
+        && resource.data.status == 'enviado_tesouraria'
+        && request.resource.data.status in ['pago', 'rejeitado'];
+    }
+
     match /systemControl/{document=**} {
       allow read, create, update, delete: if isPrimaryAdminEmail();
     }
@@ -230,6 +267,15 @@ service cloud.firestore {
       allow delete: if masterRestoreMode() || hasRole(['master']);
     }
 
+    match /societaryTransfers/{documentId} {
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow create: if masterRestoreMode() || societaryCreate(documentId);
+      allow update: if masterRestoreMode()
+        || societaryDirectorUpdate()
+        || societaryTreasuryUpdate();
+      allow delete: if false;
+    }
+
     match /fiscalNotes/{document=**} {
       allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
       allow create, update: if masterRestoreMode() || hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
@@ -282,6 +328,11 @@ service cloud.firestore {
     match /settings/{document=**} {
       allow read: if activeUser();
       allow write: if masterRestoreMode() || hasRole(['master']);
+    }
+
+    match /appConfig/societaryTransfer {
+      allow read: if hasRole(['master', 'diretor', 'gerente', 'tesouraria']);
+      allow write: if masterRestoreMode() || societaryDecisionUser();
     }
 
     match /appConfig/{document=**} {
