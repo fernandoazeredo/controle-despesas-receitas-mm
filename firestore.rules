@@ -161,8 +161,7 @@ service cloud.firestore {
     }
 
     function societaryDecisionUser() {
-      return (isDirectorEmail() && hasRole(['diretor']))
-        || (isPrimaryAdminEmail() && hasRole(['master']));
+      return hasRole(['master', 'diretor']);
     }
 
     function societaryCreate(documentId) {
