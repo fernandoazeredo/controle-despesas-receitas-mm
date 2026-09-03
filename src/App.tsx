@@ -7,6 +7,7 @@ import {
   FileCheck2,
   FileText,
   FolderArchive,
+  Handshake,
   LayoutDashboard,
   Lightbulb,
   LoaderCircle,
@@ -40,6 +41,7 @@ import { FiscalNotesPageV3 } from './pages/FiscalNotesPageV3'
 import { AlvaraTransfersPageV3 } from './pages/AlvaraControlPagesV3'
 import { AgentCommissionsPageV4 } from './pages/AgentCommissionsPageV4'
 import { AuditPageEnhancedV2 } from './pages/AuditPageEnhancedV2'
+import { SocietaryTransferSync, SocietaryTransfersPage, SocietaryTreasuryPanel } from './pages/SocietaryTransfersPage'
 import { WorkflowStatusEnhancer } from './components/WorkflowStatusEnhancer'
 import './system.css'
 import './fixes.css'
@@ -72,6 +74,7 @@ const menu: MenuItem[] = [
   { to: '/despesas', label: 'Despesas', icon: ReceiptText, tone: 'expense', roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/alvaras', label: 'Recebimento de Alvarás', icon: FileText, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/repasse-alvaras', label: 'Repasse de Alvarás', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
+  { to: '/repasse-societario', label: 'Repasse Societário', icon: Handshake, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/nota-fiscal', label: 'Nota Fiscal', icon: FileText, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/comissoes-agentes', label: 'Comissões de Agentes', icon: Users, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/tesouraria', label: 'Tesouraria / Receitas', icon: CircleDollarSign, tone: 'revenue', roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
@@ -215,6 +218,7 @@ function AppShell() {
   return (
     <div className="app-shell">
       <WorkflowStatusEnhancer />
+      <SocietaryTransferSync />
       <header className="mobile-app-header">
         <button type="button" className="mobile-menu-toggle" aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileMenuOpen} aria-controls="app-sidebar" onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}</button>
         <div className="mobile-header-brand"><img src="/logo-fm.svg" alt="Flávio Marques Advogados Associados" /><span>Controle de Despesas e Receitas</span></div>
@@ -233,9 +237,10 @@ function AppShell() {
           <Route path="/despesas" element={<ExpensesPageStorage />} />
           <Route path="/alvaras" element={<ReceivablesPageStorageV2 />} />
           <Route path="/repasse-alvaras" element={<AlvaraTransfersPageV3 />} />
+          <Route path="/repasse-societario" element={<SocietaryTransfersPage />} />
           <Route path="/nota-fiscal" element={<FiscalNotesPageV3 />} />
           <Route path="/comissoes-agentes" element={<AgentCommissionsPageV4 />} />
-          <Route path="/tesouraria" element={<TreasuryPage />} />
+          <Route path="/tesouraria" element={<><TreasuryPage /><SocietaryTreasuryPanel /></>} />
           <Route path="/aprovacoes" element={<ApprovalsPageEnhanced />} />
           <Route path="/dre-gerencial" element={<DreGerencialPageV2 />} />
           <Route path="/plano-contas" element={<AccountsPageFernando />} />
