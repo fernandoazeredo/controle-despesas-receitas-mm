@@ -17,6 +17,7 @@ import { LaborAgreementReceivableLauncher } from './components/LaborAgreementRec
 import { NavigationCopyEnhancer } from './components/NavigationCopyEnhancer'
 import { OtherRevenueReceivable } from './components/OtherRevenueReceivable'
 import { RevenueTypeChooser } from './components/RevenueTypeChooser'
+import { SocietaryRouteAccessGuard } from './components/SocietaryRouteAccessGuard'
 import { ThemeControls } from './components/ThemeControls'
 import './societary-transfer-error-guard'
 import './styles.css'
@@ -42,6 +43,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <AuthProvider>
         <ThemeControls />
+        <SocietaryRouteAccessGuard />
         <CpfCnpjValidationEnhancer />
         <ExpenseFormSemanticsEnhancer />
         <DreAccountSearchEnhancer />
