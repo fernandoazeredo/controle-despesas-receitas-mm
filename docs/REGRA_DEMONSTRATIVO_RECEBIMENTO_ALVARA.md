@@ -1,96 +1,46 @@
-# REGRA HOMOLOGADA — DEMONSTRATIVO DE RECEBIMENTO DE ALVARÁ
+# REGRA HOMOLOGADA — DEMONSTRATIVO E REPASSE SOCIETÁRIO
 
-Este documento registra a lógica operacional real usada pelo escritório e deve ser tratado como fonte de verdade para o módulo Recebimento de Alvarás.
+Este documento registra somente regras expressamente confirmadas para integração entre o Demonstrativo de Recebimento de Alvará e o módulo Repasse Societário.
 
-## Estrutura prática do demonstrativo
+## Regra central do Repasse Societário
 
-1. Valor Líquido do Alvará
-2. Imposto de Renda (Adicionar)
-3. INSS (Adicionar)
-4. FGTS
-5. Outros (Especificar) — ex.: Depósito Recursal
-6. Base Cálculo Honorários (Valor Bruto)
-7. Honorários (%)
-8. Honorários Perito (%)
-9. INSS Reclamada
-10. Honorários Perito (INSS Reclamada)
-11. Custas
-12. VALOR LÍQUIDO DEVIDO AO CLIENTE
-13. Honorários Periciais (preencher se devido repasse)
-14. Outros
-15. Participação de terceiros (até três linhas no modelo)
-16. Dados bancários do cliente
-17. Dados para emissão de Nota Fiscal
-18. Classificação/lançamento contábil
+O Repasse Societário NÃO é calculado sobre:
+- Valor Líquido do Alvará;
+- Base Cálculo Honorários;
+- IR;
+- INSS;
+- FGTS;
+- Honorários Perito;
+- Custas;
+- Participações de terceiros;
+- qualquer outro campo do Demonstrativo.
 
-## Regra de cálculo comprovada pelos demonstrativos reais
+O Repasse Societário usa exclusivamente o valor final do campo:
 
-### 1. Base Cálculo Honorários
-A Base Cálculo Honorários representa o Valor Bruto usado para cálculo dos honorários.
+**Honorários do Escritório**
 
-Quando existirem valores de IR, INSS, FGTS ou Outros indicados antes da Base, eles são valores de recomposição/adicionamento do bruto e não devem ser tratados como deduções do cliente.
+O Demonstrativo deve apenas fornecer esse valor ao módulo Repasse Societário.
 
-A regra operacional é:
+O cálculo do repasse é realizado dentro do próprio módulo Repasse Societário:
 
-Base Cálculo Honorários = Valor Líquido do Alvará + IR (Adicionar) + INSS (Adicionar) + FGTS + Outros (Adicionar/Especificar)
+**Valor do Repasse = Honorários do Escritório × Percentual de Repasse configurado**
 
-Se não houver qualquer valor de adição, a Base Cálculo Honorários será igual ao Valor Líquido do Alvará.
+Exemplo já homologado:
+- Honorários do Escritório: R$ 20.000,00
+- Percentual do Repasse: 40%
+- Valor do Repasse: R$ 8.000,00
 
-### 2. Honorários do Escritório
-Honorários do Escritório = Base Cálculo Honorários × Percentual de Honorários
+## Integração
 
-O percentual pode variar por alvará. Exemplos reais comprovam 30% e 100%.
+Ao confirmar o recebimento do alvará pela Tesouraria, o módulo Repasse Societário deve localizar no Demonstrativo o componente/campo **Honorários do Escritório** e copiar seu valor integral para o registro individual do repasse.
 
-### 3. Honorários Perito
-Honorários Perito = Base Cálculo Honorários × Percentual de Honorários Perito
+A partir daí, o módulo Repasse Societário aplica sua própria regra de percentual, aprovação, envio à Tesouraria, pagamento, saldo e auditoria.
 
-Exemplos reais comprovam percentual de 1%.
+## Regra de desenvolvimento
 
-### 4. Valor Líquido Devido ao Cliente
-O Valor Líquido Devido ao Cliente parte do Valor Líquido do Alvará efetivamente recebido e sofre as deduções posteriores à Base, quando existirem:
-
-Valor Líquido Devido ao Cliente = Valor Líquido do Alvará
-- Honorários
-- Honorários Perito
-- INSS Reclamada
-- Honorários Perito (INSS Reclamada)
-- Custas
-
-Campos posteriores ao VALOR LÍQUIDO DEVIDO AO CLIENTE, como Honorários Periciais a repassar, Outros e Participação de Terceiros, são controles de repasse separados e não devem ser incluídos automaticamente na fórmula do líquido do cliente sem regra expressa.
-
-## Casos reais de validação
-
-### Jorge Luiz Felix Pimentel Junior
-- Valor Líquido do Alvará: R$ 1.781,99
-- Base Cálculo Honorários: R$ 1.781,99
-- Honorários: 30% = R$ 534,60
-- Honorários Perito: 1% = R$ 17,82
-- Valor Líquido Devido ao Cliente: R$ 1.229,57
-
-Cálculo:
-1.781,99 - 534,60 - 17,82 = 1.229,57
-
-### Adriana Gomes da Silva — alvará de R$ 18.144,33
-- Valor Líquido do Alvará: R$ 18.144,33
-- Base Cálculo Honorários: R$ 18.144,33
-- Honorários: 30% = R$ 5.443,30
-- Honorários Perito: 1% = R$ 181,44
-- Valor Líquido Devido ao Cliente: R$ 12.519,59
-
-Cálculo:
-18.144,33 - 5.443,30 - 181,44 = 12.519,59
-
-### Adriana Gomes da Silva — honorários sucumbenciais integrais
-- Valor Líquido do Alvará: R$ 4.340,06
-- Base Cálculo Honorários: R$ 4.340,06
-- Honorários: 100% = R$ 4.340,06
-- Valor Líquido Devido ao Cliente: R$ 0,00
-
-## Regras de desenvolvimento
-
-- Não transformar este formulário em uma planilha genérica de percentuais.
-- Não calcular IR, INSS, FGTS ou Outros como percentual automático do Valor Líquido sem regra expressa.
-- Não usar a Base Cálculo Honorários como simples espelho passivo do Valor Líquido.
-- Não alterar esta matemática por inferência.
-- Toda mudança futura nessa regra deve ser confrontada com este documento e com demonstrativos reais do escritório antes de ser implementada.
-- O componente interno "Honorários do Escritório" deve continuar disponível para alimentar Nota Fiscal e Repasse Societário.
+- Não reinterpretar a matemática interna do Demonstrativo para calcular Repasse Societário.
+- Não derivar o Repasse Societário de Base Cálculo Honorários.
+- Não derivar o Repasse Societário de Valor Líquido do Alvará.
+- Não somar ou subtrair IR, INSS, perito, custas ou outras deduções para formar a base do Repasse Societário.
+- Não criar regra financeira nova sem confirmação expressa.
+- O único vínculo financeiro entre o Demonstrativo e o Repasse Societário é o valor final de **Honorários do Escritório**.
