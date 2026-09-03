@@ -192,23 +192,45 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
   const uploading = uploads.some((item) => item.status === 'uploading')
   const uploaded = uploads.flatMap((item) => item.meta ? [item.meta] : [])
 
+  function calculationBaseFor(componentName: string, totalValue = totalAlvara, feeBase = baseCalculo) {
+    return componentName === 'Honorários do Escritório' ? feeBase : totalValue
+  }
+
   function updatePercent(index: number, percentual: number) {
     const roundedPercent = normalizePercentStored(percentual)
-    setComponents((current) => current.map((item, i) => i === index ? { ...item, percentual: roundedPercent, valor: totalAlvara > 0 ? Number(((totalAlvara * roundedPercent) / 100).toFixed(2)) : 0 } : item))
+    setComponents((current) => current.map((item, i) => {
+      if (i !== index) return item
+      const calculationBase = calculationBaseFor(item.nome)
+      return { ...item, percentual: roundedPercent, valor: calculationBase > 0 ? Number(((calculationBase * roundedPercent) / 100).toFixed(2)) : 0 }
+    }))
   }
   function updateValue(index: number, valor: number) {
     const roundedValue = Number(Math.max(0, valor).toFixed(2))
-    const calculatedPercent = totalAlvara > 0 ? percentFromMoneyCustom(roundedValue, totalAlvara) : 0
-    setComponents((current) => current.map((item, i) => i === index ? { ...item, valor: roundedValue, percentual: calculatedPercent } : item))
+    setComponents((current) => current.map((item, i) => {
+      if (i !== index) return item
+      const calculationBase = calculationBaseFor(item.nome)
+      const calculatedPercent = calculationBase > 0 ? percentFromMoneyCustom(roundedValue, calculationBase) : 0
+      return { ...item, valor: roundedValue, percentual: calculatedPercent }
+    }))
   }
   function updateDetail(index: number, detalhe: string) {
     setComponents((current) => current.map((item, i) => i === index ? { ...item, detalhe } : item))
   }
   function changeTotal(value: number) {
     const previous = totalAlvara
+    const nextFeeBase = baseCalculo === 0 || baseCalculo === previous ? value : baseCalculo
     setTotalAlvara(value)
-    setBaseCalculo((current) => current === 0 || current === previous ? value : current)
+    setBaseCalculo(nextFeeBase)
     setComponents((current) => current.map((item) => {
+      const roundedPercent = normalizePercentStored(item.percentual)
+      const calculationBase = calculationBaseFor(item.nome, value, nextFeeBase)
+      return { ...item, percentual: roundedPercent, valor: calculationBase > 0 ? Number(((calculationBase * roundedPercent) / 100).toFixed(2)) : 0 }
+    }))
+  }
+  function changeBaseCalculo(value: number) {
+    setBaseCalculo(value)
+    setComponents((current) => current.map((item) => {
+      if (item.nome !== 'Honorários do Escritório') return item
       const roundedPercent = normalizePercentStored(item.percentual)
       return { ...item, percentual: roundedPercent, valor: value > 0 ? Number(((value * roundedPercent) / 100).toFixed(2)) : 0 }
     }))
@@ -287,7 +309,7 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     <h3 className="form-section-title">Dados do Processo</h3>
     <div className="form-grid compact-grid"><label><span>Unidade</span><select value={unidade} onChange={(e) => setUnidade(e.target.value as 'RJ' | 'SP')}><option>RJ</option><option>SP</option></select></label><label><span>Data</span><input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label><label><span>Natureza</span><select value={natureza} onChange={(e) => setNatureza(e.target.value)}><option>Trabalhista</option><option>Cível</option></select></label><label className="span-2"><span>Número do processo</span><input value={processo} onChange={(e) => setProcesso(e.target.value)} /></label><label className="span-2"><span>Reclamada</span><input value={reclamada} onChange={(e) => setReclamada(e.target.value)} /></label><label className="span-2"><span>Reclamante</span><input value={reclamante} onChange={(e) => setReclamante(e.target.value)} /></label><label><span>Origem</span><select value={origem} onChange={(e) => setOrigem(e.target.value)}><option>Alvará</option><option>Acordo</option></select></label><label><span>Forma de recebimento</span><input value={formaRecebimento} onChange={(e) => setFormaRecebimento(e.target.value)} /></label><label><span>Data prevista</span><input type="date" value={dataPrevista} onChange={(e) => setDataPrevista(e.target.value)} /></label></div>
     <h3 className="form-section-title">Composição do Valor</h3>
-    <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={setBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>{components.map((component, index) => { const isAgentCommission = component.nome === 'Outras Deduções / Participações'; const isOtherDeduction = component.nome.startsWith('Outras Deduções / Participações'); return <div className="composition-row" key={component.nome}><span className={isOtherDeduction ? 'commission-component-label' : ''}>{componentLabel(component.nome)}{isOtherDeduction && <input aria-label={isAgentCommission ? 'Nome do agente ou beneficiário da comissão' : `Descrição ou beneficiário de ${componentLabel(component.nome)}`} placeholder={isAgentCommission ? 'Nome do agente / beneficiário da comissão' : 'Do que se trata / nome do beneficiário'} value={isAgentCommission ? agentName : component.detalhe ?? ''} onChange={(e) => isAgentCommission ? setAgentName(e.target.value) : updateDetail(index, e.target.value)} />}</span><BrazilianPercentInput value={component.percentual} onChange={(value) => updatePercent(index, value)} ariaLabel={`Percentual de ${componentLabel(component.nome)}`} /><BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${componentLabel(component.nome)}`} /></div> })}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
+    <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={changeBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>{components.map((component, index) => { const isAgentCommission = component.nome === 'Outras Deduções / Participações'; const isOtherDeduction = component.nome.startsWith('Outras Deduções / Participações'); return <div className="composition-row" key={component.nome}><span className={isOtherDeduction ? 'commission-component-label' : ''}>{componentLabel(component.nome)}{isOtherDeduction && <input aria-label={isAgentCommission ? 'Nome do agente ou beneficiário da comissão' : `Descrição ou beneficiário de ${componentLabel(component.nome)}`} placeholder={isAgentCommission ? 'Nome do agente / beneficiário da comissão' : 'Do que se trata / nome do beneficiário'} value={isAgentCommission ? agentName : component.detalhe ?? ''} onChange={(e) => isAgentCommission ? setAgentName(e.target.value) : updateDetail(index, e.target.value)} />}</span><BrazilianPercentInput value={component.percentual} onChange={(value) => updatePercent(index, value)} ariaLabel={`Percentual de ${componentLabel(component.nome)}`} /><BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${componentLabel(component.nome)}`} /></div> })}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
 
     <h3 className="form-section-title">Dados bancários para crédito do cliente</h3>
     <div className="form-grid compact-grid"><label><span>Banco</span><input value={banco} onChange={(e) => setBanco(e.target.value)} /></label><label><span>Agência</span><input value={agencia} onChange={(e) => setAgencia(e.target.value)} /></label><label><span>Conta</span><input value={conta} onChange={(e) => setConta(e.target.value)} /></label><label className="span-2"><span>Nome / Titular</span><input value={titular} onChange={(e) => setTitular(e.target.value)} /></label><label><span>CPF</span><input value={cpf} onChange={(e) => setCpf(e.target.value)} /></label></div>
