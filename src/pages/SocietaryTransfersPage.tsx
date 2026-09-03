@@ -142,6 +142,12 @@ function statusClass(item: AnyRecord) {
   return 'soc-status warning'
 }
 
+function approvalLabel(item: AnyRecord) {
+  if (item.status === 'aguardando_aprovacao') return 'Aguardando aprovação'
+  if (['aprovado', 'enviado_tesouraria', 'pago'].includes(String(item.status ?? '')) && item.approvedByName) return String(item.approvedByName)
+  return ''
+}
+
 async function audit(profile: ReturnType<typeof useAuth>['profile'], action: string, detail: string, entityId?: string) {
   if (!profile) return
   await addDoc(collection(db, 'auditLogs'), {
@@ -570,7 +576,7 @@ export function SocietaryTransfersPage() {
       dateBR(item.receiptDate), item.processo || '', item.reclamante || '', item.reclamada || '',
       toNumber(item.officeFees).toFixed(2), toNumber(item.percent).toFixed(2), toNumber(item.transferValue).toFixed(2),
       toNumber(item.paidValue).toFixed(2), Math.max(0, toNumber(item.transferValue) - toNumber(item.paidValue)).toFixed(2),
-      item.approvedByName || (item.status === 'aguardando_aprovacao' ? 'Aguardando aprovação' : ''),
+      approvalLabel(item),
       statusLabel(item), dateBR(item.paymentDate), (rowBalances.get(item.id) ?? 0).toFixed(2),
     ])
     const table = [header, ...body].map((row) => `<tr>${row.map((cell) => `<td>${String(cell).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`).join('')}</tr>`).join('')
@@ -631,6 +637,7 @@ export function SocietaryTransfersPage() {
           const draft = draftFor(item)
           const editable = canDecide && ['apurado', 'rejeitado'].includes(String(item.status ?? ''))
           const balance = Math.max(0, toNumber(item.transferValue) - toNumber(item.paidValue))
+          const currentApproval = approvalLabel(item)
           return <tr key={item.id}>
             <td><input type="checkbox" checked={selected.has(item.id)} onChange={() => toggle(item.id)} /></td>
             <td>{dateBR(item.receiptDate)}</td>
@@ -641,7 +648,7 @@ export function SocietaryTransfersPage() {
             <td className="soc-edit-cell money-edit"><span>R$</span><input inputMode="decimal" disabled={!editable} value={draft.value} onChange={(event) => changeValue(item, event.target.value)} /></td>
             <td className="numeric">{money.format(toNumber(item.paidValue))}</td>
             <td className="numeric"><strong>{money.format(balance)}</strong></td>
-            <td className="soc-approval">{item.approvedByName ? <strong>{String(item.approvedByName)}</strong> : item.status === 'aguardando_aprovacao' ? <span>Aguardando</span> : <span>—</span>}</td>
+            <td className="soc-approval">{currentApproval ? (item.status === 'aguardando_aprovacao' ? <span>Aguardando</span> : <strong>{currentApproval}</strong>) : <span>—</span>}</td>
             <td><span className={statusClass(item)}>{statusLabel(item)}</span>{item.rejectionReason && <small className="soc-reason">{String(item.rejectionReason)}</small>}</td>
             <td>{item.paymentDate ? dateBR(item.paymentDate) : '—'}</td>
             <td className="numeric"><strong>{money.format(rowBalances.get(item.id) ?? 0)}</strong></td>
