@@ -199,22 +199,26 @@ export function SocietaryTransferSync() {
   const settings = useSocietarySettings()
   const [receivables, setReceivables] = useState<AnyRecord[]>([])
   const [knownSourceIds, setKnownSourceIds] = useState<Set<string>>(new Set())
+  const [receivablesLoaded, setReceivablesLoaded] = useState(false)
+  const [transfersLoaded, setTransfersLoaded] = useState(false)
   const syncing = useRef(false)
   const reserved = useRef(new Set<string>())
   const canSync = ['master', 'diretor', 'tesouraria'].includes(String(profile?.role ?? ''))
 
   useEffect(() => onSnapshot(collection(db, 'receivables'), (snapshot) => {
     setReceivables(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
+    setReceivablesLoaded(true)
   }), [])
 
   useEffect(() => onSnapshot(collection(db, 'societaryTransfers'), (snapshot) => {
     const ids = new Set(snapshot.docs.map((item) => String(item.data().sourceReceivableId || item.id)))
     setKnownSourceIds(ids)
+    setTransfersLoaded(true)
     reserved.current = new Set([...reserved.current].filter((id) => !ids.has(id)))
   }), [])
 
   useEffect(() => {
-    if (!canSync || syncing.current || !profile) return
+    if (!receivablesLoaded || !transfersLoaded || !canSync || syncing.current || !profile) return
     const missing = receivables.filter((item) => isEligible(item, settings) && !knownSourceIds.has(item.id) && !reserved.current.has(item.id))
     if (!missing.length) return
 
@@ -261,7 +265,7 @@ export function SocietaryTransferSync() {
         syncing.current = false
       }
     })()
-  }, [canSync, knownSourceIds, profile, receivables, settings])
+  }, [canSync, knownSourceIds, profile, receivables, receivablesLoaded, settings, transfersLoaded])
 
   return null
 }
@@ -312,7 +316,7 @@ function SettingsPanel() {
       <label><span>Percentual padrão</span><input type="number" min="0" max="100" step="0.01" value={form.defaultPercent} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, defaultPercent: toNumber(event.target.value) }))} /></label>
       <label><span>Data de início</span><input type="date" value={form.startDate} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, startDate: event.target.value }))} /></label>
       <label><span>Data de encerramento</span><input type="date" value={form.endDate} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, endDate: event.target.value }))} /></label>
-      <label><span>Dia de vencimento</span><input type="number" min="0" max="31" value={form.dueDay} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, dueDay: toNumber(event.target.value) }))} /></label>
+      <label><span>Dia de vencimento</span><input type="number" min="0" max="31" value={form.dueDay} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, dueDay: toNumber(event.target.value))) /></label>
       <label className="soc-settings-wide"><span>Dados bancários do beneficiário</span><input value={form.bankData} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, bankData: event.target.value }))} /></label>
       <label className="soc-settings-wide"><span>Observações</span><input value={form.notes} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} /></label>
       <label className="soc-active-check"><input type="checkbox" checked={form.active} disabled={!canEdit} onChange={(event) => setForm((current) => ({ ...current, active: event.target.checked }))} /><span> acordo ativo</span></label>
