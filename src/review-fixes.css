@@ -14,63 +14,81 @@
 .invite-modal { width: min(620px, 100%); margin: 40px auto; background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 24px 70px rgba(0,0,0,.25); }
 .invite-modal .form-grid { grid-template-columns: 1fr; }
 
-/* Acesso prioritário dos sócios/autorizadores. Mantém destaque visual sem alterar o fluxo. */
-.sidebar .nav-link.approval-attention-nav {
-  border: 1px solid rgba(245, 158, 11, .55);
-  background: rgba(245, 158, 11, .12);
-  box-shadow: inset 4px 0 0 #f59e0b;
+/* Aprovações: destaque amarelo permanente, inclusive fora da própria página. */
+.sidebar .nav-link.approval-attention-nav,
+.sidebar .nav-link[href="/aprovacoes"] {
+  border: 1px solid rgba(245, 158, 11, .55) !important;
+  background: rgba(245, 158, 11, .12) !important;
+  box-shadow: inset 4px 0 0 #f59e0b !important;
+  color: #a65f00 !important;
   font-weight: 800;
 }
-.sidebar .nav-link.approval-attention-nav svg { color: #d97706; }
-.sidebar .nav-link.approval-attention-nav:hover { background: rgba(245, 158, 11, .19); }
-.sidebar .nav-link.approval-attention-nav.active {
-  border-color: #f59e0b;
-  background: #f59e0b;
-  color: #172033;
-  box-shadow: none;
+.sidebar .nav-link.approval-attention-nav svg,
+.sidebar .nav-link[href="/aprovacoes"] svg { color: #d97706 !important; }
+.sidebar .nav-link.approval-attention-nav:hover,
+.sidebar .nav-link[href="/aprovacoes"]:hover { background: rgba(245, 158, 11, .19) !important; }
+.sidebar .nav-link.approval-attention-nav.active,
+.sidebar .nav-link[href="/aprovacoes"].active,
+html[data-theme] .sidebar .nav-link[href="/aprovacoes"].active {
+  border-color: #f59e0b !important;
+  background: #f59e0b !important;
+  color: #172033 !important;
+  box-shadow: none !important;
 }
-.sidebar .nav-link.approval-attention-nav.active svg { color: #172033; }
+.sidebar .nav-link.approval-attention-nav.active svg,
+.sidebar .nav-link[href="/aprovacoes"].active svg,
+html[data-theme] .sidebar .nav-link[href="/aprovacoes"].active svg { color: #172033 !important; }
 [data-theme="dark"] .sidebar .nav-link.approval-attention-nav,
-.dark .sidebar .nav-link.approval-attention-nav {
-  background: rgba(245, 158, 11, .16);
-  border-color: rgba(251, 191, 36, .6);
+[data-theme="dark"] .sidebar .nav-link[href="/aprovacoes"],
+.dark .sidebar .nav-link.approval-attention-nav,
+.dark .sidebar .nav-link[href="/aprovacoes"] {
+  background: rgba(245, 158, 11, .16) !important;
+  border-color: rgba(251, 191, 36, .6) !important;
+  color: #fbbf24 !important;
 }
 [data-theme="dark"] .sidebar .nav-link.approval-attention-nav.active,
-.dark .sidebar .nav-link.approval-attention-nav.active {
-  background: #fbbf24;
-  color: #111827;
+[data-theme="dark"] .sidebar .nav-link[href="/aprovacoes"].active,
+html[data-theme="dark"] .sidebar .nav-link[href="/aprovacoes"].active,
+.dark .sidebar .nav-link.approval-attention-nav.active,
+.dark .sidebar .nav-link[href="/aprovacoes"].active {
+  background: #fbbf24 !important;
+  border-color: #fbbf24 !important;
+  color: #111827 !important;
 }
 
-/* Repasse Societário: mesmo padrão visual de destaque das Aprovações, em vermelho. */
+/* Repasse Societário: destaque vermelho permanente, inclusive fora da própria página. */
 .sidebar .nav-link[href="/repasse-societario"] {
-  border: 1px solid rgba(198, 40, 40, .55);
-  background: rgba(198, 40, 40, .10);
-  box-shadow: inset 4px 0 0 var(--expense);
-  color: #8f2c31;
+  border: 1px solid rgba(198, 40, 40, .55) !important;
+  background: rgba(198, 40, 40, .10) !important;
+  box-shadow: inset 4px 0 0 var(--expense) !important;
+  color: #8f2c31 !important;
   font-weight: 800;
 }
-.sidebar .nav-link[href="/repasse-societario"] svg { color: var(--expense); }
-.sidebar .nav-link[href="/repasse-societario"]:hover { background: rgba(198, 40, 40, .17); }
-.sidebar .nav-link[href="/repasse-societario"].active {
-  border-color: var(--expense);
-  background: var(--expense);
-  color: #fff;
-  box-shadow: none;
+.sidebar .nav-link[href="/repasse-societario"] svg { color: var(--expense) !important; }
+.sidebar .nav-link[href="/repasse-societario"]:hover { background: rgba(198, 40, 40, .17) !important; }
+.sidebar .nav-link[href="/repasse-societario"].active,
+html[data-theme] .sidebar .nav-link[href="/repasse-societario"].active {
+  border-color: var(--expense) !important;
+  background: var(--expense) !important;
+  color: #fff !important;
+  box-shadow: none !important;
 }
-.sidebar .nav-link[href="/repasse-societario"].active svg { color: #fff; }
+.sidebar .nav-link[href="/repasse-societario"].active svg,
+html[data-theme] .sidebar .nav-link[href="/repasse-societario"].active svg { color: #fff !important; }
 [data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"],
 .dark .sidebar .nav-link[href="/repasse-societario"] {
-  background: rgba(239, 68, 68, .16);
-  border-color: rgba(248, 113, 113, .62);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, .16) !important;
+  border-color: rgba(248, 113, 113, .62) !important;
+  color: #fca5a5 !important;
 }
 [data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"] svg,
-.dark .sidebar .nav-link[href="/repasse-societario"] svg { color: #f87171; }
+.dark .sidebar .nav-link[href="/repasse-societario"] svg { color: #f87171 !important; }
 [data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"].active,
+html[data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"].active,
 .dark .sidebar .nav-link[href="/repasse-societario"].active {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #fff;
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #fff !important;
 }
 
 /* Campos adicionais do Demonstrativo de Recebimento de Alvarás. */
