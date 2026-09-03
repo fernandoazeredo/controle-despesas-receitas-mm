@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { addDoc, collection, doc, onSnapshot, serverTimestamp, setDoc, type DocumentData } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref as storageRef, uploadBytesResumable, type UploadTask } from 'firebase/storage'
-import { BadgeDollarSign, CheckCircle2, ExternalLink, FileText, Paperclip, Plus, RefreshCw, Search, Send, Upload, X } from 'lucide-react'
+import { BadgeDollarSign, CheckCircle2, ExternalLink, FileText, Paperclip, Plus, RefreshCw, Search, Send, Trash2, Upload, X } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { db, storage } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
@@ -25,6 +25,7 @@ function toNumber(value: unknown) { const number = Number(value); return Number.
 function formatBytes(bytes: number) { return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB` }
 function attachmentsOf(item: AnyRecord): AttachmentMeta[] { return Array.isArray(item.attachments) ? item.attachments as AttachmentMeta[] : [] }
 function componentLabel(name: string) { return name.startsWith('Outras Deduções / Participações') ? 'Outras Deduções / Participações' : name }
+function isDynamicComponent(name: string) { return name.startsWith('Outras Deduções / Participações - Adicional ') }
 
 function normalizeBrazilianDecimal(value: string) {
   const cleaned = value.trim().replace(/\s/g, '').replace(/[^\d,.-]/g, '')
@@ -204,6 +205,23 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
   function updateDetail(index: number, detalhe: string) {
     setComponents((current) => current.map((item, i) => i === index ? { ...item, detalhe } : item))
   }
+  function addDynamicComponent() {
+    setComponents((current) => [...current, {
+      nome: `Outras Deduções / Participações - Adicional ${Date.now()}`,
+      percentual: 0,
+      valor: 0,
+      detalhe: '',
+    }])
+  }
+  function removeDynamicComponent(index: number) {
+    setComponents((current) => {
+      const item = current[index]
+      if (!item || !isDynamicComponent(item.nome)) return current
+      const hasContent = Boolean(item.detalhe?.trim()) || toNumber(item.percentual) > 0 || toNumber(item.valor) > 0
+      if (hasContent && !window.confirm('Descartar este campo adicional e todas as informações preenchidas nele?')) return current
+      return current.filter((_, i) => i !== index)
+    })
+  }
   function changeTotal(value: number) {
     const previous = totalAlvara
     setTotalAlvara(value)
@@ -254,7 +272,7 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
   async function save(status: 'rascunho' | 'enviado_tesouraria') {
     if (uploading) { window.alert('Aguarde o término do envio dos documentos.'); return }
     if (!processo.trim() || !reclamante.trim() || totalAlvara <= 0) { window.alert('Preencha número do processo, reclamante e valor líquido do alvará.'); return }
-    const missingGeneralDetail = components.find((item) => item.nome.includes('Geral') && toNumber(item.valor) > 0 && !item.detalhe?.trim())
+    const missingGeneralDetail = components.find((item) => (item.nome.includes('Geral') || isDynamicComponent(item.nome)) && toNumber(item.valor) > 0 && !item.detalhe?.trim())
     if (missingGeneralDetail) { window.alert('Informe do que se trata ou quem é o beneficiário em cada linha de Outras Deduções / Participações utilizada.'); return }
     if (agentCommissionValue > 0 && !agentName.trim()) { window.alert('Informe o nome do agente/beneficiário em Outras Deduções / Participações.'); return }
     const componentsToSave = components.map((item) => item.nome === 'Outras Deduções / Participações'
@@ -287,7 +305,28 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
     <h3 className="form-section-title">Dados do Processo</h3>
     <div className="form-grid compact-grid"><label><span>Unidade</span><select value={unidade} onChange={(e) => setUnidade(e.target.value as 'RJ' | 'SP')}><option>RJ</option><option>SP</option></select></label><label><span>Data</span><input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label><label><span>Natureza</span><select value={natureza} onChange={(e) => setNatureza(e.target.value)}><option>Trabalhista</option><option>Cível</option></select></label><label className="span-2"><span>Número do processo</span><input value={processo} onChange={(e) => setProcesso(e.target.value)} /></label><label className="span-2"><span>Reclamada</span><input value={reclamada} onChange={(e) => setReclamada(e.target.value)} /></label><label className="span-2"><span>Reclamante</span><input value={reclamante} onChange={(e) => setReclamante(e.target.value)} /></label><label><span>Origem</span><select value={origem} onChange={(e) => setOrigem(e.target.value)}><option>Alvará</option><option>Acordo</option></select></label><label><span>Forma de recebimento</span><input value={formaRecebimento} onChange={(e) => setFormaRecebimento(e.target.value)} /></label><label><span>Data prevista</span><input type="date" value={dataPrevista} onChange={(e) => setDataPrevista(e.target.value)} /></label></div>
     <h3 className="form-section-title">Composição do Valor</h3>
-    <div className="composition-table"><div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div><div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div><div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={setBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>{components.map((component, index) => { const isAgentCommission = component.nome === 'Outras Deduções / Participações'; const isOtherDeduction = component.nome.startsWith('Outras Deduções / Participações'); return <div className="composition-row" key={component.nome}><span className={isOtherDeduction ? 'commission-component-label' : ''}>{componentLabel(component.nome)}{isOtherDeduction && <input aria-label={isAgentCommission ? 'Nome do agente ou beneficiário da comissão' : `Descrição ou beneficiário de ${componentLabel(component.nome)}`} placeholder={isAgentCommission ? 'Nome do agente / beneficiário da comissão' : 'Do que se trata / nome do beneficiário'} value={isAgentCommission ? agentName : component.detalhe ?? ''} onChange={(e) => isAgentCommission ? setAgentName(e.target.value) : updateDetail(index, e.target.value)} />}</span><BrazilianPercentInput value={component.percentual} onChange={(value) => updatePercent(index, value)} ariaLabel={`Percentual de ${componentLabel(component.nome)}`} /><BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${componentLabel(component.nome)}`} /></div> })}<div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div><div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div></div>
+    <div className="composition-table">
+      <div className="composition-row composition-head"><span>Componente</span><span>Percentual (%)</span><span>Valor (R$)</span></div>
+      <div className="composition-row total-row"><strong>Valor Líquido do Alvará</strong><span>100%</span><BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" /></div>
+      <div className="composition-row"><strong>Base Cálculo Honorários (Valor Bruto)</strong><span>editável</span><BrazilianMoneyInput value={baseCalculo} onChange={setBaseCalculo} ariaLabel="Base Cálculo Honorários" /></div>
+      {components.map((component, index) => {
+        const isAgentCommission = component.nome === 'Outras Deduções / Participações'
+        const isOtherDeduction = component.nome.startsWith('Outras Deduções / Participações')
+        const isDynamic = isDynamicComponent(component.nome)
+        return <div className={`composition-row${isDynamic ? ' dynamic-composition-row' : ''}`} key={component.nome}>
+          <span className={isOtherDeduction ? 'commission-component-label' : ''}>
+            <span className="component-label-text">{componentLabel(component.nome)}</span>
+            {isOtherDeduction && <input aria-label={isAgentCommission ? 'Nome do agente ou beneficiário da comissão' : `Descrição ou beneficiário de ${componentLabel(component.nome)}`} placeholder={isAgentCommission ? 'Nome do agente / beneficiário da comissão' : 'Do que se trata / nome do beneficiário'} value={isAgentCommission ? agentName : component.detalhe ?? ''} onChange={(e) => isAgentCommission ? setAgentName(e.target.value) : updateDetail(index, e.target.value)} />}
+            {isDynamic && <button type="button" className="dynamic-component-trash" title="Excluir campo adicional" aria-label="Excluir campo adicional" onClick={() => removeDynamicComponent(index)}><Trash2 size={16} /></button>}
+          </span>
+          <BrazilianPercentInput value={component.percentual} onChange={(value) => updatePercent(index, value)} ariaLabel={`Percentual de ${componentLabel(component.nome)}`} />
+          <BrazilianMoneyInput value={component.valor} onChange={(value) => updateValue(index, value)} ariaLabel={`Valor de ${componentLabel(component.nome)}`} />
+        </div>
+      })}
+      <div className="composition-add-row"><button type="button" className="add-dynamic-component-button" onClick={addDynamicComponent}><Plus size={16} /> Adicionar outro campo</button></div>
+      <div className="composition-row deductions-row"><strong>Total de descontos / repasses</strong><span>—</span><strong>{money.format(totalDeducoes)}</strong></div>
+      <div className="composition-row client-row"><strong>VALOR LÍQUIDO DEVIDO AO CLIENTE</strong><span>automático</span><strong>{money.format(liquidoCliente)}</strong></div>
+    </div>
 
     <h3 className="form-section-title">Dados bancários para crédito do cliente</h3>
     <div className="form-grid compact-grid"><label><span>Banco</span><input value={banco} onChange={(e) => setBanco(e.target.value)} /></label><label><span>Agência</span><input value={agencia} onChange={(e) => setAgencia(e.target.value)} /></label><label><span>Conta</span><input value={conta} onChange={(e) => setConta(e.target.value)} /></label><label className="span-2"><span>Nome / Titular</span><input value={titular} onChange={(e) => setTitular(e.target.value)} /></label><label><span>CPF</span><input value={cpf} onChange={(e) => setCpf(e.target.value)} /></label></div>
