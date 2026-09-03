@@ -565,11 +565,12 @@ export function SocietaryTransfersPage() {
   }
 
   function exportExcel() {
-    const header = ['Data', 'Processo', 'Reclamante', 'Reclamada', 'Honorários Escritório', '% Repasse', 'Valor Repasse', 'Valor Pago', 'Saldo', 'Status', 'Data Pagamento', 'Saldo Acumulado']
+    const header = ['Data', 'Processo', 'Reclamante', 'Reclamada', 'Honorários Escritório', '% Repasse', 'Valor Repasse', 'Valor Pago', 'Saldo', 'Aprovação', 'Status', 'Data Pagamento', 'Saldo Acumulado']
     const body = rows.map((item) => [
       dateBR(item.receiptDate), item.processo || '', item.reclamante || '', item.reclamada || '',
       toNumber(item.officeFees).toFixed(2), toNumber(item.percent).toFixed(2), toNumber(item.transferValue).toFixed(2),
       toNumber(item.paidValue).toFixed(2), Math.max(0, toNumber(item.transferValue) - toNumber(item.paidValue)).toFixed(2),
+      item.approvedByName || (item.status === 'aguardando_aprovacao' ? 'Aguardando aprovação' : ''),
       statusLabel(item), dateBR(item.paymentDate), (rowBalances.get(item.id) ?? 0).toFixed(2),
     ])
     const table = [header, ...body].map((row) => `<tr>${row.map((cell) => `<td>${String(cell).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`).join('')}</tr>`).join('')
@@ -625,7 +626,7 @@ export function SocietaryTransfersPage() {
       {canDecide && selected.size > 0 && <div className="soc-batchbar"><strong>{selected.size} selecionado(s)</strong><button className="small-success-button" onClick={() => void approveSelected()}><BadgeCheck size={15} /> Aprovar selecionados</button><button className="small-revenue-button" onClick={() => void sendSelected()}><Send size={15} /> Enviar aprovados à Tesouraria</button></div>}
 
       {loading ? <div className="module-empty"><RefreshCw className="spin" size={30} /><strong>Carregando extrato societário</strong></div> : rows.length === 0 ? <div className="module-empty"><Handshake size={32} /><strong>Nenhum repasse societário encontrado</strong><span>Os alvarás elegíveis passam a aparecer automaticamente após a confirmação do recebimento pela Tesouraria.</span></div> : <div className="soc-table-wrap"><table className="soc-table">
-        <thead><tr><th><input type="checkbox" checked={rows.length > 0 && rows.every((item) => selected.has(item.id))} onChange={toggleAll} /></th><th>Data</th><th>Processo</th><th>Reclamante / Reclamada</th><th>Honorários do Escritório</th><th>% Repasse</th><th>Valor do Repasse</th><th>Valor Pago</th><th>Saldo Linha</th><th>Saldo Acumulado</th><th>Status</th><th>Aprovação / Ações</th></tr></thead>
+        <thead><tr><th><input type="checkbox" checked={rows.length > 0 && rows.every((item) => selected.has(item.id))} onChange={toggleAll} /></th><th>Data</th><th>Processo</th><th>Reclamante / Reclamada</th><th>Honorários do Escritório</th><th>% Repasse</th><th>Valor do Repasse</th><th>Valor Pago</th><th>Saldo Linha</th><th>Aprovação</th><th>Status</th><th>Data Pagamento</th><th>Saldo Acumulado</th><th>Ações</th></tr></thead>
         <tbody>{rows.map((item) => {
           const draft = draftFor(item)
           const editable = canDecide && ['apurado', 'rejeitado'].includes(String(item.status ?? ''))
@@ -640,8 +641,10 @@ export function SocietaryTransfersPage() {
             <td className="soc-edit-cell money-edit"><span>R$</span><input inputMode="decimal" disabled={!editable} value={draft.value} onChange={(event) => changeValue(item, event.target.value)} /></td>
             <td className="numeric">{money.format(toNumber(item.paidValue))}</td>
             <td className="numeric"><strong>{money.format(balance)}</strong></td>
-            <td className="numeric"><strong>{money.format(rowBalances.get(item.id) ?? 0)}</strong></td>
+            <td className="soc-approval">{item.approvedByName ? <strong>{String(item.approvedByName)}</strong> : item.status === 'aguardando_aprovacao' ? <span>Aguardando</span> : <span>—</span>}</td>
             <td><span className={statusClass(item)}>{statusLabel(item)}</span>{item.rejectionReason && <small className="soc-reason">{String(item.rejectionReason)}</small>}</td>
+            <td>{item.paymentDate ? dateBR(item.paymentDate) : '—'}</td>
+            <td className="numeric"><strong>{money.format(rowBalances.get(item.id) ?? 0)}</strong></td>
             <td><div className="soc-actions">
               {editable && <button className="small-neutral-button" disabled={busyId === item.id} onClick={() => void saveAdjustment(item)}><Save size={14} /> Ajustar</button>}
               {editable && <button className="small-revenue-button" disabled={busyId === item.id} onClick={() => void submitForApproval(item)}><Send size={14} /> Enviar para aprovação</button>}
@@ -651,11 +654,11 @@ export function SocietaryTransfersPage() {
               {['aprovado', 'enviado_tesouraria'].includes(String(item.status ?? '')) && canDecide && <button className="small-neutral-button" disabled={busyId === item.id} onClick={() => void reopen(item)}><RotateCcw size={14} /> Reabrir</button>}
               {!['pago', 'cancelado'].includes(String(item.status ?? '')) && canDecide && <button className="small-expense-button" disabled={busyId === item.id} onClick={() => void cancel(item)}><XCircle size={14} /> Cancelar</button>}
               {item.status === 'enviado_tesouraria' && <span className="soc-action-note">Aguardando pagamento</span>}
-              {item.status === 'pago' && <span className="soc-action-note paid"><CheckCircle2 size={14} /> {dateBR(item.paymentDate)}</span>}
+              {item.status === 'pago' && <span className="soc-action-note paid"><CheckCircle2 size={14} /> Pago</span>}
             </div></td>
           </tr>
         })}</tbody>
-        <tfoot><tr><td colSpan={4}><strong>TOTAIS DO EXTRATO</strong></td><td className="numeric"><strong>{money.format(totals.office)}</strong></td><td></td><td className="numeric"><strong>{money.format(totals.apurado)}</strong></td><td className="numeric"><strong>{money.format(totals.paid)}</strong></td><td className="numeric"><strong>{money.format(totals.balance)}</strong></td><td className="numeric"><strong>{money.format(totals.balance)}</strong></td><td colSpan={2}></td></tr></tfoot>
+        <tfoot><tr><td colSpan={4}><strong>TOTAIS DO EXTRATO</strong></td><td className="numeric"><strong>{money.format(totals.office)}</strong></td><td></td><td className="numeric"><strong>{money.format(totals.apurado)}</strong></td><td className="numeric"><strong>{money.format(totals.paid)}</strong></td><td className="numeric"><strong>{money.format(totals.balance)}</strong></td><td colSpan={3}></td><td className="numeric"><strong>{money.format(totals.balance)}</strong></td><td></td></tr></tfoot>
       </table></div>}
     </section>
   </>
