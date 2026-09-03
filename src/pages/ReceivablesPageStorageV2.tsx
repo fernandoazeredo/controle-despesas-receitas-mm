@@ -246,7 +246,7 @@ function ReceivableModal({ onClose }: { onClose: () => void }) {
         const progress = snapshot.totalBytes ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100) : 0
         setUploads((current) => current.map((item) => item.id === id ? { ...item, progress } : item))
       }, (error) => {
-        setUploads((current) => current.map((item, i) => item.id === id ? { ...item, status: 'error', error: error.message } : item))
+        setUploads((current) => current.map((item) => item.id === id ? { ...item, status: 'error', error: error.message } : item))
       }, async () => {
         const url = await getDownloadURL(target)
         const meta: AttachmentMeta = { name: file.name, url, path, size: file.size, type: file.type || 'application/octet-stream', uploadedAt: new Date().toISOString(), uploadedBy: profile.uid }
