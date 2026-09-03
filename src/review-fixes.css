@@ -41,6 +41,85 @@
   color: #111827;
 }
 
+/* Repasse Societário: mesmo padrão visual de destaque das Aprovações, em vermelho. */
+.sidebar .nav-link[href="/repasse-societario"] {
+  border: 1px solid rgba(198, 40, 40, .55);
+  background: rgba(198, 40, 40, .10);
+  box-shadow: inset 4px 0 0 var(--expense);
+  color: #8f2c31;
+  font-weight: 800;
+}
+.sidebar .nav-link[href="/repasse-societario"] svg { color: var(--expense); }
+.sidebar .nav-link[href="/repasse-societario"]:hover { background: rgba(198, 40, 40, .17); }
+.sidebar .nav-link[href="/repasse-societario"].active {
+  border-color: var(--expense);
+  background: var(--expense);
+  color: #fff;
+  box-shadow: none;
+}
+.sidebar .nav-link[href="/repasse-societario"].active svg { color: #fff; }
+[data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"],
+.dark .sidebar .nav-link[href="/repasse-societario"] {
+  background: rgba(239, 68, 68, .16);
+  border-color: rgba(248, 113, 113, .62);
+  color: #fca5a5;
+}
+[data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"] svg,
+.dark .sidebar .nav-link[href="/repasse-societario"] svg { color: #f87171; }
+[data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"].active,
+.dark .sidebar .nav-link[href="/repasse-societario"].active {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+/* Campos adicionais do Demonstrativo de Recebimento de Alvarás. */
+.composition-add-row {
+  border-top: 1px solid #d8dee4;
+  padding: 9px 10px;
+  background: #f8fbfd;
+}
+.add-dynamic-component-button {
+  border: 1px dashed #8fb8d8;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--revenue-dark);
+  padding: 8px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.add-dynamic-component-button:hover { background: var(--revenue-soft); }
+.dynamic-composition-row .commission-component-label {
+  gap: 8px;
+  align-items: center;
+}
+.dynamic-composition-row .component-label-text { flex: 0 0 auto; }
+.dynamic-composition-row .commission-component-label input { min-width: 180px; flex: 1; }
+.dynamic-component-trash {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border: 1px solid #e2a9ab !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: var(--expense);
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center;
+  cursor: pointer;
+}
+.dynamic-component-trash:hover { background: var(--expense-soft) !important; }
+[data-theme="dark"] .composition-add-row,
+.dark .composition-add-row { background: rgba(255,255,255,.025); }
+[data-theme="dark"] .add-dynamic-component-button,
+.dark .add-dynamic-component-button,
+[data-theme="dark"] .dynamic-component-trash,
+.dark .dynamic-component-trash { background: var(--ui-surface, #172033) !important; }
+
 @media (max-width: 900px) {
   .review-expenses-table .data-row { min-width: 980px; }
 }
