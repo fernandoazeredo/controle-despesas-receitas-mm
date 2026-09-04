@@ -11,6 +11,7 @@ type DreRow = { id: string; type: 'revenue' | 'expense'; date: string; unit: str
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const EXPENSE_COMPETENCE_STATUSES = new Set(['aprovado', 'pago', 'arquivado'])
+const AGREEMENT_COMPETENCE_STATUSES = new Set(['enviado_tesouraria', 'recebido_tesouraria', 'encerrado'])
 const FILTER_STORAGE_KEY = 'dre-gerencial-periodo'
 
 function isoLocal(date: Date) {
@@ -116,6 +117,49 @@ function revenueAmount(record: AnyRecord) {
   return toNumber(components.find((item) => item.nome === 'Honorários do Escritório')?.valor)
 }
 
+function isLaborAgreement(record: AnyRecord) {
+  return String(record.tipoRecebimento ?? '').trim().toLowerCase() === 'acordo_trabalhista'
+}
+
+function laborAgreementInstallmentAmount(record: AnyRecord, installment: DocumentData) {
+  const direct = toNumber(installment.honorarios)
+  if (direct > 0) return direct
+  const installmentValue = toNumber(installment.valorParcela)
+  const percentage = toNumber(record.percentualHonorarios)
+  return installmentValue > 0 && percentage > 0 ? Number(((installmentValue * percentage) / 100).toFixed(2)) : 0
+}
+
+function laborAgreementRows(record: AnyRecord, regime: Regime, group: string): DreRow[] {
+  const installments = Array.isArray(record.parcelas) ? record.parcelas as DocumentData[] : []
+  const unit = String(record.unidade ?? 'RJ')
+  const rows: DreRow[] = []
+
+  installments.forEach((installment, index) => {
+    const realizedDate = firstValidDate(installment.dataRealizada)
+    if (!realizedDate) return
+
+    const amount = laborAgreementInstallmentAmount(record, installment)
+    if (amount <= 0) return
+
+    const date = regime === 'competencia'
+      ? firstValidDate(installment.dataContabilizacao, realizedDate, installment.dataPrevista)
+      : realizedDate
+    if (!date) return
+
+    const installmentNumber = Number(installment.numero) || index + 1
+    rows.push({
+      id: `${record.id}__parcela_${installmentNumber}`,
+      type: 'revenue',
+      date,
+      unit,
+      amount,
+      group,
+    })
+  })
+
+  return rows
+}
+
 export function DreRegimeViewEnhancer() {
   const savedRange = useMemo(initialRange, [])
   const [expenses, setExpenses] = useState<AnyRecord[]>([])
@@ -189,11 +233,24 @@ export function DreRegimeViewEnhancer() {
       const classification = classificationMap.get(`revenue__${item.id}`)
       if (!classification?.confirmed || !classification.accountDre || classification.accountDre === 'Não mostrar no DRE Gerencial') continue
       const status = normalizeStatus(item.status)
+      const group = String(classification.accountDre)
+
+      if (isLaborAgreement(item)) {
+        if (regime === 'competencia' && !AGREEMENT_COMPETENCE_STATUSES.has(status)) continue
+        if (regime === 'caixa' && ['rascunho', 'rejeitado', 'cancelado', 'excluido', 'pendente'].includes(status)) continue
+
+        const installmentRows = laborAgreementRows(item, regime, group)
+        if (installmentRows.length > 0) {
+          result.push(...installmentRows)
+          continue
+        }
+      }
+
       const date = regime === 'competencia' ? revenueCompetenceDate(item) : revenueCashDate(item)
       if (!date) continue
       if (regime === 'competencia' && !['recebido_tesouraria', 'encerrado'].includes(status)) continue
       if (regime === 'caixa' && ['rascunho', 'rejeitado', 'cancelado', 'excluido', 'pendente'].includes(status)) continue
-      result.push({ id: item.id, type: 'revenue', date, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group: String(classification.accountDre) })
+      result.push({ id: item.id, type: 'revenue', date, unit: String(item.unidade ?? 'RJ'), amount: revenueAmount(item), group })
     }
 
     return result
