@@ -140,6 +140,45 @@ html[data-theme="dark"] .sidebar .nav-link[href="/repasse-societario"].active,
 [data-theme="dark"] .dynamic-component-trash,
 .dark .dynamic-component-trash { background: var(--ui-surface, #172033) !important; }
 
+/* Valor Líquido do Alvará: campo obrigatório e primeiro passo do demonstrativo. */
+.revenue-sheet .composition-row.total-row {
+  background: #fff8e6 !important;
+  border: 1px solid rgba(245, 158, 11, .72) !important;
+}
+.revenue-sheet .composition-row.total-row > strong:first-child {
+  color: #a65f00 !important;
+}
+.revenue-sheet .composition-row.total-row input[aria-label="Valor Líquido do Alvará"] {
+  border: 2px solid #f59e0b !important;
+  background: #fffdf5 !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, .10) !important;
+}
+.revenue-sheet .composition-row.total-row:has(input[aria-label="Valor Líquido do Alvará"]):has(input:placeholder-shown)::after {
+  content: "Preencha primeiro este campo. Ele é obrigatório.";
+  grid-column: 1 / -1;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+[data-theme="dark"] .revenue-sheet .composition-row.total-row,
+.dark .revenue-sheet .composition-row.total-row {
+  background: rgba(245, 158, 11, .12) !important;
+  border-color: rgba(251, 191, 36, .72) !important;
+}
+[data-theme="dark"] .revenue-sheet .composition-row.total-row > strong:first-child,
+.dark .revenue-sheet .composition-row.total-row > strong:first-child,
+[data-theme="dark"] .revenue-sheet .composition-row.total-row:has(input:placeholder-shown)::after,
+.dark .revenue-sheet .composition-row.total-row:has(input:placeholder-shown)::after {
+  color: #fbbf24 !important;
+}
+[data-theme="dark"] .revenue-sheet .composition-row.total-row input[aria-label="Valor Líquido do Alvará"],
+.dark .revenue-sheet .composition-row.total-row input[aria-label="Valor Líquido do Alvará"] {
+  border-color: #fbbf24 !important;
+  background: rgba(245, 158, 11, .08) !important;
+}
+
 @media (max-width: 900px) {
   .review-expenses-table .data-row { min-width: 980px; }
 }
