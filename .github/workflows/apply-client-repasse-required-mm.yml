@@ -34,7 +34,6 @@ jobs:
                   raise SystemExit(f'{label}: esperado 1 trecho, encontrado {count}')
               p.write_text(text.replace(old, new, 1), encoding='utf-8')
 
-          # ALVARÁ — campos obrigatórios quando houver repasse e PIX opcional.
           path = 'src/pages/ReceivablesPageStorageV2.tsx'
           replace_once(path,
               "  const [cpf, setCpf] = useState('')\n  const [emailNf, setEmailNf] = useState('')",
@@ -53,7 +52,6 @@ jobs:
               "    <div className=\"form-grid compact-grid\">\n      <label><span>Banco *</span><input value={banco} required={liquidoCliente > 0} onChange={(e) => setBanco(e.target.value)} /></label>\n      <label><span>Agência *</span><input value={agencia} required={liquidoCliente > 0} onChange={(e) => setAgencia(e.target.value)} /></label>\n      <label><span>Conta *</span><input value={conta} required={liquidoCliente > 0} onChange={(e) => setConta(e.target.value)} /></label>\n      <label className=\"span-2\"><span>Nome / Titular *</span><input value={titular} required={liquidoCliente > 0} onChange={(e) => setTitular(e.target.value)} /></label>\n      <label><span>CPF *</span><input value={cpf} required={liquidoCliente > 0} onChange={(e) => setCpf(e.target.value)} /></label>\n      <label><span>PIX (opcional)</span><input value={pix} onChange={(e) => setPix(e.target.value)} /></label>\n    </div>",
               'alvara-ui')
 
-          # ACORDO — todos os dados do cliente obrigatórios quando houver repasse; PIX opcional.
           path = 'src/components/LaborAgreementReceivable.tsx'
           replace_once(path,
               "  const [contaCliente, setContaCliente] = useState('')\n  const [cpfCliente, setCpfCliente] = useState('')\n  const [emailCliente, setEmailCliente] = useState('')",
@@ -72,7 +70,6 @@ jobs:
               "      <label><span>Banco *</span><input value={bancoCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setBancoCliente(e.target.value)} /></label>\n      <label><span>Agência *</span><input value={agenciaCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setAgenciaCliente(e.target.value)} /></label>\n      <label><span>Conta Corrente *</span><input value={contaCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setContaCliente(e.target.value)} /></label>\n      <label><span>Nome / Titular *</span><input value={titularCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setTitularCliente(e.target.value)} /></label>\n      <label><span>CPF *</span><input value={cpfCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setCpfCliente(e.target.value)} /></label>\n      <label><span>PIX (opcional)</span><input value={pixCliente} onChange={(e) => setPixCliente(e.target.value)} /></label>\n      <label><span>E-mail *</span><input type=\"email\" value={emailCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setEmailCliente(e.target.value)} /></label>\n      <label><span>Telefone *</span><input value={telefoneCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setTelefoneCliente(e.target.value)} /></label>\n      <label className=\"span-2\"><span>Endereço *</span><input value={enderecoCliente} required={liquidoClienteRecebido > 0} onChange={(e) => setEnderecoCliente(e.target.value)} /></label>",
               'acordo-ui')
 
-          # REPASSE DE ALVARÁS — trava registros antigos incompletos e propaga/exibe PIX.
           path = 'src/pages/AlvaraControlPagesV3.tsx'
           replace_once(path,
               "${kind === 'client' ? `<div><b>CPF</b>${escapeHtml(source.cpf || '—')}</div><div><b>Banco / Agência / Conta</b>${escapeHtml(`${source.banco || '—'} / ${source.agencia || '—'} / ${source.conta || '—'}`)}</div>` : `<div><b>Comissão</b>${percent ? `${percent.toLocaleString('pt-BR')}%` : '—'}</div>`}",
@@ -106,6 +103,6 @@ jobs:
         run: |
           git config user.name "Fernando Azeredo - automacao"
           git config user.email "132702186+fernandoazeredo@users.noreply.github.com"
-          git add src/pages/ReceivablesPageStorageV2.tsx src/components/LaborAgreementReceivable.tsx src/pages/AlvaraControlPagesV3.tsx .github/workflows/apply-client-repasse-required-mm.yml
+          git add -A
           git commit -m "Adiciona dados obrigatorios do cliente e PIX no MM"
           git push origin HEAD:main
