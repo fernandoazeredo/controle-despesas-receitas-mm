@@ -1,0 +1,82 @@
+name: Retirar Repasse Societario do MM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/remove-societary-transfer-mm.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  remove:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Retirar modulo de Repasse Societario
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          app = Path('src/App.tsx')
+          text = app.read_text(encoding='utf-8')
+
+          text = text.replace('  Handshake,\n', '')
+          text = re.sub(r"^import \{ SocietaryTransferSync, SocietaryTransfersPage, SocietaryTreasuryPanel \} from './pages/SocietaryTransfersPage'\n", '', text, flags=re.M)
+          text = re.sub(r"^\s*\{ to: '/repasse-societario'.*?\},\n", '', text, flags=re.M)
+          text = text.replace('      <SocietaryTransferSync />\n', '')
+          text = re.sub(r"^\s*<Route[^\n]*path=\"/repasse-societario\"[^\n]*/>\n", '', text, flags=re.M)
+          text = re.sub(r"\s*<SocietaryTreasuryPanel\s*/>\s*", '\n', text)
+          text = re.sub(r"\s*<SocietaryTransfersPage\s*/>\s*", '\n', text)
+
+          app.write_text(text, encoding='utf-8')
+
+          page = Path('src/pages/SocietaryTransfersPage.tsx')
+          if page.exists():
+              page.unlink()
+
+          # Remover eventuais menções textuais em ajuda/documentação do MM.
+          for p in Path('src').rglob('*'):
+              if not p.is_file() or p.suffix not in {'.ts', '.tsx', '.css'}:
+                  continue
+              t = p.read_text(encoding='utf-8')
+              if 'Repasse Societário' not in t and 'repasse societário' not in t and 'repasse-societario' not in t:
+                  continue
+              # Não fazer substituições cegas em regras funcionais de outros módulos;
+              # apenas falhar para revisão se houver referências residuais fora do arquivo removido/App.
+              if p.as_posix() != 'src/App.tsx':
+                  print(f'REFERENCIA_RESIDUAL::{p}')
+          PY
+
+      - name: Verificar referencias residuais funcionais
+        shell: bash
+        run: |
+          if grep -RInE "SocietaryTransfer|repasse-societario" src --exclude='*.map'; then
+            echo "Ainda existem referencias funcionais ao modulo de Repasse Societario." >&2
+            exit 1
+          fi
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Validar build
+        run: npm run build
+
+      - name: Remover workflow temporario e publicar
+        shell: bash
+        run: |
+          rm .github/workflows/remove-societary-transfer-mm.yml
+          git config user.name "Fernando Azeredo - automacao"
+          git config user.email "132702186+fernandoazeredo@users.noreply.github.com"
+          git add -A
+          git commit -m "Retira modulo de Repasse Societario do MM"
+          git push origin HEAD:main
