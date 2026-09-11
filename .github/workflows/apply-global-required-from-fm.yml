@@ -20,13 +20,113 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Aplicar somente as alteracoes funcionais da regra global
+      - name: Aplicar alteracoes sem sobrescrever regras proprias do MM
         shell: bash
         run: |
           git remote add fm https://github.com/fernandoazeredo/tesouraria-fm-novo.git
           git fetch fm 16a9874f87323478d1cbee08a441ca204723b6f0 ef8c3136c755ce620bc1c53610ecabd877046e6a
           git diff 16a9874f87323478d1cbee08a441ca204723b6f0 ef8c3136c755ce620bc1c53610ecabd877046e6a -- src > /tmp/global-required.patch
+          set +e
           git apply --3way --index /tmp/global-required.patch
+          set -e
+          for file in src/pages/AgentCommissionsPageV4.tsx src/pages/AlvaraControlPagesV3.tsx src/pages/ReceivablesPageStorageV2.tsx src/pages/SocietaryTransfersPage.tsx; do
+            if git diff --name-only --diff-filter=U | grep -Fxq "$file"; then
+              git checkout --ours -- "$file"
+              git add "$file"
+            fi
+          done
+
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_once(path, old, new, label):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if new in text:
+                  return
+              if old not in text:
+                  raise SystemExit(f'{label}: trecho nao encontrado')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # Comissoes de agentes MM.
+          p='src/pages/AgentCommissionsPageV4.tsx'
+          replace_once(p, "import { useAuth } from '../auth/AuthContext'\n", "import { useAuth } from '../auth/AuthContext'\nimport { clearRequiredFieldErrors, showRequiredFieldErrors } from '../lib/requiredFieldValidation'\n", 'commission-import')
+          replace_once(p, "function MoneyInputBR({ value, onChange, disabled = false, ariaLabel }: { value: number; onChange: (value: number) => void; disabled?: boolean; ariaLabel?: string }) {", "function MoneyInputBR({ value, onChange, disabled = false, ariaLabel, validationKey }: { value: number; onChange: (value: number) => void; disabled?: boolean; ariaLabel?: string; validationKey?: string }) {", 'commission-money-signature')
+          replace_once(p, 'return <input type="text" inputMode="decimal" aria-label={ariaLabel} disabled={disabled}', 'return <input type="text" inputMode="decimal" aria-label={ariaLabel} data-required-key={validationKey} disabled={disabled}', 'commission-money-key')
+          replace_once(p, "    if (deductions.some((item) => item.value > 0 && (!item.description.trim() || !item.date))) { window.alert('Informe data e descrição para todas as deduções com valor.'); return }", "    const missingKeys: string[] = []\n    deductions.forEach((item, index) => { if (item.value > 0 && !item.date) missingKeys.push(`commission-deduction-date-${index}`); if (item.value > 0 && !item.description.trim()) missingKeys.push(`commission-deduction-description-${index}`) })\n    installments.forEach((item, index) => { if (item.value <= 0) missingKeys.push(`commission-installment-value-${index}`); if (!item.dueDate) missingKeys.push(`commission-installment-date-${index}`) })\n    if (missingKeys.length) { showRequiredFieldErrors('.commission-v4-modal', missingKeys); return }\n    clearRequiredFieldErrors('.commission-v4-modal')", 'commission-validation')
+          text=Path(p).read_text(encoding='utf-8')
+          text=text.replace("    if (installments.some((item) => !item.dueDate || item.value <= 0)) { window.alert('Informe valor e data de todas as parcelas.'); return }\n", '')
+          text=text.replace('<input type="date" value={item.date} disabled={!canOperate || !editable}', '<input data-required-key={`commission-deduction-date-${index}`} type="date" value={item.date} disabled={!canOperate || !editable}')
+          text=text.replace('<input value={item.description} disabled={!canOperate || !editable}', '<input data-required-key={`commission-deduction-description-${index}`} value={item.description} disabled={!canOperate || !editable}')
+          text=text.replace('<MoneyInputBR value={item.value} disabled={execution || !canOperate || !editable} onChange={(value) => patchInstallment(index, { value })} />', '<MoneyInputBR value={item.value} disabled={execution || !canOperate || !editable} validationKey={`commission-installment-value-${index}`} onChange={(value) => patchInstallment(index, { value })} />')
+          text=text.replace('<input type="date" value={item.dueDate} disabled={execution || !canOperate || !editable}', '<input data-required-key={`commission-installment-date-${index}`} type="date" value={item.dueDate} disabled={execution || !canOperate || !editable}')
+          Path(p).write_text(text, encoding='utf-8')
+
+          # Repasse de Alvaras MM: parcelas obrigatorias em destaque visual.
+          p='src/pages/AlvaraControlPagesV3.tsx'
+          replace_once(p, "import { useAuth } from '../auth/AuthContext'\n", "import { useAuth } from '../auth/AuthContext'\nimport { clearRequiredFieldErrors, showRequiredFieldErrors } from '../lib/requiredFieldValidation'\n", 'transfer-import')
+          replace_once(p, "    if (!installments.length || installments.some((item) => !item.dueDate || toNumber(item.value) <= 0)) { window.alert('Informe valor e data de todas as parcelas.'); return }", "    if (!installments.length || installments.some((item) => !item.dueDate || toNumber(item.value) <= 0)) {\n      const missingKeys: string[] = []\n      installments.forEach((item, index) => { if (toNumber(item.value) <= 0) missingKeys.push(`transfer-value-${index}`); if (!item.dueDate) missingKeys.push(`transfer-date-${index}`) })\n      if (missingKeys.length) { showRequiredFieldErrors('.obligation-modal', missingKeys); return }\n    }\n    clearRequiredFieldErrors('.obligation-modal')", 'transfer-validation')
+          text=Path(p).read_text(encoding='utf-8')
+          text=text.replace('<input type="number" min="0" step="0.01" value={item.value}', '<input data-required-key={`transfer-value-${index}`} type="number" min="0" step="0.01" value={item.value}')
+          text=text.replace('<input type="date" value={item.dueDate}', '<input data-required-key={`transfer-date-${index}`} type="date" value={item.dueDate}')
+          Path(p).write_text(text, encoding='utf-8')
+
+          # Recebimento de Alvara MM: uma unica validacao visual para todos os obrigatorios.
+          p='src/pages/ReceivablesPageStorageV2.tsx'
+          replace_once(p, "import { DEFAULT_BANK_ACCOUNT_ID, getBankAccount, type BankAccount } from '../data/bankAccounts'\n", "import { DEFAULT_BANK_ACCOUNT_ID, getBankAccount, type BankAccount } from '../data/bankAccounts'\nimport { clearRequiredFieldErrors, showRequiredFieldErrors } from '../lib/requiredFieldValidation'\n", 'alvara-import')
+          replace_once(p, "function BrazilianMoneyInput({ value, onChange, ariaLabel }: { value: number; onChange: (value: number) => void; ariaLabel?: string }) {", "function BrazilianMoneyInput({ value, onChange, ariaLabel, validationKey }: { value: number; onChange: (value: number) => void; ariaLabel?: string; validationKey?: string }) {", 'alvara-money-signature')
+          replace_once(p, "    aria-label={ariaLabel}\n    placeholder=\"0,00\"", "    aria-label={ariaLabel}\n    data-required-key={validationKey}\n    placeholder=\"0,00\"", 'alvara-money-key')
+          text=Path(p).read_text(encoding='utf-8')
+          pattern=r"  async function save\(status: 'rascunho' \| 'enviado_tesouraria'\) \{.*?    const componentsToSave ="
+          replacement="""  async function save(status: 'rascunho' | 'enviado_tesouraria') {
+    if (uploading) { window.alert('Aguarde o término do envio dos documentos.'); return }
+    const missingKeys: string[] = []
+    if (!processo.trim()) missingKeys.push('alvara-processo')
+    if (!reclamante.trim()) missingKeys.push('alvara-reclamante')
+    if (totalAlvara <= 0) missingKeys.push('alvara-total')
+    if (status === 'enviado_tesouraria' && liquidoCliente > 0) {
+      if (!banco.trim()) missingKeys.push('alvara-banco')
+      if (!agencia.trim()) missingKeys.push('alvara-agencia')
+      if (!conta.trim()) missingKeys.push('alvara-conta')
+      if (!titular.trim()) missingKeys.push('alvara-titular')
+      if (!cpf.trim()) missingKeys.push('alvara-cpf')
+    }
+    components.forEach((item, index) => {
+      const requiresDetail = (item.nome.includes('Geral') || isDynamicComponent(item.nome)) && toNumber(item.valor) > 0 && !item.detalhe?.trim()
+      if (requiresDetail) missingKeys.push(`alvara-detail-${index}`)
+    })
+    if (agentCommissionValue > 0 && !agentName.trim()) missingKeys.push('alvara-agent')
+    if (missingKeys.length) { showRequiredFieldErrors('.revenue-sheet', missingKeys); return }
+    clearRequiredFieldErrors('.revenue-sheet')
+    const componentsToSave ="""
+          text,count=re.subn(pattern,replacement,text,count=1,flags=re.S)
+          if count != 1: raise SystemExit('alvara-save: trecho nao encontrado')
+          text=text.replace('<input value={processo} aria-invalid={showProcessValidation && !processo.trim()}', '<input data-required-key="alvara-processo" value={processo} aria-invalid={showProcessValidation && !processo.trim()}')
+          text=text.replace('<input value={reclamante} aria-invalid={showProcessValidation && !reclamante.trim()}', '<input data-required-key="alvara-reclamante" value={reclamante} aria-invalid={showProcessValidation && !reclamante.trim()}')
+          text=text.replace('<BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" />', '<BrazilianMoneyInput value={totalAlvara} onChange={changeTotal} ariaLabel="Valor Líquido do Alvará" validationKey="alvara-total" />')
+          text=text.replace('<input aria-label={isAgentCommission ?', '<input data-required-key={isAgentCommission ? \'alvara-agent\' : `alvara-detail-${index}`} aria-label={isAgentCommission ?', 1)
+          text=text.replace('<input value={banco} required={liquidoCliente > 0}', '<input data-required-key="alvara-banco" value={banco} required={liquidoCliente > 0}')
+          text=text.replace('<input value={agencia} required={liquidoCliente > 0}', '<input data-required-key="alvara-agencia" value={agencia} required={liquidoCliente > 0}')
+          text=text.replace('<input value={conta} required={liquidoCliente > 0}', '<input data-required-key="alvara-conta" value={conta} required={liquidoCliente > 0}')
+          text=text.replace('<input value={titular} required={liquidoCliente > 0}', '<input data-required-key="alvara-titular" value={titular} required={liquidoCliente > 0}')
+          text=text.replace('<input value={cpf} required={liquidoCliente > 0}', '<input data-required-key="alvara-cpf" value={cpf} required={liquidoCliente > 0}')
+          Path(p).write_text(text, encoding='utf-8')
+
+          # Repasse Societario MM: beneficiario obrigatorio em destaque, sem alterar Ana/40%.
+          p='src/pages/SocietaryTransfersPage.tsx'
+          replace_once(p, "import { useAuth } from '../auth/AuthContext'\n", "import { useAuth } from '../auth/AuthContext'\nimport { clearRequiredFieldErrors, showRequiredFieldErrors } from '../lib/requiredFieldValidation'\n", 'soc-import')
+          replace_once(p, "    if (!form.beneficiary.trim() || form.defaultPercent < 0 || form.defaultPercent > 100 || form.dueDay < 0 || form.dueDay > 31) {\n      window.alert('Revise beneficiário, percentual padrão e dia de vencimento.')\n      return\n    }", "    if (!form.beneficiary.trim()) { showRequiredFieldErrors('.soc-settings', ['soc-beneficiary']); return }\n    clearRequiredFieldErrors('.soc-settings')\n    if (form.defaultPercent < 0 || form.defaultPercent > 100 || form.dueDay < 0 || form.dueDay > 31) {\n      window.alert('Revise beneficiário, percentual padrão e dia de vencimento.')\n      return\n    }", 'soc-validation')
+          replace_once(p, '<label><span>Beneficiário</span><input value={form.beneficiary}', '<label><span>Beneficiário</span><input data-required-key="soc-beneficiary" value={form.beneficiary}', 'soc-key')
+          PY
+
+          if git diff --name-only --diff-filter=U | grep -q .; then
+            echo 'Ainda existem conflitos:'
+            git diff --name-only --diff-filter=U
+            exit 1
+          fi
+          if grep -R -nE '^(<<<<<<<|=======|>>>>>>>)' src; then exit 1; fi
+          git add src
 
       - name: Instalar dependencias
         run: npm install --no-package-lock
