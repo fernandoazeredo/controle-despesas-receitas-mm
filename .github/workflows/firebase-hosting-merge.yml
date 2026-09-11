@@ -2,6 +2,7 @@
 # https://github.com/firebase/firebase-tools
 # Deploy de homologacao: campos obrigatorios do cliente e PIX no MM.
 # Publicacao da validacao visual inline dos campos obrigatorios.
+# Publicacao da nomenclatura Tesouraria — Recebimentos.
 
 name: Deploy to Firebase Hosting on merge
 on:
