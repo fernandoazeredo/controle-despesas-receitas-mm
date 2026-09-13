@@ -18,8 +18,7 @@ export function OperationalFlowImage() {
       return response.text()
     })))
       .then((parts) => {
-        const svg = parts.join('').replace('autorizadora/text>', 'autorizadora</text>')
-        imageUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }))
+        imageUrl = URL.createObjectURL(new Blob([parts.join('')], { type: 'image/svg+xml;charset=utf-8' }))
         if (active) setSrc(imageUrl)
         else URL.revokeObjectURL(imageUrl)
       })
@@ -85,7 +84,13 @@ export function OperationalFlowImage() {
 
   const card = (
     <section className="page-card" style={{ marginTop: 24, padding: 12 }}>
-      <button type="button" onClick={() => setOpen(true)} onTouchEnd={() => setOpen(true)} aria-label="Abrir Fluxo Operacional em tamanho grande" style={{ display: 'block', width: '100%', padding: 0, border: 0, background: 'transparent', cursor: 'zoom-in', WebkitTapHighlightColor: 'transparent' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        onTouchEnd={() => setOpen(true)}
+        aria-label="Abrir Fluxo Operacional em tamanho grande"
+        style={{ display: 'block', width: '100%', padding: 0, border: 0, background: 'transparent', cursor: 'zoom-in', WebkitTapHighlightColor: 'transparent' }}
+      >
         <img src={src} alt="Fluxo Operacional do Aplicativo" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 14 }} />
       </button>
       {pdfUrl && (
