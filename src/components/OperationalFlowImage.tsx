@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { createFlowPdfUrl } from '../lib/flowPdf'
 
-const FLOW_IMAGE = '/fluxo-operacional-mm.svg?v=20260913-3'
+const FLOW_IMAGE = '/fluxo-operacional-mm.png?v=20260913-1103-png'
 
 export function OperationalFlowImage() {
   const [pdfUrl, setPdfUrl] = useState('')
@@ -90,7 +90,7 @@ export function OperationalFlowImage() {
           </a>
         ) : (
           <button type="button" className="primary-button" disabled>
-            Baixar Fluxo Operacional em PDF
+            Preparando PDF...
           </button>
         )}
       </div>
