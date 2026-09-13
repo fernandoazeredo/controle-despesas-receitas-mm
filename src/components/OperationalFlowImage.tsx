@@ -2,41 +2,18 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { createFlowPdfUrl } from '../lib/flowPdf'
 
-const PART_COUNT = 5
+const FLOW_IMAGE = '/fluxo-operacional-mm.svg?v=20260913-3'
 
 export function OperationalFlowImage() {
-  const [src, setSrc] = useState('')
   const [pdfUrl, setPdfUrl] = useState('')
   const [open, setOpen] = useState(false)
   const [host, setHost] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
     let active = true
-
-    Promise.all(
-      Array.from({ length: PART_COUNT }, (_, index) =>
-        fetch(`/fluxo-operacional-${index + 1}.b64`, { cache: 'no-store' }).then((response) => {
-          if (!response.ok) throw new Error('Imagem ainda não disponível')
-          return response.text()
-        }),
-      ),
-    )
-      .then((parts) => {
-        if (active) setSrc(`data:image/svg+xml;base64,${parts.join('').trim()}`)
-      })
-      .catch(() => undefined)
-
-    return () => {
-      active = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!src) return
-    let active = true
     let createdUrl = ''
 
-    createFlowPdfUrl(src)
+    createFlowPdfUrl(FLOW_IMAGE)
       .then((url) => {
         createdUrl = url
         if (active) setPdfUrl(url)
@@ -48,7 +25,7 @@ export function OperationalFlowImage() {
       active = false
       if (createdUrl) URL.revokeObjectURL(createdUrl)
     }
-  }, [src])
+  }, [])
 
   useEffect(() => {
     const parent = document.querySelector<HTMLElement>('.main-content')
@@ -87,7 +64,7 @@ export function OperationalFlowImage() {
     }
   }, [open])
 
-  if (!src || !host) return null
+  if (!host) return null
 
   const card = (
     <section className="page-card" style={{ marginTop: 24, padding: 12 }}>
@@ -98,11 +75,11 @@ export function OperationalFlowImage() {
         aria-label="Abrir Fluxo Operacional em tamanho grande"
         style={{ display: 'block', width: '100%', padding: 0, border: 0, background: 'transparent', cursor: 'zoom-in', WebkitTapHighlightColor: 'transparent' }}
       >
-        <img src={src} alt="Fluxo Operacional do Aplicativo" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 14 }} />
+        <img src={FLOW_IMAGE} alt="Fluxo Operacional do Aplicativo" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 14 }} />
       </button>
 
-      {pdfUrl && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+        {pdfUrl ? (
           <a
             href={pdfUrl}
             download="Fluxo_Operacional_MM.pdf"
@@ -111,8 +88,12 @@ export function OperationalFlowImage() {
           >
             Baixar Fluxo Operacional em PDF
           </a>
-        </div>
-      )}
+        ) : (
+          <button type="button" className="primary-button" disabled>
+            Baixar Fluxo Operacional em PDF
+          </button>
+        )}
+      </div>
     </section>
   )
 
@@ -132,7 +113,7 @@ export function OperationalFlowImage() {
       >×</button>
 
       <img
-        src={src}
+        src={FLOW_IMAGE}
         alt="Fluxo Operacional do Aplicativo ampliado"
         onClick={(event) => event.stopPropagation()}
         style={{ display: 'block', width: 'auto', maxWidth: '98vw', height: 'auto', maxHeight: '94vh', objectFit: 'contain', borderRadius: 10, background: '#fff', boxShadow: '0 24px 70px rgba(0,0,0,.55)' }}
