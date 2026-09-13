@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -10,5 +11,23 @@ if (!svg.startsWith('<svg') || !svg.endsWith('</svg>')) {
   throw new Error('Fluxo MM inválido: SVG não foi montado corretamente.')
 }
 
-writeFileSync(resolve(root, 'public/fluxo-operacional-mm.svg'), svg, 'utf8')
-console.log('Fluxo MM montado como arquivo SVG físico.')
+const svgPath = resolve(root, 'public/fluxo-operacional-mm-source.svg')
+const pngPath = resolve(root, 'public/fluxo-operacional-mm.png')
+
+writeFileSync(svgPath, svg, 'utf8')
+
+execFileSync(
+  'rsvg-convert',
+  [
+    '--format=png',
+    '--width=2400',
+    '--height=1600',
+    '--background-color=#ffffff',
+    '--output',
+    pngPath,
+    svgPath,
+  ],
+  { stdio: 'inherit' },
+)
+
+console.log('Fluxo MM convertido para PNG físico em 2400x1600.')
