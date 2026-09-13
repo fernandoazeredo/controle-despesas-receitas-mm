@@ -18,7 +18,8 @@ export function OperationalFlowImage() {
       return response.text()
     })))
       .then((parts) => {
-        imageUrl = URL.createObjectURL(new Blob([parts.join('')], { type: 'image/svg+xml;charset=utf-8' }))
+        const svg = parts.join('').replace('autorizadora/text>', 'autorizadora</text>')
+        imageUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }))
         if (active) setSrc(imageUrl)
         else URL.revokeObjectURL(imageUrl)
       })
