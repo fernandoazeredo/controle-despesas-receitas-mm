@@ -35,7 +35,22 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CONTROLE_DESPESAS_RECEITAS_MM }}
 
+      - name: Instalar Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Publicar Hosting do MM
+        run: firebase deploy --only hosting --project controle-despesas-receitas-mm --non-interactive
+
+      - name: Configurar CORS do Storage MM
+        id: cors
+        continue-on-error: true
+        run: |
+          gcloud storage buckets update gs://controle-despesas-receitas-mm.firebasestorage.app --cors-file=cors-mm.json
+          gcloud storage buckets describe gs://controle-despesas-receitas-mm.firebasestorage.app --format="yaml(cors_config)"
+
       - name: Publicar regras Firestore pela API
+        id: firestore_rules
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -57,6 +72,8 @@ jobs:
           curl -fsS -X PATCH "https://firebaserules.googleapis.com/v1/projects/controle-despesas-receitas-mm/releases/cloud.firestore" -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/release.json
 
       - name: Publicar regras Storage pela API
+        id: storage_rules
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -79,13 +96,8 @@ jobs:
           PY
           curl -fsS -X PATCH "https://firebaserules.googleapis.com/v1/$RELEASE_NAME" -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/storage-release.json
 
-      - name: Configurar CORS do Storage MM
+      - name: Resumo de permissoes
         run: |
-          gcloud storage buckets update gs://controle-despesas-receitas-mm.firebasestorage.app --cors-file=cors-mm.json
-          gcloud storage buckets describe gs://controle-despesas-receitas-mm.firebasestorage.app --format="yaml(cors_config)"
-
-      - name: Instalar Firebase CLI
-        run: npm install --global firebase-tools
-
-      - name: Publicar Hosting do MM
-        run: firebase deploy --only hosting --project controle-despesas-receitas-mm --non-interactive
+          echo "CORS: ${{ steps.cors.outcome }}"
+          echo "Firestore rules: ${{ steps.firestore_rules.outcome }}"
+          echo "Storage rules: ${{ steps.storage_rules.outcome }}"
