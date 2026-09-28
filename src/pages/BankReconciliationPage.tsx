@@ -74,7 +74,6 @@ export function BankReconciliationPage() {
   const receivables = useLiveCollection('receivables')
   const transfers = useLiveCollection('alvaraTransfers')
   const commissions = useLiveCollection('agentCommissions')
-  const societaryTransfers = useLiveCollection('societaryTransfers')
 
   const periodId = `${competence}__${DEFAULT_BANK_ACCOUNT_ID}`
   const period = periods.find((item) => item.id === periodId)
@@ -140,23 +139,8 @@ export function BankReconciliationPage() {
     addInstallments(transfers, 'alvaraTransfers', 'Repasse de Alvará')
     addInstallments(commissions, 'agentCommissions', 'Comissão de Agente')
 
-    for (const item of societaryTransfers) {
-      if (String(item.status) !== 'pago') continue
-      const date = String(item.paymentDate || '').slice(0, 10)
-      if (date.slice(0, 7) !== competence) continue
-      rows.push({
-        key: `societaryTransfers:${item.id}`,
-        collection: 'societaryTransfers',
-        id: item.id,
-        type: 'Repasse Societário',
-        date,
-        amount: -Math.abs(toNumber(item.paidValue || item.transferValue)),
-        label: String(item.beneficiary || 'Repasse Societário'),
-      })
-    }
-
     return rows
-  }, [expenses, receivables, transfers, commissions, societaryTransfers, competence])
+  }, [expenses, receivables, transfers, commissions, competence])
 
   const activeStatementVersions = useMemo(() => new Set(
     statements.map((item) => String(item.activeVersionId || '')).filter(Boolean)
