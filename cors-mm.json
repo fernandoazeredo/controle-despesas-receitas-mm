@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://controle-despesas-receitas-mm.web.app","https://controle-despesas-receitas-mm.firebaseapp.com"],
+    "method": ["GET","HEAD"],
+    "responseHeader": ["Content-Type","Content-Length","Content-Disposition","ETag","x-goog-meta-firebasestoragedownloadtokens"],
+    "maxAgeSeconds": 3600
+  }
+]
