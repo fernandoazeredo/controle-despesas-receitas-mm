@@ -30,39 +30,62 @@ jobs:
       - name: Gerar build
         run: npm run build
 
-      - name: Autenticar no Google Cloud / Firebase
+      - name: Autenticar no Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CONTROLE_DESPESAS_RECEITAS_MM }}
 
-      - name: Instalar Firebase CLI
-        run: npm install --global firebase-tools
-
-      - name: Publicar Firestore, Storage e Hosting do MM
-        run: firebase deploy --only firestore:rules,firestore:indexes,storage,hosting --project controle-despesas-receitas-mm --non-interactive
-
-      - name: Configurar CORS do Storage MM
+      - name: Publicar regras Firestore pela API
         shell: bash
         run: |
           set -euo pipefail
-          cat > /tmp/cors.json <<'EOF'
-          [
-            {
-              "origin": [
-                "https://controle-despesas-receitas-mm.web.app",
-                "https://controle-despesas-receitas-mm.firebaseapp.com"
-              ],
-              "method": ["GET", "HEAD"],
-              "responseHeader": [
-                "Content-Type",
-                "Content-Length",
-                "Content-Disposition",
-                "ETag",
-                "x-goog-meta-firebasestoragedownloadtokens"
-              ],
-              "maxAgeSeconds": 3600
-            }
-          ]
-          EOF
-          gcloud storage buckets update gs://controle-despesas-receitas-mm.firebasestorage.app --cors-file=/tmp/cors.json
+          ACCESS_TOKEN="$(gcloud auth application-default print-access-token)"
+          python3 - <<'PY'
+          import json
+          content = open("firestore.rules", "r", encoding="utf-8").read()
+          with open("/tmp/ruleset.json", "w", encoding="utf-8") as f:
+              json.dump({"source":{"files":[{"name":"firestore.rules","content":content}]}}, f)
+          PY
+          RESPONSE="$(curl -fsS -X POST "https://firebaserules.googleapis.com/v1/projects/controle-despesas-receitas-mm/rulesets" -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/ruleset.json)"
+          RULESET_NAME="$(printf '%s' "$RESPONSE" | python3 -c 'import json,sys; print(json.load(sys.stdin)["name"])')"
+          python3 - "$RULESET_NAME" <<'PY'
+          import json, sys
+          release_name = "projects/controle-despesas-receitas-mm/releases/cloud.firestore"
+          with open("/tmp/release.json", "w", encoding="utf-8") as f:
+              json.dump({"release":{"name":release_name,"rulesetName":sys.argv[1]},"updateMask":"rulesetName"}, f)
+          PY
+          curl -fsS -X PATCH "https://firebaserules.googleapis.com/v1/projects/controle-despesas-receitas-mm/releases/cloud.firestore" -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/release.json
+
+      - name: Publicar regras Storage pela API
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACCESS_TOKEN="$(gcloud auth application-default print-access-token)"
+          python3 - <<'PY'
+          import json
+          content = open("storage.rules", "r", encoding="utf-8").read()
+          with open("/tmp/storage-ruleset.json", "w", encoding="utf-8") as f:
+              json.dump({"source":{"files":[{"name":"storage.rules","content":content}]}}, f)
+          PY
+          RESPONSE="$(curl -fsS -X POST "https://firebaserules.googleapis.com/v1/projects/controle-despesas-receitas-mm/rulesets" -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/storage-ruleset.json)"
+          RULESET_NAME="$(printf '%s' "$RESPONSE" | python3 -c 'import json,sys; print(json.load(sys.stdin)["name"])')"
+          RELEASES="$(curl -fsS "https://firebaserules.googleapis.com/v1/projects/controle-despesas-receitas-mm/releases?pageSize=100" -H "Authorization: Bearer $ACCESS_TOKEN")"
+          RELEASE_NAME="$(printf '%s' "$RELEASES" | python3 -c 'import json,sys; data=json.load(sys.stdin); names=[r["name"] for r in data.get("releases",[]) if "/firebase.storage/" in r.get("name","")]; print(names[0] if names else "")')"
+          test -n "$RELEASE_NAME"
+          python3 - "$RULESET_NAME" "$RELEASE_NAME" <<'PY'
+          import json, sys
+          with open("/tmp/storage-release.json", "w", encoding="utf-8") as f:
+              json.dump({"release":{"name":sys.argv[2],"rulesetName":sys.argv[1]},"updateMask":"rulesetName"}, f)
+          PY
+          curl -fsS -X PATCH "https://firebaserules.googleapis.com/v1/$RELEASE_NAME" -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/storage-release.json
+
+      - name: Configurar CORS do Storage MM
+        run: |
+          gcloud storage buckets update gs://controle-despesas-receitas-mm.firebasestorage.app --cors-file=cors-mm.json
           gcloud storage buckets describe gs://controle-despesas-receitas-mm.firebasestorage.app --format="yaml(cors_config)"
+
+      - name: Instalar Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Publicar Hosting do MM
+        run: firebase deploy --only hosting --project controle-despesas-receitas-mm --non-interactive
