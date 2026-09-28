@@ -8,6 +8,7 @@ import {
   FileText,
   FolderArchive,
   LayoutDashboard,
+  Landmark,
   Lightbulb,
   LoaderCircle,
   LogOut,
@@ -80,6 +81,7 @@ const menu: MenuItem[] = [
   { to: '/dre-gerencial', label: 'DRE Gerencial', icon: BarChart3, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/plano-contas', label: 'Plano de Contas', icon: BookOpenCheck, roles: ['master'] },
   { to: '/contabilidade', label: 'Contabilidade', icon: Calculator, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
+  { to: '/conciliacao-bancaria', label: 'Conciliação Bancária', icon: Landmark, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
   { to: '/documentos', label: 'Arquivo de Documentos', icon: FolderArchive, roles: ['master', 'diretor', 'gerente', 'tesouraria', 'operador'] },
   { to: '/usuarios', label: 'Usuários', icon: Users, roles: ['master'] },
   { to: '/auditoria', label: 'Auditoria', icon: ShieldCheck, roles: ['master', 'diretor', 'gerente', 'tesouraria'] },
@@ -241,6 +243,7 @@ function AppShell() {
           <Route path="/dre-gerencial" element={<DreGerencialPageV2 />} />
           <Route path="/plano-contas" element={<AccountsPageFernando />} />
           <Route path="/contabilidade" element={<AccountingPageStorageV2 />} />
+          <Route path="/conciliacao-bancaria" element={<BankReconciliationPage />} />
           <Route path="/documentos" element={<DocumentsPageStorage />} />
           <Route path="/usuarios" element={<UsersPageKitFernando />} />
           <Route path="/auditoria" element={<AuditPageEnhancedV2 />} />
